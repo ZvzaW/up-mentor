@@ -91,10 +91,10 @@ export default function TrainerProfile({
                     : "Brak podanej ceny"}
                 </p>
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1 w-full">
                 <p className="text-center text-sm text-zinc-400">Opis pracy</p>
-                <div className="bg-dirty-blue/40 rounded-md p-2">
-                  <p className="custom-scrollbar max-h-30 overflow-y-auto p-1 text-sm break-words whitespace-pre-line">
+                <div className="bg-dirty-blue/40 rounded-md p-2 mx-auto">
+                  <p className="custom-scrollbar max-h-30  overflow-y-auto  p-1 text-sm break-words whitespace-pre-wrap [tab-size:4]">
                     {specificData.work_description ?? "Brak opisu"}
                   </p>
                 </div>

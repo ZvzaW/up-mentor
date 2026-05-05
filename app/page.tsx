@@ -39,8 +39,9 @@ export default function LoginPage() {
       if (result?.error) {
         setLoginError(result.error)
       } else {
-        router.push("/dashboard")
-        router.refresh()
+        // router.push("/dashboard")
+        // router.refresh()
+        window.location.href = "/dashboard";
       }
     } catch (error) {
       toast.error("Wystąpił nieoczekiwany błąd.")

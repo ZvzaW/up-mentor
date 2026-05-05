@@ -141,24 +141,24 @@ export default function DashboardPage() {
       return
     }
 
-    mutateCount(Math.max(0, unreadCount - 1), false)
+    // mutateCount(Math.max(0, unreadCount - 1), false)
 
-    if (pagesData) {
-      const newData = pagesData.map((page) => ({
-        ...page,
-        grouped: Object.fromEntries(
-          Object.entries(page.grouped as Record<string, Notification[]>).map(
-            ([label, items]) => [
-              label,
-              items.map((notif) =>
-                notif.id === notifId ? { ...notif, is_read: true } : notif
-              ),
-            ]
-          )
-        ),
-      }))
-      mutateList(newData, false)
-    }
+    // if (pagesData) {
+    //   const newData = pagesData.map((page) => ({
+    //     ...page,
+    //     grouped: Object.fromEntries(
+    //       Object.entries(page.grouped as Record<string, Notification[]>).map(
+    //         ([label, items]) => [
+    //           label,
+    //           items.map((notif) =>
+    //             notif.id === notifId ? { ...notif, is_read: true } : notif
+    //           ),
+    //         ]
+    //       )
+    //     ),
+    //   }))
+    //   mutateList(newData, false)
+    // }
 
     await markAsReadAction(notifId)
 
@@ -166,7 +166,7 @@ export default function DashboardPage() {
       if (url) {
         router.push(url)
       }
-    }, 100)
+    }, 50)
   }
 
   const getNotificationIcon = (type: string) => {

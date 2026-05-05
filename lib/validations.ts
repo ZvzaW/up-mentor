@@ -148,6 +148,22 @@ export const createWorkplaceSchema = z.object({
 })
 export type CreateWorkplaceFormValues = z.infer<typeof createWorkplaceSchema>
 
+export const trainerOpinionSchema = z.object({
+  trainer_id: z.string(),
+  rate: z
+    .number()
+    .int()
+    .min(1, "Wybierz ocenę od 1 do 5")
+    .max(5, "Wybierz ocenę od 1 do 5"),
+  comment: z
+    .string()
+    .trim()
+    .max(2000, "Komentarz może mieć maksymalnie 2000 znaków")
+    .optional()
+    .or(z.literal("")),
+})
+export type TrainerOpinionFormValues = z.infer<typeof trainerOpinionSchema>
+
 // --- MORE SCHEMAS ---
 
 export const changePasswordSchema = z
