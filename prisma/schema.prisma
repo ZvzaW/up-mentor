@@ -7,13 +7,60 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model user {
+  id               String             @id(map: "user_pk") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name             String             @db.VarChar(100)
+  surname          String             @db.VarChar(100)
+  email            String             @unique @db.VarChar(100)
+  phone            String             @db.VarChar(30)
+  password         String
+  role             String             @db.VarChar(20)
+  notification     notification[]
+  trainee          trainee?
+  trainer          trainer?
+  training_comment training_comment[]
+  refresh_token    refresh_token[]
+}
+
+model trainee {
+  id               String             @id(map: "trainee_pk") @db.Uuid
+  birthdate        DateTime           @db.Date
+  slug               String           @unique @db.Text
+  coaching_request coaching_request[]
+  cooperation      cooperation[]
+  opinion          opinion[]
+  personal_record  personal_record[]
+  survey_answer    survey_answer[]
+  user             user               @relation(fields: [id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "trainee_user")
+  workout_plan     workout_plan[]
+}
+
+model trainer {
+  id                 String             @id(map: "trainer_pk") @db.Uuid
+  work_description   String?
+  price_per_training Int?
+  is_public          Boolean            @default(true)
+  slug               String             @unique @db.Text
+  coaching_request   coaching_request[]
+  cooperation        cooperation[]
+  exercise           exercise[]
+  opinion            opinion[]
+  user               user               @relation(fields: [id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "trainer_user")
+  workout_plan       workout_plan[]
+  workplace          workplace[]
+}
+
 model coaching_request {
-  trainer_id String   @db.Uuid
-  trainee_id String   @db.Uuid
-  message    String?
-  created_at DateTime @default(now()) @db.Timestamptz(6)
-  trainee    trainee  @relation(fields: [trainee_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "coaching_request_client")
-  trainer    trainer  @relation(fields: [trainer_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "coaching_request_trainer")
+  trainer_id   String    @db.Uuid
+  trainee_id   String    @db.Uuid
+  workplace_id String    @db.Uuid 
+  message      String?
+  created_at   DateTime  @default(now()) @db.Timestamptz(6)
+  status       String    @default("pending") @db.VarChar(10) 
+  
+  trainee      trainee   @relation(fields: [trainee_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "coaching_request_client")
+  trainer      trainer   @relation(fields: [trainer_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "coaching_request_trainer")
+  workplace    workplace @relation(fields: [workplace_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "coaching_request_workplace")
 
   @@id([trainer_id, trainee_id], map: "coaching_request_pk")
 }
@@ -21,10 +68,14 @@ model coaching_request {
 model cooperation {
   trainer_id   String     @db.Uuid
   trainee_id   String     @db.Uuid
+  workplace_id String     @db.Uuid 
   created_at   DateTime   @default(now()) @db.Timestamptz(6)
   trainer_note String?
+  status       String     @default("active") @db.VarChar(10) 
+
   trainee      trainee    @relation(fields: [trainee_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "cooperation_trainee")
   trainer      trainer    @relation(fields: [trainer_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "cooperation_trainer")
+  workplace    workplace  @relation(fields: [workplace_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "cooperation_workplace")
   training     training[]
 
   @@id([trainer_id, trainee_id], map: "cooperation_pk")
@@ -70,6 +121,7 @@ model opinion {
   trainer_id String  @db.Uuid
   rate       Int
   comment    String?
+  created_at DateTime @default(now()) @db.Timestamptz(6)
   trainee    trainee @relation(fields: [trainee_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "opinion_trainee")
   trainer    trainer @relation(fields: [trainer_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "opinion_trainer")
 
@@ -113,31 +165,7 @@ model survey_question {
   survey_answer survey_answer[]
 }
 
-model trainee {
-  id               String             @id(map: "trainee_pk") @db.Uuid
-  birthdate        DateTime           @db.Date
-  coaching_request coaching_request[]
-  cooperation      cooperation[]
-  opinion          opinion[]
-  personal_record  personal_record[]
-  survey_answer    survey_answer[]
-  user             user               @relation(fields: [id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "trainee_user")
-  workout_plan     workout_plan[]
-}
 
-model trainer {
-  id                 String             @id(map: "trainer_pk") @db.Uuid
-  work_description   String?
-  price_per_training Int?
-  is_public          Boolean            @default(true)
-  coaching_request   coaching_request[]
-  cooperation        cooperation[]
-  exercise           exercise[]
-  opinion            opinion[]
-  user               user               @relation(fields: [id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "trainer_user")
-  workout_plan       workout_plan[]
-  workplace          workplace[]
-}
 
 model training {
   id               String             @id(map: "training_pk") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -163,21 +191,6 @@ model training_comment {
   user        user     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "comment_user")
 }
 
-model user {
-  id               String             @id(map: "user_pk") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name             String             @db.VarChar(100)
-  surname          String             @db.VarChar(100)
-  email            String             @unique @db.VarChar(100)
-  phone            String             @db.VarChar(30)
-  password         String
-  role             String             @db.VarChar(20)
-  notification     notification[]
-  trainee          trainee?
-  trainer          trainer?
-  training_comment training_comment[]
-  refresh_token    refresh_token[]
-}
-
 model refresh_token {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   user_id    String   @db.Uuid
@@ -199,13 +212,16 @@ model workout_plan {
 }
 
 model workplace {
-  id              String     @id(map: "workplace_pk") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  trainer_id      String     @db.Uuid
-  name            String     @db.VarChar(120)
-  street          String     @db.VarChar(120)
-  building_number String     @db.VarChar(20)
-  flat_number     String?    @db.VarChar(20)
-  city            String     @db.VarChar(120)
-  training        training[]
-  trainer         trainer    @relation(fields: [trainer_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "workplace_trainer")
+  id               String             @id(map: "workplace_pk") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  trainer_id       String             @db.Uuid
+  name             String             @db.VarChar(120)
+  street           String             @db.VarChar(120)
+  building_number  String             @db.VarChar(20)
+  flat_number      String?            @db.VarChar(20)
+  city             String             @db.VarChar(120)
+  
+  coaching_request coaching_request[]
+  cooperation      cooperation[]      
+  training         training[]
+  trainer          trainer            @relation(fields: [trainer_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "workplace_trainer")
 }
