@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { Search, MapPin, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import Link from "next/link";
 
 interface Trainee {
   key: string;
+  slug: string;
   name: string;
   workplace: string;
 }
@@ -39,8 +41,9 @@ export default function TraineesList({ initialTrainees }: TraineesListProps) {
       {/* LISTA PODOPIECZNYCH */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {filteredTrainees.map((trainee) => (
-          <button
+          <Link
             key={trainee.key}
+            href={`/dashboard/trainees/${trainee.slug}`}
             className="bg-dirty-blue hover:bg-hover group flex justify-between items-center rounded-xl p-5 text-left transition-all"
           >
             <div className="text-sm w-[95%]">
@@ -52,7 +55,7 @@ export default function TraineesList({ initialTrainees }: TraineesListProps) {
                 </div>
             </div>
             <ChevronRight className="shrink-0 text-gray-300 group-hover:translate-x-1 transition-transform" />
-          </button>
+          </Link>
         ))}
 
         {filteredTrainees.length === 0 && searchQuery.length !== 0 &&(

@@ -17,6 +17,7 @@ export default async function TraineesPage() {
 
   const mappedTrainees = result.data?.map((cooperation) => ({
     key: cooperation.trainee.id,
+    slug: cooperation.trainee.slug,
     name: `${cooperation.trainee.user.name} ${cooperation.trainee.user.surname}`,
     workplace: `${cooperation.workplace.name} - ul. ${cooperation.workplace.street}, ${cooperation.workplace.city}`,
   })) ?? [];
