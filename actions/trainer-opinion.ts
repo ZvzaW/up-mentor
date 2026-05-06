@@ -145,11 +145,11 @@ export async function upsertOpinion(input: unknown) {
         trainee_id: session.user.id,
         trainer_id: data.trainer_id,
         rate: data.rate,
-        comment: data.comment || null,
+        comment: data.comment,
       },
       update: {
         rate: data.rate,
-        comment: data.comment || null,
+        comment: data.comment,
       },
     })
   } catch {

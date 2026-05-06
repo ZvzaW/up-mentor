@@ -122,11 +122,21 @@ export type TrainerPersonalDataValues = z.infer<
 
 export const trainerCardSchema = z.object({
   price_per_training: z
-    .union([z.number().int().min(0, "Cena nie może być ujemna"), z.null()])
+    .number()
+    .int()
+    .min(0, "Cena nie może być ujemna")
+    .nullable()
     .optional(),
-  work_description: z.string().trim().nullable().optional(),
+  
+  work_description: z
+    .string()
+    .trim()
+    .optional()
+    .nullable()
+    .transform((val) => (val === "" ? null : val)), 
 })
 export type TrainerCardValues = z.infer<typeof trainerCardSchema>
+export type TrainerCardInput = z.input<typeof trainerCardSchema>;
 
 // WORKPLACE
 export const editWorkplaceSchema = z.object({
@@ -159,8 +169,9 @@ export const trainerOpinionSchema = z.object({
     .string()
     .trim()
     .max(2000, "Komentarz może mieć maksymalnie 2000 znaków")
-    .optional()
-    .or(z.literal("")),
+    .or(z.literal(""))        
+  .nullable()              
+  .transform((val) => val === "" ? null : val)
 })
 export type TrainerOpinionFormValues = z.infer<typeof trainerOpinionSchema>
 

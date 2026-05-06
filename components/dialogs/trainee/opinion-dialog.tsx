@@ -48,7 +48,7 @@ export function OpinionDialog({
   const [isLoadingOpinion, setIsLoadingOpinion] = React.useState(false)
   const [currentOpinion, setCurrentOpinion] = React.useState<{
     rate: number
-    comment: string | null
+    comment: string | null 
   } | null>(null)
   const hasOpinion = currentOpinion !== null
 
@@ -89,7 +89,7 @@ export function OpinionDialog({
       form.reset({
         trainer_id: trainerId,
         rate: opinion?.rate ?? 5,
-        comment: opinion?.comment?.trim() ? opinion.comment : "",
+        comment: opinion?.comment ? opinion.comment : "",
       })
       setIsLoadingOpinion(false)
     })()
@@ -112,7 +112,7 @@ export function OpinionDialog({
       toast.success(hasOpinion ? "Zaktualizowano opinię." : "Dodano opinię.")
       setCurrentOpinion({
         rate: data.rate,
-        comment: data.comment?.trim() ? data.comment : null,
+        comment: data.comment,
       })
       setOpen(false)
       router.refresh()
@@ -220,7 +220,7 @@ export function OpinionDialog({
                   <FormControl>
                     <textarea
                       {...field}
-                      value={field.value ?? ""}
+                      value={field.value || ""}
                       placeholder="Np. atmosfera treningów, komunikacja, postępy…"
                       rows={4}
                       className="custom-scrollbar border-input focus-visible:ring-baby-blue flex min-h-[100px] w-full rounded-md border bg-transparent px-3 py-2 text-sm focus-visible:ring-1 focus-visible:outline-none"

@@ -85,7 +85,7 @@ export default async function TrainerDetailsPage({ params }: TrainerDetailsPageP
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
             <Card>
               <CardContent className="flex flex-col space-y-4 text-gray-300 text-sm items-center w-full">
-                <CardTitle className="text-gold font-michroma text-lg break-words mb-6">{selectedTrainer.name}</CardTitle>
+                <CardTitle className="text-gold font-michroma text-lg max-w-full overflow-x-auto text-center custom-scrollbar mb-6">{selectedTrainer.name}</CardTitle>
                 <TrainerQuickActions trainerId={selectedTrainer.key} slug={selectedTrainer.slug} phone={selectedTrainer.phone} />
 
                 <div className="flex items-center gap-3 mt-3">
