@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma"
 import { changePasswordSchema } from "@/lib/validations"
 import { redirect } from "next/navigation"
 
-export async function changePasswordAction(input: unknown) {
+export async function changePassword(input: unknown) {
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { changeProfileVisibilityAction } from "@/actions/profile"
+import { changeProfileVisibility } from "@/actions/profile"
 import EditTrainerCardDialog from "@/components/dialogs/trainer/edit-trainer-card"
 import EditWorkplaceDialog from "@/components/dialogs/trainer/edit-workplace"
 import DeleteWorkplaceDialog from "@/components/dialogs/trainer/delete-workplace"
@@ -55,7 +55,7 @@ export default function TrainerProfile({
     setIsPublic(checked)
 
     startSavingTransition(async () => {
-      const result = await changeProfileVisibilityAction(checked)
+      const result = await changeProfileVisibility(checked)
 
       if (result?.error) {
         setIsPublic(previousValue)

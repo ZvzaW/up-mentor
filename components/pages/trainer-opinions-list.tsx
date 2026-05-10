@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { getTrainerOpinions } from "@/actions/trainer-opinion"
+import { getTrainerOpinions } from "@/actions/opinion"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Star } from "lucide-react"
 import { cn, formatDate } from "@/lib/utils"

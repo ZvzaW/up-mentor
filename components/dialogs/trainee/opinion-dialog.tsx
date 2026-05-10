@@ -11,7 +11,7 @@ import {
   deleteOpinion,
   getMyOpinion,
   upsertOpinion,
-} from "@/actions/trainer-opinion"
+} from "@/actions/opinion"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,

@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "sonner"
-import { loginAction } from "@/actions/authorization"
+import { login } from "@/actions/authorization"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -34,13 +34,11 @@ export default function LoginPage() {
     const password = formData.get("password") as string
 
     try {
-      const result = await loginAction({ email, password })
+      const result = await login({ email, password })
 
       if (result?.error) {
         setLoginError(result.error)
       } else {
-        // router.push("/dashboard")
-        // router.refresh()
         window.location.href = "/dashboard"
       }
     } catch (error) {

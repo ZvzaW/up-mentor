@@ -4,7 +4,7 @@ import * as React from "react"
 import { Loader2, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
-import { deleteWorkplaceAction } from "@/actions/profile"
+import { deleteWorkplace } from "@/actions/profile"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -29,7 +29,7 @@ export default function DeleteWorkplaceDialog({
 
   const handleDelete = () => {
     startDeletingTransition(async () => {
-      const result = await deleteWorkplaceAction(workplaceId)
+      const result = await deleteWorkplace(workplaceId)
 
       if (result?.error) {
         toast.error(result.error)

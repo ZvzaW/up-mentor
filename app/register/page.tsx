@@ -33,7 +33,7 @@ import {
   type RegisterTraineeFormValues,
   type RegisterTrainerFormValues,
 } from "@/lib/validations"
-import { registerAction } from "@/actions/authorization"
+import { register } from "@/actions/authorization"
 
 const PASSWORD_MAX_LENGTH = 30
 
@@ -95,7 +95,7 @@ export default function RegisterPage() {
     setTraineeError(null)
     setIsPending(true)
     try {
-      const result = await registerAction(data, "trainee")
+      const result = await register(data, "trainee")
       if (result?.error) {
         setTraineeError(result.error)
       }
@@ -108,7 +108,7 @@ export default function RegisterPage() {
     setTrainerError(null)
     setIsPending(true)
     try {
-      const result = await registerAction(data, "trainer")
+      const result = await register(data, "trainer")
       if (result?.error) {
         setTrainerError(result.error)
       }

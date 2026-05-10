@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
 
-import { updateTrainerCardAction } from "@/actions/profile"
+import { updateTrainerCard } from "@/actions/profile"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -63,7 +63,7 @@ export default function EditTrainerCardDialog({
 
   const handleSave = (data: TrainerCardInput) => {
     startSavingTransition(async () => {
-      const result = await updateTrainerCardAction({
+      const result = await updateTrainerCard({
         price_per_training: data.price_per_training,
         work_description: data.work_description,
       })

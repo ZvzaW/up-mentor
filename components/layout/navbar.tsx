@@ -10,7 +10,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
-import { logoutAction } from "@/actions/authorization"
+import { logout } from "@/actions/authorization"
 import { toast } from "sonner"
 
 interface NavbarProps {
@@ -23,7 +23,7 @@ export default function Navbar({ role }: NavbarProps) {
   const [isResourcesOpen, setIsResourcesOpen] = useState(false)
 
   const handleLogout = async () => {
-    const result = await logoutAction()
+    const result = await logout()
     if (result?.error) {
       toast.error(result.error)
     }

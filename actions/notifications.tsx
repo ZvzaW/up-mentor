@@ -5,7 +5,7 @@ import { auth } from "@/auth"
 import { formatDate } from "@/lib/utils"
 import { redirect } from "next/navigation"
 
-export async function getNotificationsAction(page: number = 0) {
+export async function getNotifications(page: number = 0) {
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
@@ -32,52 +32,6 @@ export async function getNotificationsAction(page: number = 0) {
       grouped: {},
       hasMore: false,
       error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę",
-    }
-  }
-}
-
-export async function getUnreadCountAction() {
-  const session = await auth()
-  if (!session?.user?.id) {
-    redirect("/?unauthorized=true")
-  }
-
-  try {
-    const count = await prisma.notification.count({
-      where: {
-        user_id: session.user.id,
-        is_read: false,
-      },
-    })
-
-    return { count, error: null }
-  } catch (error: any) {
-    return {
-      count: 0,
-      error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę",
-    }
-  }
-}
-
-export async function markAsReadAction(id: string) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    redirect("/?unauthorized=true")
-  }
-
-  try {
-    await prisma.notification.update({
-      where: {
-        id: id,
-        user_id: session.user.id,
-      },
-      data: { is_read: true },
-    })
-
-    return { error: null }
-  } catch (error: any) {
-    return {
-      error: "Coś poszło nie tak przy odczytywaniu powiadomienia.",
     }
   }
 }
@@ -112,4 +66,50 @@ function groupNotificationsByDate(notifications: any[]) {
   })
 
   return groups
+}
+
+export async function getUnreadCount() {
+  const session = await auth()
+  if (!session?.user?.id) {
+    redirect("/?unauthorized=true")
+  }
+
+  try {
+    const count = await prisma.notification.count({
+      where: {
+        user_id: session.user.id,
+        is_read: false,
+      },
+    })
+
+    return { count, error: null }
+  } catch (error: any) {
+    return {
+      count: 0,
+      error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę",
+    }
+  }
+}
+
+export async function markAsRead(id: string) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    redirect("/?unauthorized=true")
+  }
+
+  try {
+    await prisma.notification.update({
+      where: {
+        id: id,
+        user_id: session.user.id,
+      },
+      data: { is_read: true },
+    })
+
+    return { error: null }
+  } catch (error: any) {
+    return {
+      error: "Coś poszło nie tak przy odczytywaniu powiadomienia.",
+    }
+  }
 }

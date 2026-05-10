@@ -13,7 +13,7 @@ import { signOut, auth } from "@/auth"
 import { signIn } from "@/auth"
 import { AuthError } from "next-auth"
 
-export async function registerAction(
+export async function register(
   formData: any,
   role: "trainee" | "trainer"
 ) {
@@ -97,7 +97,7 @@ export async function registerAction(
   redirect("/?registered=true")
 }
 
-export async function loginAction(data: any) {
+export async function login(data: any) {
   const email = data.email
   const password = data.password
 
@@ -127,7 +127,7 @@ export async function loginAction(data: any) {
   }
 }
 
-export async function logoutAction() {
+export async function logout() {
   const session = await auth()
   const tokenToDelete = (session as any)?.refreshToken
 
@@ -144,7 +144,7 @@ export async function logoutAction() {
   await signOut({ redirectTo: "/" })
 }
 
-export async function logoutAllDevicesAction() {
+export async function logoutAllDevices() {
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
