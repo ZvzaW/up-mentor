@@ -1,10 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { useForm, Controller } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import Link from "next/link"
-import { Eye, EyeOff, Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -14,8 +14,17 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { PasswordInput } from "@/components/common/password-input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -29,8 +38,6 @@ import { registerAction } from "@/actions/authorization"
 const PASSWORD_MAX_LENGTH = 30
 
 export default function RegisterPage() {
-  const [showPasswordTrainee, setShowPasswordTrainee] = useState(false)
-  const [showPasswordTrainer, setShowPasswordTrainer] = useState(false)
   const [activeTab, setActiveTab] = useState<"trainee" | "trainer">("trainee")
   const [traineeError, setTraineeError] = useState<string | null>(null)
   const [trainerError, setTrainerError] = useState<string | null>(null)
@@ -110,7 +117,7 @@ export default function RegisterPage() {
     }
   }
 
-  //PAGE
+  
   return (
     <div className="flex min-h-screen items-center justify-center p-7 sm:p-10">
       <Card className="w-full max-w-lg">
@@ -121,7 +128,7 @@ export default function RegisterPage() {
           <CardDescription>Dołącz jako trener lub podopieczny</CardDescription>
         </CardHeader>
         <CardContent>
-          {/*Role picker*/}
+
           <Tabs
             value={activeTab}
             onValueChange={handleTabChange}
@@ -134,433 +141,374 @@ export default function RegisterPage() {
 
             {/* TRAINEE TAB */}
             <TabsContent value="trainee">
-              <form
-                className="space-y-6"
-                onSubmit={traineeForm.handleSubmit(onSubmitTrainee)}
-                onChange={() => {
-                  if (traineeError) setTraineeError(null)
-                }}
-              >
-                <div className="grid grid-cols-2 gap-4">
-                  {/*NAME*/}
-                  <div className="space-y-1.5">
-                    <Label htmlFor="trainee-name">Imię*</Label>
-                    <Input
-                      id="trainee-name"
-                      placeholder="Anna"
-                      aria-invalid={!!traineeForm.formState.errors.name}
-                      {...traineeForm.register("name")}
-                    />
-                    {traineeForm.formState.errors.name && (
-                      <p className="text-destructive text-xs">
-                        {traineeForm.formState.errors.name.message}
-                      </p>
-                    )}
-                  </div>
-
-                  {/*SURNAME*/}
-                  <div className="space-y-1.5">
-                    <Label htmlFor="trainee-surname">Nazwisko*</Label>
-                    <Input
-                      id="trainee-surname"
-                      placeholder="Kowalska"
-                      aria-invalid={!!traineeForm.formState.errors.surname}
-                      {...traineeForm.register("surname")}
-                    />
-                    {traineeForm.formState.errors.surname && (
-                      <p className="text-destructive text-xs">
-                        {traineeForm.formState.errors.surname.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/*EMAIL*/}
-                <div className="space-y-1.5">
-                  <Label htmlFor="trainee-email">Adres e-mail*</Label>
-                  <Input
-                    id="trainee-email"
-                    type="email"
-                    placeholder="anna@example.com"
-                    aria-invalid={!!traineeForm.formState.errors.email}
-                    {...traineeForm.register("email")}
-                  />
-                  {traineeForm.formState.errors.email && (
-                    <p className="text-destructive text-xs">
-                      {traineeForm.formState.errors.email.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-4">
-                  {/*PHONE*/}
-                  <div className="space-y-1.5">
-                    <Label htmlFor="trainee-phone">Numer telefonu*</Label>
-                    <Input
-                      id="trainee-phone"
-                      type="tel"
-                      aria-invalid={!!traineeForm.formState.errors.phone}
-                      {...traineeForm.register("phone")}
-                    />
-                    {traineeForm.formState.errors.phone && (
-                      <p className="text-destructive text-xs">
-                        {traineeForm.formState.errors.phone.message}
-                      </p>
-                    )}
-                  </div>
-
-                  {/*BIRTHDATE*/}
-                  <div className="space-y-1.5">
-                    <Label htmlFor="trainee-birthdate">Data urodzenia*</Label>
-                    <Input
-                      id="trainee-birthdate"
-                      type="date"
-                      className="appearance-none"
-                      aria-invalid={!!traineeForm.formState.errors.birthdate}
-                      {...traineeForm.register("birthdate")}
-                    />
-                    {traineeForm.formState.errors.birthdate && (
-                      <p className="text-destructive text-xs">
-                        {traineeForm.formState.errors.birthdate.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/*PASSWORD*/}
-                <div className="space-y-1.5">
-                  <Label htmlFor="trainee-password">Hasło*</Label>
-                  <div className="relative">
-                    <Input
-                      id="trainee-password"
-                      type={showPasswordTrainee ? "text" : "password"}
-                      className="pr-10"
-                      aria-invalid={!!traineeForm.formState.errors.password}
-                      maxLength={PASSWORD_MAX_LENGTH}
-                      {...traineeForm.register("password")}
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowPasswordTrainee(!showPasswordTrainee)
-                      }
-                      className="absolute top-1/2 right-3.5 -translate-y-1/2 text-zinc-400 hover:text-zinc-200"
-                    >
-                      {showPasswordTrainee ? (
-                        <EyeOff size={18} />
-                      ) : (
-                        <Eye size={18} />
+              <Form {...traineeForm}>
+                <form
+                  className="space-y-6"
+                  onSubmit={traineeForm.handleSubmit(onSubmitTrainee)}
+                  onChange={() => {
+                    if (traineeError) setTraineeError(null)
+                  }}
+                >
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={traineeForm.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Imię*</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Anna" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
                       )}
-                    </button>
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-zinc-400">
-                    <p>Min. 8 znaków: małe i wielkie litery, cyfry</p>
-                    <span className="ml-1 pr-1">
-                      {traineePasswordValue.length}/{PASSWORD_MAX_LENGTH}
-                    </span>
-                  </div>
-                  {traineeForm.formState.errors.password && (
-                    <p className="text-destructive text-xs">
-                      {traineeForm.formState.errors.password.message}
-                    </p>
-                  )}
-                </div>
+                    />
 
-                {/*TERMS*/}
-                <div className="flex items-center space-x-2">
-                  <Controller
-                    name="terms"
+                    <FormField
+                      control={traineeForm.control}
+                      name="surname"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nazwisko*</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Kowalska" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
                     control={traineeForm.control}
+                    name="email"
                     render={({ field }) => (
-                      <Checkbox
-                        id="terms-trainee"
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        aria-invalid={!!traineeForm.formState.errors.terms}
-                      />
+                      <FormItem>
+                        <FormLabel>Adres e-mail*</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="anna@example.com"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
                     )}
                   />
-                  <Label
-                    htmlFor="terms-trainee"
-                    className="text-sm font-normal"
-                  >
-                    Wyrażam zgodę na przetwarzanie danych.*
-                  </Label>
-                </div>
-                {traineeForm.formState.errors.terms && (
-                  <p className="text-destructive -translate-y-4 text-xs">
-                    {traineeForm.formState.errors.terms.message}
-                  </p>
-                )}
 
-                {traineeError && (
-                  <Alert variant="destructive" className="mx-auto">
-                    <AlertDescription>{traineeError}</AlertDescription>
-                  </Alert>
-                )}
-                <Button className="w-full" type="submit" disabled={isPending}>
-                  {isPending ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    "Utwórz konto podopiecznego"
+                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-4">
+                    <FormField
+                      control={traineeForm.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Numer telefonu*</FormLabel>
+                          <FormControl>
+                            <Input type="tel" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={traineeForm.control}
+                      name="birthdate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Data urodzenia*</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="date"
+                              className="appearance-none"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={traineeForm.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Hasło*</FormLabel>
+                        <FormControl>
+                          <PasswordInput
+                            maxLength={PASSWORD_MAX_LENGTH}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription className="flex justify-between">
+                          <span>Min. 8 znaków: małe i wielkie litery, cyfry</span>
+                          <span className="mr-1">
+                            {traineePasswordValue.length}/{PASSWORD_MAX_LENGTH}
+                          </span>
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={traineeForm.control}
+                    name="terms"
+                    render={({ field }) => (
+                      <FormItem className="ml-1 flex items-center gap-2">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="mb-0">
+                          Wyrażam zgodę na przetwarzanie danych.*
+                        </FormLabel>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {traineeError && (
+                    <Alert variant="destructive" className="mx-auto">
+                      <AlertDescription>{traineeError}</AlertDescription>
+                    </Alert>
                   )}
-                </Button>
-              </form>
+                  <Button className="w-full" type="submit" disabled={isPending}>
+                    {isPending ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      "Utwórz konto podopiecznego"
+                    )}
+                  </Button>
+                </form>
+              </Form>
             </TabsContent>
 
             {/*------------------------------------------------------------------------------------- */}
             {/* TRAINER TAB */}
             <TabsContent value="trainer">
-              <form
-                className="space-y-6"
-                onSubmit={trainerForm.handleSubmit(onSubmitTrainer)}
-                onChange={() => {
-                  if (trainerError) setTrainerError(null)
-                }}
-              >
-                <div className="grid grid-cols-2 gap-4">
-                  {/*NAME*/}
-                  <div className="space-y-1.5">
-                    <Label htmlFor="trainer-name">Imię*</Label>
-                    <Input
-                      id="trainer-name"
-                      placeholder="Anna"
-                      aria-invalid={!!trainerForm.formState.errors.name}
-                      {...trainerForm.register("name")}
-                    />
-                    {trainerForm.formState.errors.name && (
-                      <p className="text-destructive text-xs">
-                        {trainerForm.formState.errors.name.message}
-                      </p>
-                    )}
-                  </div>
-
-                  {/*SURANME*/}
-                  <div className="space-y-1.5">
-                    <Label htmlFor="trainer-surname">Nazwisko*</Label>
-                    <Input
-                      id="trainer-surname"
-                      placeholder="Kowalska"
-                      aria-invalid={!!trainerForm.formState.errors.surname}
-                      {...trainerForm.register("surname")}
-                    />
-                    {trainerForm.formState.errors.surname && (
-                      <p className="text-destructive text-xs">
-                        {trainerForm.formState.errors.surname.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/*EMAIL*/}
-                <div className="space-y-1.5">
-                  <Label htmlFor="trainer-email">Adres e-mail*</Label>
-                  <Input
-                    id="trainer-email"
-                    type="email"
-                    placeholder="anna@example.com"
-                    aria-invalid={!!trainerForm.formState.errors.email}
-                    {...trainerForm.register("email")}
-                  />
-                  {trainerForm.formState.errors.email && (
-                    <p className="text-destructive text-xs">
-                      {trainerForm.formState.errors.email.message}
-                    </p>
-                  )}
-                </div>
-
-                {/*PHONE*/}
-                <div className="space-y-1.5">
-                  <Label htmlFor="trainer-phone">Numer telefonu*</Label>
-                  <Input
-                    id="trainer-phone"
-                    type="tel"
-                    aria-invalid={!!trainerForm.formState.errors.phone}
-                    {...trainerForm.register("phone")}
-                  />
-                  {trainerForm.formState.errors.phone && (
-                    <p className="text-destructive text-xs">
-                      {trainerForm.formState.errors.phone.message}
-                    </p>
-                  )}
-                </div>
-
-                {/*PASSWORD*/}
-                <div className="space-y-1.5">
-                  <Label htmlFor="trainer-password">Hasło*</Label>
-                  <div className="relative">
-                    <Input
-                      id="trainer-password"
-                      type={showPasswordTrainer ? "text" : "password"}
-                      className="pr-10"
-                      aria-invalid={!!trainerForm.formState.errors.password}
-                      maxLength={PASSWORD_MAX_LENGTH}
-                      {...trainerForm.register("password")}
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowPasswordTrainer(!showPasswordTrainer)
-                      }
-                      className="absolute top-1/2 right-3.5 -translate-y-1/2 text-zinc-400 hover:text-zinc-200"
-                    >
-                      {showPasswordTrainer ? (
-                        <EyeOff size={18} />
-                      ) : (
-                        <Eye size={18} />
+              <Form {...trainerForm}>
+                <form
+                  className="space-y-6"
+                  onSubmit={trainerForm.handleSubmit(onSubmitTrainer)}
+                  onChange={() => {
+                    if (trainerError) setTrainerError(null)
+                  }}
+                >
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={trainerForm.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Imię*</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Anna" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
                       )}
-                    </button>
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-zinc-400">
-                    <p>Min. 8 znaków: małe i wielkie litery, cyfry</p>
-                    <span className="ml-1 pr-1">
-                      {trainerPasswordValue.length}/{PASSWORD_MAX_LENGTH}
-                    </span>
-                  </div>
-                  {trainerForm.formState.errors.password && (
-                    <p className="text-destructive text-xs">
-                      {trainerForm.formState.errors.password.message}
-                    </p>
-                  )}
-                </div>
-
-                {/* WORKPLACE SECTION */}
-                <div className="border-gold mt-2 space-y-4 rounded-md border p-3.5">
-                  <Label className="text-gold w-full justify-center font-semibold">
-                    Główne miejsce pracy
-                  </Label>
-
-                  {/*WORKPLACE NAME*/}
-                  <div className="space-y-1.5">
-                    <Label htmlFor="workplace-name">Nazwa miejsca*</Label>
-                    <Input
-                      id="workplace-name"
-                      className="border-gold"
-                      aria-invalid={
-                        !!trainerForm.formState.errors.workplaceName
-                      }
-                      {...trainerForm.register("workplaceName")}
-                      placeholder="np. Siłownia X"
                     />
-                    {trainerForm.formState.errors.workplaceName && (
-                      <p className="text-destructive text-xs">
-                        {trainerForm.formState.errors.workplaceName.message}
-                      </p>
-                    )}
-                  </div>
 
-                  {/*STREET*/}
-                  <div className="space-y-1">
-                    <Label htmlFor="street">Ulica*</Label>
-                    <Input
-                      id="street"
-                      className="border-gold"
-                      aria-invalid={!!trainerForm.formState.errors.street}
-                      {...trainerForm.register("street")}
-                    />
-                    {trainerForm.formState.errors.street && (
-                      <p className="text-destructive text-xs">
-                        {trainerForm.formState.errors.street.message}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
-                    {/*BUILDING NUMBER*/}
-                    <div className="space-y-1">
-                      <Label htmlFor="building-number">Nr bud.*</Label>
-                      <Input
-                        id="building-number"
-                        className="border-gold"
-                        aria-invalid={
-                          !!trainerForm.formState.errors.buildingNumber
-                        }
-                        {...trainerForm.register("buildingNumber")}
-                      />
-                      {trainerForm.formState.errors.buildingNumber && (
-                        <p className="text-destructive text-xs">
-                          {trainerForm.formState.errors.buildingNumber.message}
-                        </p>
+                    <FormField
+                      control={trainerForm.control}
+                      name="surname"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nazwisko*</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Kowalska" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
                       )}
-                    </div>
-
-                    <div className="text-md pb-1 text-center">/</div>
-                    {/*FLAT NUMBER*/}
-                    <div className="space-y-1">
-                      <Label htmlFor="flatnumber">Nr mieszk.</Label>
-                      <Input
-                        id="flat-number"
-                        className="border-gold"
-                        aria-invalid={!!trainerForm.formState.errors.flatNumber}
-                        {...trainerForm.register("flatNumber")}
-                      />
-                      {trainerForm.formState.errors.flatNumber && (
-                        <p className="text-destructive text-xs">
-                          {trainerForm.formState.errors.flatNumber.message}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/*CITY*/}
-                  <div className="space-y-1">
-                    <Label htmlFor="city">Miasto*</Label>
-                    <Input
-                      id="city"
-                      className="border-gold"
-                      aria-invalid={!!trainerForm.formState.errors.city}
-                      {...trainerForm.register("city")}
                     />
-                    {trainerForm.formState.errors.city && (
-                      <p className="text-destructive text-xs">
-                        {trainerForm.formState.errors.city.message}
-                      </p>
-                    )}
                   </div>
-                  <p className="text-xs text-zinc-300">
-                    Kolejne miejsca pracy możesz dodać po zalogowaniu do
-                    systemu.
-                  </p>
-                </div>
 
-                {/*TERMS*/}
-                <div className="flex items-center space-x-2">
-                  <Controller
-                    name="terms"
+                  <FormField
                     control={trainerForm.control}
+                    name="email"
                     render={({ field }) => (
-                      <Checkbox
-                        id="terms"
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        aria-invalid={!!trainerForm.formState.errors.terms}
-                      />
+                      <FormItem>
+                        <FormLabel>Adres e-mail*</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            placeholder="anna@example.com"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
                     )}
                   />
-                  <Label htmlFor="terms" className="text-sm font-normal">
-                    Wyrażam zgodę na przetwarzanie danych.*
-                  </Label>
-                </div>
-                {trainerForm.formState.errors.terms && (
-                  <p className="text-destructive -translate-y-4 text-xs">
-                    {trainerForm.formState.errors.terms.message}
-                  </p>
-                )}
 
-                {trainerError && (
-                  <Alert variant="destructive" className="mx-auto">
-                    <AlertDescription>{trainerError}</AlertDescription>
-                  </Alert>
-                )}
+                  <FormField
+                    control={trainerForm.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Numer telefonu*</FormLabel>
+                        <FormControl>
+                          <Input type="tel" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <Button className="w-full" type="submit" disabled={isPending}>
-                  {isPending ? (
-                    <Loader2 className="animate-spin" />
-                  ) : (
-                    "Utwórz konto trenera"
+                  <FormField
+                    control={trainerForm.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Hasło*</FormLabel>
+                        <FormControl>
+                          <PasswordInput
+                            maxLength={PASSWORD_MAX_LENGTH}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription className="flex justify-between">
+                          <span>Min. 8 znaków: małe i wielkie litery, cyfry</span>
+                          <span className="mr-1">
+                            {trainerPasswordValue.length}/{PASSWORD_MAX_LENGTH}
+                          </span>
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="border-gold mt-2 space-y-4 rounded-md border p-3.5">
+                    <div className=" w-full text-center">
+                      <p className="font-semibold text-gold mb-1"> Miejsce pracy </p>
+                      <p className="text-xs text-zinc-400 ">
+                      Kolejne miejsca pracy możesz dodać po zalogowaniu do
+                      systemu.
+                    </p>
+                    </div>
+                    
+                    <FormField
+                      control={trainerForm.control}
+                      name="workplaceName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nazwa miejsca*</FormLabel>
+                          <FormControl>
+                            <Input
+                              className="border-gold"
+                              placeholder="np. Siłownia X"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={trainerForm.control}
+                      name="street"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Ulica*</FormLabel>
+                          <FormControl>
+                            <Input className="border-gold" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="flex items-end gap-2">
+                      <FormField
+                        control={trainerForm.control}
+                        name="buildingNumber"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nr bud.*</FormLabel>
+                            <FormControl>
+                              <Input className="border-gold" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="text-md pb-1 text-center">/</div>
+
+                      <FormField
+                        control={trainerForm.control}
+                        name="flatNumber"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nr lokalu</FormLabel>
+                            <FormControl>
+                              <Input className="border-gold" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <FormField
+                      control={trainerForm.control}
+                      name="city"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Miasto*</FormLabel>
+                          <FormControl>
+                            <Input className="border-gold" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    
+                  </div>
+
+                  <FormField
+                    control={trainerForm.control}
+                    name="terms"
+                    render={({ field }) => (
+                      <FormItem className="ml-1 flex items-center gap-2">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="mb-0">
+                          Wyrażam zgodę na przetwarzanie danych.*
+                        </FormLabel>
+                        <FormMessage/>
+                      </FormItem>
+                    )}
+                  />
+
+                  {trainerError && (
+                    <Alert variant="destructive" className="mx-auto">
+                      <AlertDescription>{trainerError}</AlertDescription>
+                    </Alert>
                   )}
-                </Button>
-              </form>
+
+                  <Button className="w-full" type="submit" disabled={isPending}>
+                    {isPending ? (
+                      <Loader2 className="animate-spin" />
+                    ) : (
+                      "Utwórz konto trenera"
+                    )}
+                  </Button>
+                </form>
+              </Form>
             </TabsContent>
           </Tabs>
 
