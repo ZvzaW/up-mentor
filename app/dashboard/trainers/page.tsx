@@ -1,4 +1,3 @@
-import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getMyTrainers } from "@/actions/my-trainers";
 import Link from "next/link";
@@ -8,20 +7,13 @@ import { Button } from "@/components/ui/button";
 import { BookOpen, ChevronRight, MapPin } from "lucide-react";
 
 export default async function TrainersPage() {
-  const session = await auth();
-
-  if (session?.user?.role !== "trainee") {
-    redirect("/dashboard");
-  }
-
+  
   const result = await getMyTrainers();
-  const trainers = result.data ? result.data.map((cooperation) => ({
-          key: cooperation.trainer_id,
-          name: `${cooperation.trainer.user.name} ${cooperation.trainer.user.surname}`,
-          workplace: `${cooperation.workplace.name} - ul. ${cooperation.workplace.street} ${cooperation.workplace.building_number}${cooperation.workplace.flat_number ? `/${cooperation.workplace.flat_number}` : ""}, ${cooperation.workplace.city}`,
-          slug: cooperation.trainer.slug,
-        }))
-      : [];
+  const trainers = result.data ?? [];
+
+  if(!result.error && trainers.length === 0){
+    redirect("/dashboard/trainers/catalog");
+  }
 
   if (!result.error && trainers.length === 1) {
     redirect(`/dashboard/trainers/${trainers[0].slug}`);
@@ -32,9 +24,11 @@ export default async function TrainersPage() {
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 sm:mb-5 gap-6">
         <h1 className="text-2xl font-michroma md:ml-1">Twoi trenerzy</h1>
 
-        <Button variant="secondary" className="border border-baby-blue flex w-[185px] gap-2 text-xs font-michroma">
-          <BookOpen className="shrink-0" />
-          Katalog trenerów
+        <Button asChild variant="secondary" className="flex w-[185px] gap-2 text-xs font-michroma">
+          <Link href="/dashboard/trainers/catalog">
+            <BookOpen className="shrink-0" />
+            Katalog trenerów
+          </Link>
         </Button>
       </div>
 

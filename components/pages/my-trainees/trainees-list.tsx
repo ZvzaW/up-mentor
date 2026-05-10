@@ -47,7 +47,7 @@ export default function TraineesList({ initialTrainees }: TraineesListProps) {
             className="bg-dirty-blue hover:bg-hover group flex justify-between items-center rounded-xl p-5 text-left transition-all"
           >
             <div className="text-sm w-[95%]">
-                <h2 className="text-lg text-gold truncate mb-5">{trainee.name}</h2>
+                <h2 className="text-lg text-gold truncate mb-4">{trainee.name}</h2>
 
                 <div className="flex gap-2 text-xs">
                   <MapPin className="w-3.5 h-3.5 text-baby-blue" />

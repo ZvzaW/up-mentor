@@ -95,6 +95,21 @@ export type TraineePersonalDataValues = z.infer<
   typeof traineePersonalDataSchema
 >
 
+
+export const coachingRequestSchema = z.object({
+  trainer_id: z.string(),
+  workplace_id: z.string().min(1, "Wybierz miejsce treningów z listy."),
+  message: z
+    .string()
+    .trim()
+    .max(1000, "Wiadomość może mieć maksymalnie 1000 znaków.")
+    .optional()
+    .nullable()
+    .transform((val) => (val === "" ? null : val)),
+});
+
+export type CoachingRequestInput = z.input<typeof coachingRequestSchema>;
+
 // TRAINER
 export const registerTrainerSchema = z.object({
   name: baseName,

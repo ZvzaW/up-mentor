@@ -34,6 +34,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
+    ...authConfig.callbacks,
     async jwt({ token, user }) {
       if (user) {
         const refreshToken = crypto.randomBytes(40).toString("hex")
@@ -64,21 +65,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
 
       return await refreshAccessToken(token)
-    },
-
-    async session({ session, token }) {
-      const t = token as any
-
-      session.accessToken = t.accessToken
-      session.refreshToken = t.refreshToken
-      session.error = t.error
-
-      if (session.user) {
-        session.user.id = t.id
-        session.user.role = t.role
-      }
-
-      return session
     },
   },
 })

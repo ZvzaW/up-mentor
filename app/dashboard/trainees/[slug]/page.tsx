@@ -1,14 +1,13 @@
-import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClipboardList, Clock3, MapPin, NotebookPen, ChevronLeft, Trophy } from "lucide-react";
-import { getMyTraineeBySlug, getMyTrainees } from "@/actions/my-trainees";
+import { getMyTraineeBySlug } from "@/actions/my-trainees";
 import { TraineeQuickActions } from "@/components/pages/my-trainees/trainee-quick-actions";
 import { TraineeNoteEditor } from "@/components/pages/my-trainees/trainee-note-editor";
-import { toast } from "sonner";
+
 
 type TraineeDetailsPageProps = {
   params: Promise<{
@@ -45,12 +44,6 @@ const mockTrainings = [
 ];
 
 export default async function TraineeDetailsPage({ params }: TraineeDetailsPageProps) {
-  const session = await auth();
-
-  if (session?.user?.role !== "trainer") {
-    redirect("/dashboard");
-  }
-
   const { slug } = await params;
   const result = await getMyTraineeBySlug(slug)
 

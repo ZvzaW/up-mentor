@@ -47,7 +47,14 @@ export async function getMyTrainees() {
       },
     });
 
-    return { success: true, data: cooperations };
+    const mappedCooperations = cooperations.map((cooperation) => ({
+      key: cooperation.trainee.id,
+      slug: cooperation.trainee.slug,
+      name: `${cooperation.trainee.user.name} ${cooperation.trainee.user.surname}`,
+      workplace: `${cooperation.workplace.name} - ul. ${cooperation.workplace.street}, ${cooperation.workplace.city}`,
+    }))
+
+    return { success: true, data: mappedCooperations };
   } catch (error) {
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." };
   }

@@ -1,6 +1,5 @@
-import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { getMyTrainerBySlug, getMyTrainersCount } from "@/actions/my-trainers";
+import { getMyTrainerBySlug, hasTrainerCooperation } from "@/actions/my-trainers";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -17,21 +16,16 @@ type TrainerDetailsPageProps = {
 };
 
 export default async function TrainerDetailsPage({ params }: TrainerDetailsPageProps) {
-  const session = await auth();
-
-  if (session?.user?.role !== "trainee") {
-    redirect("/dashboard");
-  }
 
   const { slug } = await params;
-  const [trainerResult, trainersCountResult] = await Promise.all([
+  const [trainerResult, cooperationResult] = await Promise.all([
     getMyTrainerBySlug(slug),
-    getMyTrainersCount(),
+    hasTrainerCooperation(),
   ]);
 
-  const pageError = trainerResult.error ?? trainersCountResult.error;
+  const pageError = trainerResult.error ?? cooperationResult.error;
   const cooperation = trainerResult.data;
-  const trainersCount = trainersCountResult.data ?? 0;
+  const hasAnyCooperation = cooperationResult.data ?? false;
 
   if (!pageError && !cooperation) {
     redirect("/dashboard/trainers");
@@ -65,20 +59,22 @@ export default async function TrainerDetailsPage({ params }: TrainerDetailsPageP
 
       {!pageError && selectedTrainer && (
         <div className="space-y-4">
-          {trainersCount === 1 ? (
-            <div className="flex flex-col sm:flex-row justify-between items-center mb-8 sm:mb-5 gap-6">
-              <h1 className="text-2xl font-michroma md:ml-1">Twój trener</h1>
-
-              <Button variant="secondary" className="border border-baby-blue flex w-[185px] gap-2 text-xs font-michroma">
-                <BookOpen className="shrink-0" />
-                Katalog trenerów
-              </Button>
-            </div>
-          ) : (
+          {hasAnyCooperation ? (
             <div className="flex justify-center">
               <button className="bg-dirty-blue rounded-2xl p-3 pr-4 flex items-center text-sm gap-2 hover:bg-hover mb-5">
                 <ChevronLeft size={14} /> <Link href="/dashboard/trainers">Wróć do listy trenerów</Link>
               </button>
+            </div>
+          ) : (
+            <div className="flex flex-col sm:flex-row justify-between items-center mb-8 sm:mb-5 gap-6">
+              <h1 className="text-2xl font-michroma md:ml-1">Twój trener</h1>
+
+              <Button asChild variant="secondary" className=" flex w-[185px] gap-2 text-xs font-michroma">
+                <Link href="/dashboard/trainers/catalog">
+                  <BookOpen className="shrink-0" />
+                  Katalog trenerów
+                </Link>
+              </Button>
             </div>
           )}
 
@@ -89,7 +85,7 @@ export default async function TrainerDetailsPage({ params }: TrainerDetailsPageP
                 <TrainerQuickActions trainerId={selectedTrainer.key} slug={selectedTrainer.slug} phone={selectedTrainer.phone} />
 
                 <div className="flex items-center gap-3 mt-3">
-                  <Banknote className="text-baby-blue w-4 h-4" />
+                  <Banknote className="text-baby-blue w-4 h-4"/>
                   <span>{selectedTrainer.price}</span>
                 </div>
                 <div className="flex items-center gap-3 max-w-full truncate  pl-1 custom-scrollbar overflow-x-auto">
