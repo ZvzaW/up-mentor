@@ -7,7 +7,6 @@ import EditWorkplaceDialog from "@/components/dialogs/trainer/edit-workplace"
 import DeleteWorkplaceDialog from "@/components/dialogs/trainer/delete-workplace"
 import AddWorkplaceDialog from "@/components/dialogs/trainer/add-workplace"
 import SettingsDialog from "@/components/dialogs/settings"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
   Popover,
@@ -18,6 +17,7 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { InfoIcon, Star } from "lucide-react"
 import { toast } from "sonner"
+import { ShowOpinionsDialog } from "@/components/dialogs/trainer/show-opinions"
 
 interface TrainerProfileProps {
   baseData: {
@@ -139,11 +139,7 @@ export default function TrainerProfile({
                   />
                 </div>
 
-                {/*TO-DO: Zaimplementowac moduł opinii*/}
-                <Button variant="secondary">
-                  {" "}
-                  <Star /> Opinie klientów
-                </Button>
+                <ShowOpinionsDialog trainerId={baseData.id}/>
                 <SettingsDialog
                   baseData={baseData}
                   specificData={specificData}

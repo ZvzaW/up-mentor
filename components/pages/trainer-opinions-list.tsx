@@ -1,7 +1,11 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import { getTrainerOpinions } from "@/actions/trainer-opinion";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Star } from "lucide-react";
 import { cn, formatDate } from "@/lib/utils";
+import { SkeletonTable } from "@/components/ui/skeleton";
 
 function StarRating({ rate }: { rate: number }) {
   return (
@@ -32,29 +36,64 @@ type TrainerReview = {
   comment: string | null;
 };
 
-export async function TrainerOpinionsList({ trainerId }: TrainerOpinionsListProps) {
-  const result = await getTrainerOpinions(trainerId);
-  const reviews: TrainerReview[] = result.success ? result.data.reviews : [];
-  const averageRate =  result.data?.averageRate;
+
+export function TrainerOpinionsList({ trainerId }: TrainerOpinionsListProps) {
+  const [reviews, setReviews] = useState<TrainerReview[]>([]);
+  const [averageRate, setAverageRate] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchOpinions = async () => {
+      setIsLoading(true);
+      const result = await getTrainerOpinions(trainerId);
+
+      if (!isMounted) return;
+
+      if (result.error) {
+        setError(result.error);
+      } else if (result.success) {
+        setReviews(result.data.reviews);
+        setAverageRate(result.data.averageRate ?? null);
+      }
+      setIsLoading(false);
+    };
+
+    fetchOpinions();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [trainerId]);
+
+
+  if (isLoading) {
+    return (
+        <SkeletonTable />
+    );
+  }
 
   return (
     <div className="space-y-2 text-sm">
-      {result.error && (
+      {error && (
         <Alert variant="destructive" className="mx-auto my-12">
-          <AlertDescription>{result.error}</AlertDescription>
+          <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
-      {!result.error && (
+      {!error && (
         <>
           {averageRate ? (
             <p className=" text-zinc-400 ml-1">
               Średnia z {reviews.length} ocen: <span className="font-bold text-gold">{`${averageRate.toFixed(1)} / 5`}</span>
             </p>
           ) : null}
-          <div className="bg-dirty-blue/40 rounded-xl p-2">
+          <div className="bg-dirty-blue/50 rounded-xl p-2">
             {reviews.length === 0 ? (
-              <p className="text-zinc-400 text-center">Brak opinii.</p>
+              <p className="text-zinc-400 text-center py-4">Brak opinii.</p>
             ) : (
               <ul className="custom-scrollbar max-h-75 space-y-4 overflow-y-auto p-2">
                 {reviews.map((review) => (
