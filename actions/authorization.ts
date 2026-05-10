@@ -1,7 +1,10 @@
 "use server"
 
 import { prisma } from "@/lib/prisma"
-import { generateUniqueTraineeSlug, generateUniqueTrainerSlug } from "@/lib/slug"
+import {
+  generateUniqueTraineeSlug,
+  generateUniqueTrainerSlug,
+} from "@/lib/slug"
 import { registerTraineeSchema, registerTrainerSchema } from "@/lib/validations"
 import { Prisma } from "@prisma/client"
 import * as argon2 from "argon2"
@@ -9,7 +12,6 @@ import { redirect } from "next/navigation"
 import { signOut, auth } from "@/auth"
 import { signIn } from "@/auth"
 import { AuthError } from "next-auth"
-
 
 export async function registerAction(
   formData: any,
@@ -25,13 +27,13 @@ export async function registerAction(
   const data = validatedFields.data
   const hashedPassword = await argon2.hash(data.password)
 
-  let generatedSlug = "";
+  let generatedSlug = ""
 
-if (role === "trainer") {
-  generatedSlug = await generateUniqueTrainerSlug(data.name, data.surname);
-}else{
-  generatedSlug = await generateUniqueTraineeSlug(data.name, data.surname);
-}
+  if (role === "trainer") {
+    generatedSlug = await generateUniqueTrainerSlug(data.name, data.surname)
+  } else {
+    generatedSlug = await generateUniqueTraineeSlug(data.name, data.surname)
+  }
 
   try {
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
@@ -48,7 +50,9 @@ if (role === "trainer") {
 
       if (role === "trainer") {
         const d = data as any
-        await tx.trainer.create({ data: { id: newUser.id, slug: generatedSlug} })
+        await tx.trainer.create({
+          data: { id: newUser.id, slug: generatedSlug },
+        })
         await tx.workplace.create({
           data: {
             trainer_id: newUser.id,
@@ -62,7 +66,11 @@ if (role === "trainer") {
       } else {
         const d = data as any
         await tx.trainee.create({
-          data: { id: newUser.id, birthdate: new Date(d.birthdate), slug: generatedSlug },
+          data: {
+            id: newUser.id,
+            birthdate: new Date(d.birthdate),
+            slug: generatedSlug,
+          },
         })
       }
 

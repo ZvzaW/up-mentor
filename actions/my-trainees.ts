@@ -1,26 +1,24 @@
-"use server";
+"use server"
 
-import { prisma } from "@/lib/prisma"; 
+import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth"
-import { redirect } from "next/navigation";
+import { redirect } from "next/navigation"
 
 export async function getMyTrainees() {
-  
-    const session = await auth()
-    if (!session?.user?.id) {
-      redirect("/?unauthorized=true")
-    }
-    
-    if (session.user.role !== "trainer") {
-        return { error: "Brak uprawnień do tej operacji." }
-      }
+  const session = await auth()
+  if (!session?.user?.id) {
+    redirect("/?unauthorized=true")
+  }
 
+  if (session.user.role !== "trainer") {
+    return { error: "Brak uprawnień do tej operacji." }
+  }
 
-    try {
+  try {
     const cooperations = await prisma.cooperation.findMany({
       where: {
         trainer_id: session.user.id,
-        status: "active", 
+        status: "active",
       },
       include: {
         trainee: {
@@ -45,7 +43,7 @@ export async function getMyTrainees() {
       orderBy: {
         created_at: "desc",
       },
-    });
+    })
 
     const mappedCooperations = cooperations.map((cooperation) => ({
       key: cooperation.trainee.id,
@@ -54,20 +52,20 @@ export async function getMyTrainees() {
       workplace: `${cooperation.workplace.name} - ul. ${cooperation.workplace.street}, ${cooperation.workplace.city}`,
     }))
 
-    return { success: true, data: mappedCooperations };
+    return { success: true, data: mappedCooperations }
   } catch (error) {
-    return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." };
+    return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }
 
 export async function getMyTraineeBySlug(slug: string) {
-  const session = await auth();
+  const session = await auth()
   if (!session?.user?.id) {
-    redirect("/?unauthorized=true");
+    redirect("/?unauthorized=true")
   }
 
   if (session.user.role !== "trainer") {
-    return { error: "Brak uprawnień do tej operacji." };
+    return { error: "Brak uprawnień do tej operacji." }
   }
 
   try {
@@ -102,22 +100,22 @@ export async function getMyTraineeBySlug(slug: string) {
           },
         },
       },
-    });
+    })
 
-    return { success: true, data: cooperation };
+    return { success: true, data: cooperation }
   } catch {
-    return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." };
+    return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }
 
 export async function updateMyTraineeNote(traineeId: string, note: string) {
-  const session = await auth();
+  const session = await auth()
   if (!session?.user?.id) {
-    redirect("/?unauthorized=true");
+    redirect("/?unauthorized=true")
   }
 
   if (session.user.role !== "trainer") {
-    return { error: "Brak uprawnień do tej operacji." };
+    return { error: "Brak uprawnień do tej operacji." }
   }
 
   try {
@@ -131,10 +129,12 @@ export async function updateMyTraineeNote(traineeId: string, note: string) {
       data: {
         trainer_note: note.trim() ? note : null,
       },
-    });
+    })
 
-    return { success: true };
+    return { success: true }
   } catch {
-    return { error: "Wystąpił błąd podczas zapisywania danych. Spróbuj ponownie." };
+    return {
+      error: "Wystąpił błąd podczas zapisywania danych. Spróbuj ponownie.",
+    }
   }
 }

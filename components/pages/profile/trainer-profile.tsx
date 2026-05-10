@@ -83,17 +83,19 @@ export default function TrainerProfile({
             {/* Wizytówka */}
             <div className="order-4 mt-7 flex h-full min-w-0 flex-col items-center gap-6 px-8 md:order-none md:row-span-2 md:mt-0">
               <div className="space-y-1 text-center">
-                <p className="text-sm text-zinc-400">Cena za godzinę treningu</p>
+                <p className="text-sm text-zinc-400">
+                  Cena za godzinę treningu
+                </p>
                 <p>
                   {specificData.price_per_training !== null
                     ? `${specificData.price_per_training} PLN`
                     : "Brak podanej ceny"}
                 </p>
               </div>
-              <div className="space-y-1 w-full">
+              <div className="w-full space-y-1">
                 <p className="text-center text-sm text-zinc-400">Opis pracy</p>
-                <div className="bg-dirty-blue/40 rounded-md p-2 mx-auto md:ml-2">
-                  <p className="custom-scrollbar max-h-30 overflow-y-auto  p-1 text-sm break-words whitespace-pre-wrap [tab-size:4]">
+                <div className="bg-dirty-blue/40 mx-auto rounded-md p-2 md:ml-2">
+                  <p className="custom-scrollbar max-h-30 overflow-y-auto p-1 text-sm break-words whitespace-pre-wrap [tab-size:4]">
                     {specificData.work_description ?? "Brak opisu"}
                   </p>
                 </div>
@@ -139,7 +141,7 @@ export default function TrainerProfile({
                   />
                 </div>
 
-                <ShowOpinionsDialog trainerId={baseData.id}/>
+                <ShowOpinionsDialog trainerId={baseData.id} />
                 <SettingsDialog
                   baseData={baseData}
                   specificData={specificData}

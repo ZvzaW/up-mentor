@@ -1,50 +1,52 @@
-"use server";
+"use server"
 
-import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma"; 
-import { revalidatePath } from "next/cache";
-import { coachingRequestSchema, type CoachingRequestInput } from "@/lib/validations";
-import { redirect } from "next/navigation";
-
+import { auth } from "@/auth"
+import { prisma } from "@/lib/prisma"
+import { revalidatePath } from "next/cache"
+import {
+  coachingRequestSchema,
+  type CoachingRequestInput,
+} from "@/lib/validations"
+import { redirect } from "next/navigation"
 
 export async function sendCoachingRequest(data: CoachingRequestInput) {
-  const session = await auth();
+  const session = await auth()
 
   if (!session?.user?.id) {
-    redirect("/?unauthorized=true");
+    redirect("/?unauthorized=true")
   }
 
   if (session.user.role !== "trainee") {
-    return { error: "Brak uprawnień do tej operacji." };
+    return { error: "Brak uprawnień do tej operacji." }
   }
 
-  const validated = coachingRequestSchema.safeParse(data);
+  const validated = coachingRequestSchema.safeParse(data)
   if (!validated.success) {
-    return { error: "Nieprawidłowe dane wejściowe." };
+    return { error: "Nieprawidłowe dane wejściowe." }
   }
 
-  const traineeId = session.user.id;
-  const { trainer_id, workplace_id, message } = validated.data;
+  const traineeId = session.user.id
+  const { trainer_id, workplace_id, message } = validated.data
 
   try {
     const existingRequest = await prisma.coaching_request.findUnique({
       where: {
         trainer_id_trainee_id: { trainer_id, trainee_id: traineeId },
       },
-    });
+    })
 
     if (existingRequest) {
-      return { error: "Wysłałeś już prośbę o współpracę do tego trenera." };
+      return { error: "Wysłałeś już prośbę o współpracę do tego trenera." }
     }
 
     const existingCooperation = await prisma.cooperation.findUnique({
       where: {
         trainer_id_trainee_id: { trainer_id, trainee_id: traineeId },
       },
-    });
+    })
 
     if (existingCooperation) {
-      return { error: "Posiadasz już aktywną współpracę z tym trenerem." };
+      return { error: "Posiadasz już aktywną współpracę z tym trenerem." }
     }
 
     await prisma.coaching_request.create({
@@ -54,86 +56,88 @@ export async function sendCoachingRequest(data: CoachingRequestInput) {
         workplace_id: workplace_id,
         message: message,
       },
-    });
+    })
 
-    revalidatePath("/dashboard/trainers/catalog");
-    return { success: true };
+    revalidatePath("/dashboard/trainers/catalog")
+    return { success: true }
   } catch (error) {
-    return { error: "Wystąpił błąd podczas wysyłania prośby. Spróbuj ponownie." };
+    return {
+      error: "Wystąpił błąd podczas wysyłania prośby. Spróbuj ponownie.",
+    }
   }
 }
 
-
 export async function deleteCoachingRequest(trainerId: string) {
-    const session = await auth();
-  
-    if (!session?.user?.id) {
-        redirect("/?unauthorized=true");
-      }
+  const session = await auth()
 
-      if (session.user.role !== "trainee") {
-        return { error: "Brak uprawnień do tej operacji." };
-      }
-  
-    const traineeId = session.user.id;
-  
-    try {
-      await prisma.coaching_request.delete({
-        where: {
-          trainer_id_trainee_id: {
-            trainer_id: trainerId,
-            trainee_id: traineeId,
-          },
-        },
-      });
-  
-      revalidatePath("/dashboard/trainers/catalog");
-      return { success: true };
-    } catch (error) {
-      console.error(error);
-      return { error: "Wystąpił błąd podczas usuwania danych. Spróbuj ponownie." };
-    }
+  if (!session?.user?.id) {
+    redirect("/?unauthorized=true")
   }
 
+  if (session.user.role !== "trainee") {
+    return { error: "Brak uprawnień do tej operacji." }
+  }
 
+  const traineeId = session.user.id
+
+  try {
+    await prisma.coaching_request.delete({
+      where: {
+        trainer_id_trainee_id: {
+          trainer_id: trainerId,
+          trainee_id: traineeId,
+        },
+      },
+    })
+
+    revalidatePath("/dashboard/trainers/catalog")
+    return { success: true }
+  } catch (error) {
+    console.error(error)
+    return { error: "Wystąpił błąd podczas usuwania danych. Spróbuj ponownie." }
+  }
+}
 
 export async function getCooperationStatus(trainerId: string) {
-  const session = await auth();
-  
+  const session = await auth()
+
   if (!session?.user?.id) {
-    redirect("/?unauthorized=true");
+    redirect("/?unauthorized=true")
   }
 
-  const traineeId = session.user.id;
+  const traineeId = session.user.id
 
   const [request, cooperation] = await Promise.all([
     prisma.coaching_request.findUnique({
-      where: { trainer_id_trainee_id: { trainer_id: trainerId, trainee_id: traineeId } },
+      where: {
+        trainer_id_trainee_id: { trainer_id: trainerId, trainee_id: traineeId },
+      },
     }),
     prisma.cooperation.findUnique({
-      where: { trainer_id_trainee_id: { trainer_id: trainerId, trainee_id: traineeId } },
+      where: {
+        trainer_id_trainee_id: { trainer_id: trainerId, trainee_id: traineeId },
+      },
     }),
-  ]);
+  ])
 
   return {
     hasRequest: !!request,
     hasCooperation: !!cooperation,
-  };
+  }
 }
 
-
 export async function getPendingRequests() {
-  const session = await auth();
+  const session = await auth()
 
   if (!session?.user?.id) {
-    redirect("/?unauthorized=true");
+    redirect("/?unauthorized=true")
   }
 
   if (session.user.role !== "trainer") {
-    return { error: "Brak uprawnień do tej operacji." };
+    return { error: "Brak uprawnień do tej operacji." }
   }
 
-  const trainerId = session.user.id;
+  const trainerId = session.user.id
 
   try {
     const requests = await prisma.coaching_request.findMany({
@@ -150,11 +154,17 @@ export async function getPendingRequests() {
           },
         },
         workplace: {
-          select: { name: true, city: true, street: true, building_number: true, flat_number: true },
+          select: {
+            name: true,
+            city: true,
+            street: true,
+            building_number: true,
+            flat_number: true,
+          },
         },
       },
       orderBy: { created_at: "desc" },
-    });
+    })
 
     const mappedRequests = requests.map((req) => ({
       traineeId: req.trainee_id,
@@ -163,27 +173,26 @@ export async function getPendingRequests() {
       message: req.message,
       createdAt: req.created_at,
       workplace: `${req.workplace.name} - ul. ${req.workplace.street} ${req.workplace.building_number}${req.workplace.flat_number ? `/${req.workplace.flat_number}` : ""}, ${req.workplace.city}`,
-    }));
+    }))
 
-    return { success: true, data: mappedRequests };
+    return { success: true, data: mappedRequests }
   } catch (error) {
-    return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." };
+    return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }
 
-
 export async function acceptRequest(traineeId: string, workplaceId: string) {
-  const session = await auth();
+  const session = await auth()
 
   if (!session?.user?.id) {
-    redirect("/?unauthorized=true");
+    redirect("/?unauthorized=true")
   }
 
   if (session.user.role !== "trainer") {
-    return { error: "Brak uprawnień do tej operacji." };
+    return { error: "Brak uprawnień do tej operacji." }
   }
 
-  const trainerId = session.user.id;
+  const trainerId = session.user.id
 
   try {
     await prisma.$transaction([
@@ -203,29 +212,30 @@ export async function acceptRequest(traineeId: string, workplaceId: string) {
           },
         },
       }),
-    ]);
+    ])
 
-    revalidatePath("/dashboard/trainees"); 
-    return { success: true };
+    revalidatePath("/dashboard/trainees")
+    return { success: true }
   } catch (error) {
-    console.error(error);
-    return { error: "Wystąpił błąd podczas akceptacji prośby. Spróbuj ponownie." };
+    console.error(error)
+    return {
+      error: "Wystąpił błąd podczas akceptacji prośby. Spróbuj ponownie.",
+    }
   }
 }
 
-
 export async function rejectRequest(traineeId: string) {
-  const session = await auth();
+  const session = await auth()
 
   if (!session?.user?.id) {
-    redirect("/?unauthorized=true");
+    redirect("/?unauthorized=true")
   }
 
   if (session.user.role !== "trainer") {
-    return { error: "Brak uprawnień do tej operacji." };
+    return { error: "Brak uprawnień do tej operacji." }
   }
 
-  const trainerId = session.user.id;
+  const trainerId = session.user.id
 
   try {
     await prisma.coaching_request.delete({
@@ -235,14 +245,14 @@ export async function rejectRequest(traineeId: string) {
           trainee_id: traineeId,
         },
       },
-    });
+    })
 
-    revalidatePath("/dashboard/trainees");
-    return { success: true };
+    revalidatePath("/dashboard/trainees")
+    return { success: true }
   } catch (error) {
-    console.error(error);
-    return { error: "Wystąpił błąd podczas odrzucania prośby. Spróbuj ponownie." };
+    console.error(error)
+    return {
+      error: "Wystąpił błąd podczas odrzucania prośby. Spróbuj ponownie.",
+    }
   }
 }
-
-

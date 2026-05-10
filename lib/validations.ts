@@ -95,7 +95,6 @@ export type TraineePersonalDataValues = z.infer<
   typeof traineePersonalDataSchema
 >
 
-
 export const coachingRequestSchema = z.object({
   trainer_id: z.string(),
   workplace_id: z.string().min(1, "Wybierz miejsce treningów z listy."),
@@ -106,9 +105,9 @@ export const coachingRequestSchema = z.object({
     .optional()
     .nullable()
     .transform((val) => (val === "" ? null : val)),
-});
+})
 
-export type CoachingRequestInput = z.input<typeof coachingRequestSchema>;
+export type CoachingRequestInput = z.input<typeof coachingRequestSchema>
 
 // TRAINER
 export const registerTrainerSchema = z.object({
@@ -142,16 +141,16 @@ export const trainerCardSchema = z.object({
     .min(0, "Cena nie może być ujemna")
     .nullable()
     .optional(),
-  
+
   work_description: z
     .string()
     .trim()
     .optional()
     .nullable()
-    .transform((val) => (val === "" ? null : val)), 
+    .transform((val) => (val === "" ? null : val)),
 })
 export type TrainerCardValues = z.infer<typeof trainerCardSchema>
-export type TrainerCardInput = z.input<typeof trainerCardSchema>;
+export type TrainerCardInput = z.input<typeof trainerCardSchema>
 
 // WORKPLACE
 export const editWorkplaceSchema = z.object({
@@ -184,9 +183,9 @@ export const trainerOpinionSchema = z.object({
     .string()
     .trim()
     .max(2000, "Komentarz może mieć maksymalnie 2000 znaków")
-    .or(z.literal(""))        
-  .nullable()              
-  .transform((val) => val === "" ? null : val)
+    .or(z.literal(""))
+    .nullable()
+    .transform((val) => (val === "" ? null : val)),
 })
 export type TrainerOpinionFormValues = z.infer<typeof trainerOpinionSchema>
 

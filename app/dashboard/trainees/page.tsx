@@ -1,28 +1,30 @@
-import { Card, CardContent } from "@/components/ui/card";
-import TraineesList from "@/components/pages/my-trainees/trainees-list";
-import { getMyTrainees } from "@/actions/my-trainees";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { getPendingRequests } from "@/actions/coaching-request";
-import { ManageCoachingRequestsDialog } from "@/components/dialogs/trainer/manage-coaching-request";
-
+import { Card, CardContent } from "@/components/ui/card"
+import TraineesList from "@/components/pages/my-trainees/trainees-list"
+import { getMyTrainees } from "@/actions/my-trainees"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { getPendingRequests } from "@/actions/coaching-request"
+import { ManageCoachingRequestsDialog } from "@/components/dialogs/trainer/manage-coaching-request"
 
 export default async function TraineesPage() {
- 
   const [traineesResult, requestsResult] = await Promise.all([
     getMyTrainees(),
     getPendingRequests(),
-  ]);
+  ])
 
-  const trainees = traineesResult.data ?? [];
-  const pendingRequests = requestsResult.data ?? [];
+  const trainees = traineesResult.data ?? []
+  const pendingRequests = requestsResult.data ?? []
 
   return (
     <div className="min-h-screen p-3">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 sm:mb-5 gap-6">
-        <h1 className="text-2xl font-michroma md:ml-1">
-          Podopieczni <span className="text-baby-blue">({trainees.length})</span>
+      <div className="mb-8 flex flex-col items-center justify-between gap-6 sm:mb-5 sm:flex-row">
+        <h1 className="font-michroma text-2xl md:ml-1">
+          Podopieczni{" "}
+          <span className="text-baby-blue">({trainees.length})</span>
         </h1>
-        <ManageCoachingRequestsDialog requests={pendingRequests} error={requestsResult.error} />
+        <ManageCoachingRequestsDialog
+          requests={pendingRequests}
+          error={requestsResult.error}
+        />
       </div>
 
       <Card>
@@ -37,5 +39,5 @@ export default async function TraineesPage() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

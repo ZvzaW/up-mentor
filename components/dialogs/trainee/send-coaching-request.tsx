@@ -1,12 +1,12 @@
-"use client";
+"use client"
 
-import { useState, useTransition } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
-import { Loader2, Send } from "lucide-react";
+import { useState, useTransition } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { toast } from "sonner"
+import { Loader2, Send } from "lucide-react"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -15,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@/components/ui/dialog"
 import {
   Form,
   FormControl,
@@ -23,37 +23,38 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from "@/components/ui/form"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/select"
 
-import { sendCoachingRequest } from "@/actions/coaching-request";
-import { CoachingRequestInput, coachingRequestSchema } from "@/lib/validations";
-
+import { sendCoachingRequest } from "@/actions/coaching-request"
+import { CoachingRequestInput, coachingRequestSchema } from "@/lib/validations"
 
 type Workplace = {
-  id: string;
-  name: string;
-  city: string;
-  street: string;
-  building_number: string;
-  flat_number: string | null;
-
-};
+  id: string
+  name: string
+  city: string
+  street: string
+  building_number: string
+  flat_number: string | null
+}
 
 type SendCoachingRequestDialogProps = {
-  trainerId: string;
-  workplaces: Workplace[];
-};
+  trainerId: string
+  workplaces: Workplace[]
+}
 
-export function SendCoachingRequestDialog({ trainerId, workplaces }: SendCoachingRequestDialogProps) {
-  const [open, setOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
+export function SendCoachingRequestDialog({
+  trainerId,
+  workplaces,
+}: SendCoachingRequestDialogProps) {
+  const [open, setOpen] = useState(false)
+  const [isPending, startTransition] = useTransition()
 
   const form = useForm<CoachingRequestInput>({
     resolver: zodResolver(coachingRequestSchema),
@@ -62,28 +63,28 @@ export function SendCoachingRequestDialog({ trainerId, workplaces }: SendCoachin
       workplace_id: "",
       message: "",
     },
-  });
+  })
 
   const onSubmit = (data: CoachingRequestInput) => {
     startTransition(async () => {
-      const result = await sendCoachingRequest(data);
+      const result = await sendCoachingRequest(data)
 
       if (result.error) {
-        toast.error(result.error);
-        return;
+        toast.error(result.error)
+        return
       }
 
-      toast.success("Prośba o współpracę została wysłana!");
-      setOpen(false);
-      form.reset();
-    });
-  };
+      toast.success("Prośba o współpracę została wysłana!")
+      setOpen(false)
+      form.reset()
+    })
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button >
-          <Send/>
+        <Button>
+          <Send />
           Poproś o współpracę
         </Button>
       </DialogTrigger>
@@ -92,7 +93,8 @@ export function SendCoachingRequestDialog({ trainerId, workplaces }: SendCoachin
         <DialogHeader>
           <DialogTitle>Wyślij prośbę o współpracę</DialogTitle>
           <DialogDescription>
-            Wybierz miejsce, w którym chciałbyś trenować, i opcjonalnie zostaw wiadomość dla trenera.
+            Wybierz miejsce, w którym chciałbyś trenować, i opcjonalnie zostaw
+            wiadomość dla trenera.
           </DialogDescription>
         </DialogHeader>
 
@@ -102,9 +104,12 @@ export function SendCoachingRequestDialog({ trainerId, workplaces }: SendCoachin
               control={form.control}
               name="workplace_id"
               render={({ field }) => (
-                <FormItem >
+                <FormItem>
                   <FormLabel>Miejsce treningów</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value} >
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Wybierz miejsce pracy trenera" />
@@ -113,7 +118,12 @@ export function SendCoachingRequestDialog({ trainerId, workplaces }: SendCoachin
                     <SelectContent>
                       {workplaces.map((workplace) => (
                         <SelectItem key={workplace.id} value={workplace.id}>
-                          {workplace.name} - ul. {workplace.street} {workplace.building_number}{workplace.flat_number ?`/${workplace.flat_number}` : ""}, {workplace.city}
+                          {workplace.name} - ul. {workplace.street}{" "}
+                          {workplace.building_number}
+                          {workplace.flat_number
+                            ? `/${workplace.flat_number}`
+                            : ""}
+                          , {workplace.city}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -134,7 +144,7 @@ export function SendCoachingRequestDialog({ trainerId, workplaces }: SendCoachin
                       {...field}
                       value={field.value ?? ""}
                       placeholder="Napisz kilka słów o swoim celu, doświadczeniu itp."
-                      className="custom-scrollbar flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-baby-blue resize-none"
+                      className="custom-scrollbar border-input focus-visible:ring-baby-blue flex min-h-[100px] w-full resize-none rounded-md border bg-transparent px-3 py-2 text-sm focus-visible:ring-1 focus-visible:outline-none"
                     />
                   </FormControl>
                   <FormMessage />
@@ -143,11 +153,18 @@ export function SendCoachingRequestDialog({ trainerId, workplaces }: SendCoachin
             />
 
             <DialogFooter className="pt-4">
-              <Button type="button" variant="destructive" onClick={() => setOpen(false)} disabled={isPending}>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => setOpen(false)}
+                disabled={isPending}
+              >
                 Anuluj
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
+                {isPending ? (
+                  <Loader2 className="mr-2 animate-spin" size={16} />
+                ) : null}
                 Wyślij
               </Button>
             </DialogFooter>
@@ -155,5 +172,5 @@ export function SendCoachingRequestDialog({ trainerId, workplaces }: SendCoachin
         </Form>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

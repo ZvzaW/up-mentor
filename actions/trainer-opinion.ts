@@ -4,7 +4,7 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { trainerOpinionSchema } from "@/lib/validations"
 import { revalidatePath } from "next/cache"
-import { redirect } from "next/navigation";
+import { redirect } from "next/navigation"
 
 export async function getMyOpinion(trainerId: string) {
   const session = await auth()
@@ -153,16 +153,17 @@ export async function upsertOpinion(input: unknown) {
       },
     })
   } catch {
-    return { error: "Wystąpił błąd podczas zapisywania danych. Spróbuj ponownie." }
+    return {
+      error: "Wystąpił błąd podczas zapisywania danych. Spróbuj ponownie.",
+    }
   }
 
   revalidatePath("/dashboard/trainers")
   return { success: true as const }
 }
 
-
 export async function deleteOpinion(trainerId: string) {
-   const session = await auth()
+  const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }

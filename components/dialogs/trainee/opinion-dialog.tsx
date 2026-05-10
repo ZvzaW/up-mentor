@@ -30,7 +30,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import { trainerOpinionSchema, type TrainerOpinionFormValues } from "@/lib/validations"
+import {
+  trainerOpinionSchema,
+  type TrainerOpinionFormValues,
+} from "@/lib/validations"
 import { cn } from "@/lib/utils"
 
 type OpinionDialogProps = {
@@ -38,17 +41,14 @@ type OpinionDialogProps = {
   trainerName: string
 }
 
-export function OpinionDialog({
-  trainerId,
-  trainerName,
-}: OpinionDialogProps) {
+export function OpinionDialog({ trainerId, trainerName }: OpinionDialogProps) {
   const router = useRouter()
   const [open, setOpen] = React.useState(false)
   const [isSaving, startSavingTransition] = React.useTransition()
   const [isLoadingOpinion, setIsLoadingOpinion] = React.useState(false)
   const [currentOpinion, setCurrentOpinion] = React.useState<{
     rate: number
-    comment: string | null 
+    comment: string | null
   } | null>(null)
   const hasOpinion = currentOpinion !== null
 
@@ -99,7 +99,6 @@ export function OpinionDialog({
     }
   }, [open, trainerId, form])
 
-
   const handleSave = (data: TrainerOpinionFormValues) => {
     startSavingTransition(async () => {
       const result = await upsertOpinion(data)
@@ -119,7 +118,6 @@ export function OpinionDialog({
     })
   }
 
-  
   const handleDelete = () => {
     startSavingTransition(async () => {
       const result = await deleteOpinion(trainerId)
@@ -150,7 +148,7 @@ export function OpinionDialog({
           title="Dodaj lub edytuj swoją opinię"
           aria-label="Dodaj lub edytuj swoją opinię"
         >
-          <Plus/> <Pencil/>
+          <Plus /> <Pencil />
         </Button>
       </DialogTrigger>
 
@@ -177,7 +175,7 @@ export function OpinionDialog({
                 <FormItem>
                   <FormControl>
                     <div
-                      className="flex gap-1 justify-center"
+                      className="flex justify-center gap-1"
                       role="group"
                       aria-label="Ocena od 1 do 5"
                     >
@@ -188,7 +186,7 @@ export function OpinionDialog({
                           <button
                             key={value}
                             type="button"
-                            className="rounded p-0.5 transition-opacity hover:opacity-90 focus-visible:ring-baby-blue focus-visible:ring-2 focus-visible:outline-none"
+                            className="focus-visible:ring-baby-blue rounded p-0.5 transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:outline-none"
                             onClick={() => field.onChange(value)}
                             aria-label={`${value} z 5 gwiazdek`}
                             aria-pressed={active}
@@ -198,7 +196,7 @@ export function OpinionDialog({
                                 "size-8",
                                 active
                                   ? "fill-gold text-gold"
-                                  : "fill-transparent text-gold/30"
+                                  : "text-gold/30 fill-transparent"
                               )}
                             />
                           </button>
@@ -257,7 +255,13 @@ export function OpinionDialog({
                     Anuluj
                   </Button>
                   <Button type="submit" disabled={isSaving}>
-                    {isSaving ? <Loader2 className="animate-spin" aria-hidden /> : hasOpinion ? "Zapisz" : "Dodaj"}
+                    {isSaving ? (
+                      <Loader2 className="animate-spin" aria-hidden />
+                    ) : hasOpinion ? (
+                      "Zapisz"
+                    ) : (
+                      "Dodaj"
+                    )}
                   </Button>
                 </>
               )}

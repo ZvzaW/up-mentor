@@ -117,7 +117,6 @@ export default function RegisterPage() {
     }
   }
 
-  
   return (
     <div className="flex min-h-screen items-center justify-center p-7 sm:p-10">
       <Card className="w-full max-w-lg">
@@ -128,7 +127,6 @@ export default function RegisterPage() {
           <CardDescription>Dołącz jako trener lub podopieczny</CardDescription>
         </CardHeader>
         <CardContent>
-
           <Tabs
             value={activeTab}
             onValueChange={handleTabChange}
@@ -244,7 +242,9 @@ export default function RegisterPage() {
                           />
                         </FormControl>
                         <FormDescription className="flex justify-between">
-                          <span>Min. 8 znaków: małe i wielkie litery, cyfry</span>
+                          <span>
+                            Min. 8 znaków: małe i wielkie litery, cyfry
+                          </span>
                           <span className="mr-1">
                             {traineePasswordValue.length}/{PASSWORD_MAX_LENGTH}
                           </span>
@@ -375,7 +375,9 @@ export default function RegisterPage() {
                           />
                         </FormControl>
                         <FormDescription className="flex justify-between">
-                          <span>Min. 8 znaków: małe i wielkie litery, cyfry</span>
+                          <span>
+                            Min. 8 znaków: małe i wielkie litery, cyfry
+                          </span>
                           <span className="mr-1">
                             {trainerPasswordValue.length}/{PASSWORD_MAX_LENGTH}
                           </span>
@@ -386,14 +388,17 @@ export default function RegisterPage() {
                   />
 
                   <div className="border-gold mt-2 space-y-4 rounded-md border p-3.5">
-                    <div className=" w-full text-center">
-                      <p className="font-semibold text-gold mb-1"> Miejsce pracy </p>
-                      <p className="text-xs text-zinc-400 ">
-                      Kolejne miejsca pracy możesz dodać po zalogowaniu do
-                      systemu.
-                    </p>
+                    <div className="w-full text-center">
+                      <p className="text-gold mb-1 font-semibold">
+                        {" "}
+                        Miejsce pracy{" "}
+                      </p>
+                      <p className="text-xs text-zinc-400">
+                        Kolejne miejsca pracy możesz dodać po zalogowaniu do
+                        systemu.
+                      </p>
                     </div>
-                    
+
                     <FormField
                       control={trainerForm.control}
                       name="workplaceName"
@@ -471,8 +476,6 @@ export default function RegisterPage() {
                         </FormItem>
                       )}
                     />
-
-                    
                   </div>
 
                   <FormField
@@ -489,7 +492,7 @@ export default function RegisterPage() {
                         <FormLabel className="mb-0">
                           Wyrażam zgodę na przetwarzanie danych.*
                         </FormLabel>
-                        <FormMessage/>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />

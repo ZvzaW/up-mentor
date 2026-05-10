@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { useSession, signOut } from "next-auth/react"
-import Navbar from "@/components/layout/navbar" 
+import Navbar from "@/components/layout/navbar"
 
 export default function DashboardLayout({
   children,

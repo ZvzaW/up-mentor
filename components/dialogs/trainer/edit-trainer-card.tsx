@@ -25,7 +25,11 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { TrainerCardInput, trainerCardSchema, type TrainerCardValues } from "@/lib/validations"
+import {
+  TrainerCardInput,
+  trainerCardSchema,
+  type TrainerCardValues,
+} from "@/lib/validations"
 import { Loader2 } from "lucide-react"
 
 interface EditTrainerCardDialogProps {
@@ -100,18 +104,17 @@ export default function EditTrainerCardDialog({
                   <FormItem>
                     <FormLabel>Cena za godzinę treningu (PLN)</FormLabel>
                     <FormControl>
-                    <Input
-          {...field}
-          type="number"
-          value={field.value ?? ""}
-          onChange={(e) => {
-
-            const val = e.target.value;
-            field.onChange(val === "" ? null : Number(val));
-          }}
-          placeholder="Np. 150"
-          inputMode="numeric"
-        />
+                      <Input
+                        {...field}
+                        type="number"
+                        value={field.value ?? ""}
+                        onChange={(e) => {
+                          const val = e.target.value
+                          field.onChange(val === "" ? null : Number(val))
+                        }}
+                        placeholder="Np. 150"
+                        inputMode="numeric"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -14,7 +14,7 @@ import { logoutAction } from "@/actions/authorization"
 import { toast } from "sonner"
 
 interface NavbarProps {
-  role: "trainer" | "trainee" | string;
+  role: "trainer" | "trainee" | string
 }
 
 export default function Navbar({ role }: NavbarProps) {
@@ -37,7 +37,7 @@ export default function Navbar({ role }: NavbarProps) {
   const navLinks = [
     { name: "Czat", href: "/dashboard/chat" },
     { name: "Treningi", href: "/dashboard/workouts" },
-    roleSpecificLink, 
+    roleSpecificLink,
   ]
 
   //Dropdown menu - ZASOBY

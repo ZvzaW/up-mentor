@@ -1,93 +1,96 @@
-"use client";
+"use client"
 
-import { Button } from "@/components/ui/button";
-import { MessageCircle, Phone, Settings, Share2 } from "lucide-react";
-import { toast } from "sonner";
+import { Button } from "@/components/ui/button"
+import { MessageCircle, Phone, Settings, Share2 } from "lucide-react"
+import { toast } from "sonner"
 
 type TrainerQuickActionsProps = {
-  trainerId: string;
-  phone: string;
-  slug: string;
-};
+  trainerId: string
+  phone: string
+  slug: string
+}
 
-export function TrainerQuickActions({ trainerId, phone, slug }: TrainerQuickActionsProps) {
+export function TrainerQuickActions({
+  trainerId,
+  phone,
+  slug,
+}: TrainerQuickActionsProps) {
   const handleCopyPhone = async () => {
     try {
-      await navigator.clipboard.writeText(phone);
-      toast.success("Numer telefonu skopiowany.");
+      await navigator.clipboard.writeText(phone)
+      toast.success("Numer telefonu skopiowany.")
     } catch {
-      toast.error("Nie udało się skopiować numeru telefonu.");
+      toast.error("Nie udało się skopiować numeru telefonu.")
     }
-  };
+  }
 
   const handleCopyProfileLink = async () => {
     try {
-      const profileLink = `${window.location.origin}/dashboard/trainers/catalog/${slug}`;
-      await navigator.clipboard.writeText(profileLink);
-      toast.success("Link do profilu trenera skopiowany.");
+      const profileLink = `${window.location.origin}/dashboard/trainers/catalog/${slug}`
+      await navigator.clipboard.writeText(profileLink)
+      toast.success("Link do profilu trenera skopiowany.")
     } catch {
-      toast.error("Nie udało się skopiować linku.");
+      toast.error("Nie udało się skopiować linku.")
     }
-  };
+  }
 
   const handleChatRedirect = () => {
-    window.location.href = `/dashboard/chat?trainerId=${trainerId}`;
-  };
+    window.location.href = `/dashboard/chat?trainerId=${trainerId}`
+  }
 
   const handleSettingsClick = () => {
-    toast.info("Ustawienia współpracy będą dostępne wkrótce.");
-  };
+    toast.info("Ustawienia współpracy będą dostępne wkrótce.")
+  }
 
   return (
     <div className="flex items-center justify-center gap-4">
-       <Button
+      <Button
         type="button"
         size="icon"
         variant="ghost"
-        className="border border-baby-blue rounded-full text-baby-blue"
+        className="border-baby-blue text-baby-blue rounded-full border"
         onClick={handleChatRedirect}
         title="Przejdź do czatu"
         aria-label="Przejdź do czatu"
       >
-        <MessageCircle/>
+        <MessageCircle />
       </Button>
-      
+
       <Button
         type="button"
         size="icon"
         variant="ghost"
-        className="border border-baby-blue rounded-full text-baby-blue"
+        className="border-baby-blue text-baby-blue rounded-full border"
         onClick={handleCopyPhone}
         title="Skopiuj numer telefonu"
         aria-label="Skopiuj numer telefonu"
       >
-        <Phone/>
+        <Phone />
       </Button>
 
       <Button
         type="button"
         size="icon"
         variant="ghost"
-        className="border border-baby-blue rounded-full text-baby-blue"
+        className="border-baby-blue text-baby-blue rounded-full border"
         onClick={handleCopyProfileLink}
         title="Skopiuj link do profilu"
         aria-label="Skopiuj link do profilu w katalogu"
       >
-        <Share2/>
+        <Share2 />
       </Button>
-
 
       <Button
         type="button"
         size="icon"
         variant="ghost"
-        className="border border-baby-blue rounded-full text-baby-blue"
+        className="border-baby-blue text-baby-blue rounded-full border"
         onClick={handleSettingsClick}
         title="Zarządzaj współpracą"
         aria-label="Zarządzaj współpracą"
       >
-        <Settings/>
+        <Settings />
       </Button>
     </div>
-  );
+  )
 }

@@ -41,7 +41,7 @@ export default function LoginPage() {
       } else {
         // router.push("/dashboard")
         // router.refresh()
-        window.location.href = "/dashboard";
+        window.location.href = "/dashboard"
       }
     } catch (error) {
       toast.error("Wystąpił nieoczekiwany błąd.")
