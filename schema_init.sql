@@ -71,7 +71,7 @@ CREATE TABLE cooperation (
 
 CREATE TABLE exercise (
     id uuid NOT NULL DEFAULT gen_random_uuid(),
-    trainer_id uuid NOT NULL,
+    trainer_id uuid NULL,
     name varchar(255) NOT NULL,
     video_url text NULL,
     body_part varchar(100) NOT NULL,
@@ -84,7 +84,7 @@ CREATE TABLE workout_plan (
     name varchar(255) NOT NULL,
     difficulty varchar(100) NULL,
     description text NULL,
-    trainee_id uuid NOT NULL,
+    trainee_id uuid NULL,
     CONSTRAINT workout_plan_pk PRIMARY KEY (id)
 );
 
