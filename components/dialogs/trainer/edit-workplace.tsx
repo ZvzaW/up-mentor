@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
 import { Loader2, Pencil } from "lucide-react"
 
-import { editWorkplaceAction } from "@/actions/profile"
+import { editWorkplace } from "@/actions/profile"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -75,7 +75,7 @@ export default function EditWorkplaceDialog({
 
   const handleSave = (data: EditWorkplaceFormValues) => {
     startSavingTransition(async () => {
-      const result = await editWorkplaceAction(data)
+      const result = await editWorkplace(data)
 
       if (result?.error) {
         toast.error(result.error)
@@ -150,7 +150,7 @@ export default function EditWorkplaceDialog({
                 />
 
                 <span className="mt-6 px-2">/</span>
-                
+
                 <FormField
                   control={form.control}
                   name="flat_number"

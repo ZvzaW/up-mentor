@@ -41,12 +41,11 @@ import {
   changePasswordSchema,
   type ChangePasswordValues,
   traineePersonalDataSchema,
-  type TraineePersonalDataValues,
   trainerPersonalDataSchema,
 } from "@/lib/validations"
-import { changePasswordAction } from "@/actions/settings"
-import { logoutAllDevicesAction } from "@/actions/authorization"
-import { updatePersonalDataAction } from "@/actions/profile"
+import { changePassword } from "@/actions/settings"
+import { logoutAllDevices} from "@/actions/authorization"
+import { updatePersonalData } from "@/actions/profile"
 import { z } from "zod"
 
 export interface SettingsDialogProps {
@@ -234,7 +233,7 @@ export default function SettingsDialog({
                 disabled={isPending}
                 onClick={() => {
                   startTransition(async () => {
-                    const res = await logoutAllDevicesAction()
+                    const res = await logoutAllDevices()
                     if (res?.error) {
                       toast.error(res.error)
                     }
@@ -266,7 +265,7 @@ export default function SettingsDialog({
                 onSubmit={passwordForm.handleSubmit((values) => {
                   startPasswordTransition(async () => {
                     passwordForm.clearErrors("currentPassword")
-                    const res = await changePasswordAction(values)
+                    const res = await changePassword(values)
                     if (res?.error) {
                       if (res.error === "Obecne hasło jest nieprawidłowe") {
                         passwordForm.setError("currentPassword", {
@@ -466,7 +465,7 @@ export default function SettingsDialog({
               <form
                 onSubmit={editForm.handleSubmit((values) => {
                   startEditTransition(async () => {
-                    const res = await updatePersonalDataAction(values)
+                    const res = await updatePersonalData(values)
                     if (res?.error) {
                       toast.error(res.error)
                       return

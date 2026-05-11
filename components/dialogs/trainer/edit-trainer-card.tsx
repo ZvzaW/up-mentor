@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
 
-import { updateTrainerCardAction } from "@/actions/profile"
+import { updateTrainerCard } from "@/actions/profile"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -25,7 +25,11 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { trainerCardSchema, type TrainerCardValues } from "@/lib/validations"
+import {
+  TrainerCardInput,
+  trainerCardSchema,
+  type TrainerCardValues,
+} from "@/lib/validations"
 import { Loader2 } from "lucide-react"
 
 interface EditTrainerCardDialogProps {
@@ -39,7 +43,7 @@ export default function EditTrainerCardDialog({
 }: EditTrainerCardDialogProps) {
   const [open, setOpen] = React.useState(false)
   const [isSaving, startSavingTransition] = React.useTransition()
-  const form = useForm<TrainerCardValues>({
+  const form = useForm<TrainerCardInput>({
     resolver: zodResolver(trainerCardSchema),
     defaultValues: {
       price_per_training: pricePerTraining ?? null,
@@ -57,12 +61,11 @@ export default function EditTrainerCardDialog({
     }
   }, [open, pricePerTraining, workDescription, form])
 
-  const handleSave = (data: TrainerCardValues) => {
+  const handleSave = (data: TrainerCardInput) => {
     startSavingTransition(async () => {
-      const result = await updateTrainerCardAction({
-        price_per_training: data.price_per_training ?? null,
-        work_description:
-          data.work_description === "" ? null : (data.work_description ?? null),
+      const result = await updateTrainerCard({
+        price_per_training: data.price_per_training,
+        work_description: data.work_description,
       })
 
       if (result?.error) {
@@ -99,20 +102,15 @@ export default function EditTrainerCardDialog({
                 name="price_per_training"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Cena za trening (PLN)</FormLabel>
+                    <FormLabel>Cena za godzinę treningu (PLN)</FormLabel>
                     <FormControl>
                       <Input
-                        value={
-                          field.value === null || field.value === undefined
-                            ? ""
-                            : field.value.toString()
-                        }
+                        {...field}
                         type="number"
-                        onChange={(event) => {
-                          const rawValue = event.target.value.trim()
-                          field.onChange(
-                            rawValue === "" ? null : Number(rawValue)
-                          )
+                        value={field.value ?? ""}
+                        onChange={(e) => {
+                          const val = e.target.value
+                          field.onChange(val === "" ? null : Number(val))
                         }}
                         placeholder="Np. 150"
                         inputMode="numeric"

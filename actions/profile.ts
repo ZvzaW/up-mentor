@@ -14,7 +14,7 @@ import { Prisma } from "@prisma/client"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
-export async function updatePersonalDataAction(input: unknown) {
+export async function updatePersonalData(input: unknown) {
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
@@ -60,7 +60,7 @@ export async function updatePersonalDataAction(input: unknown) {
 }
 
 //--- TRAINER ---
-export async function updateTrainerCardAction(input: unknown) {
+export async function updateTrainerCard(input: unknown) {
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
@@ -76,22 +76,13 @@ export async function updateTrainerCardAction(input: unknown) {
   }
 
   const data = validated.data
-  const preparedDescription =
-    data.work_description === undefined
-      ? undefined
-      : data.work_description === null || data.work_description.trim() === ""
-        ? null
-        : data.work_description.trim()
 
   try {
     await prisma.trainer.update({
       where: { id: session.user.id },
       data: {
-        price_per_training:
-          data.price_per_training === undefined
-            ? undefined
-            : data.price_per_training,
-        work_description: preparedDescription,
+        price_per_training: data.price_per_training,
+        work_description: data.work_description,
       },
     })
   } catch (e: any) {
@@ -104,7 +95,7 @@ export async function updateTrainerCardAction(input: unknown) {
   return { success: true }
 }
 
-export async function editWorkplaceAction(input: unknown) {
+export async function editWorkplace(input: unknown) {
   const session = await auth()
 
   if (!session?.user?.id) {
@@ -150,7 +141,7 @@ export async function editWorkplaceAction(input: unknown) {
   }
 }
 
-export async function addWorkplaceAction(input: unknown) {
+export async function addWorkplace(input: unknown) {
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
@@ -188,7 +179,7 @@ export async function addWorkplaceAction(input: unknown) {
   }
 }
 
-export async function deleteWorkplaceAction(workplaceId: string) {
+export async function deleteWorkplace(workplaceId: string) {
   const session = await auth()
 
   if (!session?.user?.id) {
@@ -229,7 +220,7 @@ export async function deleteWorkplaceAction(workplaceId: string) {
   }
 }
 
-export async function changeProfileVisibilityAction(isPublic: boolean) {
+export async function changeProfileVisibility(isPublic: boolean) {
   const session = await auth()
 
   if (!session?.user?.id) {

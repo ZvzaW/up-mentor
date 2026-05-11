@@ -10,27 +10,34 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
-import { logoutAction } from "@/actions/authorization"
+import { logout } from "@/actions/authorization"
 import { toast } from "sonner"
 
-export default function Navbar() {
+interface NavbarProps {
+  role: "trainer" | "trainee" | string
+}
+
+export default function Navbar({ role }: NavbarProps) {
   const pathname = usePathname() || ""
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isResourcesOpen, setIsResourcesOpen] = useState(false)
 
   const handleLogout = async () => {
-    const result = await logoutAction()
-
+    const result = await logout()
     if (result?.error) {
-      toast.error(result?.error)
+      toast.error(result.error)
     }
   }
 
-  //Main links
+  const roleSpecificLink =
+    role === "trainer"
+      ? { name: "Podopieczni", href: "/dashboard/trainees" }
+      : { name: "Trenerzy", href: "/dashboard/trainers" }
+
   const navLinks = [
     { name: "Czat", href: "/dashboard/chat" },
     { name: "Treningi", href: "/dashboard/workouts" },
-    { name: "Podopieczni", href: "/dashboard/clients" },
+    roleSpecificLink,
   ]
 
   //Dropdown menu - ZASOBY

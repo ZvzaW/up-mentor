@@ -1,13 +1,12 @@
 "use client"
 
 import * as React from "react"
-import { changeProfileVisibilityAction } from "@/actions/profile"
+import { changeProfileVisibility } from "@/actions/profile"
 import EditTrainerCardDialog from "@/components/dialogs/trainer/edit-trainer-card"
 import EditWorkplaceDialog from "@/components/dialogs/trainer/edit-workplace"
 import DeleteWorkplaceDialog from "@/components/dialogs/trainer/delete-workplace"
 import AddWorkplaceDialog from "@/components/dialogs/trainer/add-workplace"
 import SettingsDialog from "@/components/dialogs/settings"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
   Popover,
@@ -18,6 +17,7 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { InfoIcon, Star } from "lucide-react"
 import { toast } from "sonner"
+import { ShowOpinionsDialog } from "@/components/dialogs/trainer/show-opinions"
 
 interface TrainerProfileProps {
   baseData: {
@@ -55,7 +55,7 @@ export default function TrainerProfile({
     setIsPublic(checked)
 
     startSavingTransition(async () => {
-      const result = await changeProfileVisibilityAction(checked)
+      const result = await changeProfileVisibility(checked)
 
       if (result?.error) {
         setIsPublic(previousValue)
@@ -78,23 +78,24 @@ export default function TrainerProfile({
                 <p className="truncate">{baseData.name}</p>
                 <p className="break-words">{baseData.surname}</p>
               </div>
-              <p className="mt-4 truncate text-zinc-400"> {baseData.email} </p>
             </div>
 
             {/* Wizytówka */}
             <div className="order-4 mt-7 flex h-full min-w-0 flex-col items-center gap-6 px-8 md:order-none md:row-span-2 md:mt-0">
               <div className="space-y-1 text-center">
-                <p className="text-sm text-zinc-400">Cena za trening</p>
+                <p className="text-sm text-zinc-400">
+                  Cena za godzinę treningu
+                </p>
                 <p>
                   {specificData.price_per_training !== null
                     ? `${specificData.price_per_training} PLN`
                     : "Brak podanej ceny"}
                 </p>
               </div>
-              <div className="space-y-1">
+              <div className="w-full space-y-1">
                 <p className="text-center text-sm text-zinc-400">Opis pracy</p>
-                <div className="bg-dirty-blue/40 rounded-md p-2">
-                  <p className="custom-scrollbar max-h-30 overflow-y-auto p-1 text-sm break-words whitespace-pre-line">
+                <div className="bg-dirty-blue/40 mx-auto rounded-md p-2 md:ml-2">
+                  <p className="custom-scrollbar max-h-30 overflow-y-auto p-1 text-sm break-words whitespace-pre-wrap [tab-size:4]">
                     {specificData.work_description ?? "Brak opisu"}
                   </p>
                 </div>
@@ -140,11 +141,7 @@ export default function TrainerProfile({
                   />
                 </div>
 
-                {/*TO-DO: Zaimplementowac moduł opinii*/}
-                <Button variant="secondary">
-                  {" "}
-                  <Star /> Opinie klientów
-                </Button>
+                <ShowOpinionsDialog trainerId={baseData.id} />
                 <SettingsDialog
                   baseData={baseData}
                   specificData={specificData}

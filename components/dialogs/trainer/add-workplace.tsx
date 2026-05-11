@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Loader2, Plus } from "lucide-react"
 import { toast } from "sonner"
 
-import { addWorkplaceAction } from "@/actions/profile"
+import { addWorkplace } from "@/actions/profile"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -54,7 +54,7 @@ export default function AddWorkplaceDialog() {
 
   const handleSave = (data: CreateWorkplaceFormValues) => {
     startSavingTransition(async () => {
-      const result = await addWorkplaceAction(data)
+      const result = await addWorkplace(data)
 
       if (result?.error) {
         toast.error(result.error)

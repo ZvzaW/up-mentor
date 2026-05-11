@@ -16,18 +16,15 @@ CREATE TABLE trainer (
     work_description text NULL,
     price_per_training int NULL, 
     is_public boolean NOT NULL DEFAULT true,
+    slug text NOT NULL,
     CONSTRAINT trainer_pk PRIMARY KEY (id)
 );
 
-CREATE TABLE trainee (
-    id uuid NOT NULL, -- PK z user
-    birthdate date NOT NULL,
-    CONSTRAINT trainee_pk PRIMARY KEY (id)
-);
 
 CREATE TABLE trainee (
     id uuid NOT NULL, -- PK z user
     birthdate date NOT NULL,
+    slug text NOT NULL,
     CONSTRAINT trainee_pk PRIMARY KEY (id)
 );
 
@@ -53,22 +50,28 @@ CREATE TABLE workplace (
 CREATE TABLE coaching_request (
     trainer_id uuid NOT NULL,
     trainee_id uuid NOT NULL,
+    workplace_id uuid NOT NULL, 
     message text NULL,
     created_at timestamptz NOT NULL DEFAULT now(),
-    CONSTRAINT coaching_request_pk PRIMARY KEY (trainer_id, trainee_id)
+    status varchar(10) NOT NULL DEFAULT 'pending', 
+    CONSTRAINT coaching_request_pk PRIMARY KEY (trainer_id, trainee_id),
+    CONSTRAINT coaching_request_status_check CHECK (status IN ('pending', 'accepted', 'refused'))
 );
 
 CREATE TABLE cooperation (
     trainer_id uuid NOT NULL,
     trainee_id uuid NOT NULL,
+    workplace_id uuid NOT NULL, 
     created_at timestamptz NOT NULL DEFAULT now(),
     trainer_note text NULL,
-    CONSTRAINT cooperation_pk PRIMARY KEY (trainer_id, trainee_id)
+    status varchar(10) NOT NULL DEFAULT 'active', 
+    CONSTRAINT cooperation_pk PRIMARY KEY (trainer_id, trainee_id),
+    CONSTRAINT cooperation_status_check CHECK (status IN ('active', 'ended'))
 );
 
 CREATE TABLE exercise (
     id uuid NOT NULL DEFAULT gen_random_uuid(),
-    trainer_id uuid NOT NULL,
+    trainer_id uuid NULL,
     name varchar(255) NOT NULL,
     video_url text NULL,
     body_part varchar(100) NOT NULL,
@@ -81,7 +84,7 @@ CREATE TABLE workout_plan (
     name varchar(255) NOT NULL,
     difficulty varchar(100) NULL,
     description text NULL,
-    trainee_id uuid NOT NULL,
+    trainee_id uuid NULL,
     CONSTRAINT workout_plan_pk PRIMARY KEY (id)
 );
 
@@ -131,6 +134,7 @@ CREATE TABLE opinion (
     trainer_id uuid NOT NULL,
     rate int NOT NULL,
     comment text NULL,
+    created_at timestamptz NOT NULL DEFAULT now(),
     CONSTRAINT opinion_pk PRIMARY KEY (trainee_id, trainer_id)
 );
 
@@ -175,6 +179,8 @@ ALTER TABLE refresh_token ADD CONSTRAINT refresh_token_user FOREIGN KEY (user_id
 ALTER TABLE workplace ADD CONSTRAINT workplace_trainer FOREIGN KEY (trainer_id) REFERENCES trainer (id) ON DELETE CASCADE;
 ALTER TABLE coaching_request ADD CONSTRAINT coaching_request_client FOREIGN KEY (trainee_id) REFERENCES trainee (id);
 ALTER TABLE coaching_request ADD CONSTRAINT coaching_request_trainer FOREIGN KEY (trainer_id) REFERENCES trainer (id);
+ALTER TABLE coaching_request ADD CONSTRAINT coaching_request_workplace FOREIGN KEY (workplace_id) REFERENCES workplace (id);
+ALTER TABLE cooperation ADD CONSTRAINT cooperation_workplace FOREIGN KEY (workplace_id) REFERENCES workplace (id);
 ALTER TABLE cooperation ADD CONSTRAINT cooperation_trainee FOREIGN KEY (trainee_id) REFERENCES trainee (id);
 ALTER TABLE cooperation ADD CONSTRAINT cooperation_trainer FOREIGN KEY (trainer_id) REFERENCES trainer (id);
 ALTER TABLE exercise ADD CONSTRAINT exercise_trainer FOREIGN KEY (trainer_id) REFERENCES trainer (id);

@@ -1,6 +1,10 @@
 "use server"
 
 import { prisma } from "@/lib/prisma"
+import {
+  generateUniqueTraineeSlug,
+  generateUniqueTrainerSlug,
+} from "@/lib/slug"
 import { registerTraineeSchema, registerTrainerSchema } from "@/lib/validations"
 import { Prisma } from "@prisma/client"
 import * as argon2 from "argon2"
@@ -9,7 +13,7 @@ import { signOut, auth } from "@/auth"
 import { signIn } from "@/auth"
 import { AuthError } from "next-auth"
 
-export async function registerAction(
+export async function register(
   formData: any,
   role: "trainee" | "trainer"
 ) {
@@ -22,6 +26,14 @@ export async function registerAction(
 
   const data = validatedFields.data
   const hashedPassword = await argon2.hash(data.password)
+
+  let generatedSlug = ""
+
+  if (role === "trainer") {
+    generatedSlug = await generateUniqueTrainerSlug(data.name, data.surname)
+  } else {
+    generatedSlug = await generateUniqueTraineeSlug(data.name, data.surname)
+  }
 
   try {
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
@@ -38,7 +50,9 @@ export async function registerAction(
 
       if (role === "trainer") {
         const d = data as any
-        await tx.trainer.create({ data: { id: newUser.id } })
+        await tx.trainer.create({
+          data: { id: newUser.id, slug: generatedSlug },
+        })
         await tx.workplace.create({
           data: {
             trainer_id: newUser.id,
@@ -52,7 +66,11 @@ export async function registerAction(
       } else {
         const d = data as any
         await tx.trainee.create({
-          data: { id: newUser.id, birthdate: new Date(d.birthdate) },
+          data: {
+            id: newUser.id,
+            birthdate: new Date(d.birthdate),
+            slug: generatedSlug,
+          },
         })
       }
 
@@ -79,7 +97,7 @@ export async function registerAction(
   redirect("/?registered=true")
 }
 
-export async function loginAction(data: any) {
+export async function login(data: any) {
   const email = data.email
   const password = data.password
 
@@ -109,11 +127,10 @@ export async function loginAction(data: any) {
   }
 }
 
-export async function logoutAction() {
+export async function logout() {
   const session = await auth()
   const tokenToDelete = (session as any)?.refreshToken
 
-  console.log(tokenToDelete)
   try {
     if (tokenToDelete) {
       await prisma.refresh_token.deleteMany({
@@ -127,7 +144,7 @@ export async function logoutAction() {
   await signOut({ redirectTo: "/" })
 }
 
-export async function logoutAllDevicesAction() {
+export async function logoutAllDevices() {
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
