@@ -73,21 +73,6 @@ export async function register(
           },
         })
       }
-
-      const notificationMessage =
-        role === "trainer"
-          ? "Przejdź do swojego profilu i uzupełnij wizytówkę, aby przyszli podopieczni mogli poznać Twoją ofertę."
-          : "Przejdź do swojego profilu i uzupełnij ankietę startową niezbędną do współpracy z Twoim przyszłym trenerem."
-
-      await tx.notification.create({
-        data: {
-          user_id: newUser.id,
-          title: "Witaj w systemie UpMentor!",
-          message: notificationMessage,
-          redirect_url: "dashboard/profile",
-          type: "system",
-        },
-      })
     })
   } catch (error: any) {
     if (error.code === "P2002") return { error: "Ten e-mail jest już zajęty!" }
@@ -109,10 +94,9 @@ export async function login(data: any) {
     await signIn("credentials", {
       email,
       password,
-      redirect: false,
+      redirectTo: "/dashboard",
     })
 
-    return { success: true }
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
@@ -122,8 +106,7 @@ export async function login(data: any) {
           return { error: "Wystąpił błąd podczas logowania. Spróbuj ponownie." }
       }
     }
-
-    throw error
+    throw error 
   }
 }
 
