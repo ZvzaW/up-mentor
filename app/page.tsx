@@ -12,6 +12,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { login } from "@/actions/authorization"
 
+
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isPending, setIsPending] = useState(false)
@@ -28,22 +29,29 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsPending(true)
-
+    setLoginError(null)
+  
     const formData = new FormData(e.currentTarget)
     const email = formData.get("email") as string
     const password = formData.get("password") as string
-
+  
     try {
       const result = await login({ email, password })
 
       if (result?.error) {
         setLoginError(result.error)
-      } else {
-        window.location.href = "/dashboard"
+        setIsPending(false) 
+      } 
+      
+    } catch (error: any) {
+      if (
+        error?.message === "NEXT_REDIRECT" || 
+        error?.digest?.includes("NEXT_REDIRECT")
+      ) {
+        throw error
       }
-    } catch (error) {
+  
       toast.error("Wystąpił nieoczekiwany błąd.")
-    } finally {
       setIsPending(false)
     }
   }

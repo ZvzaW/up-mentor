@@ -3,7 +3,7 @@ import { getCatalogTrainers } from "@/actions/catalog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Card, CardContent } from "@/components/ui/card"
 import { ChevronRight, MapPin, Star } from "lucide-react"
-import { hasTrainerCooperation } from "@/actions/my-trainers"
+import { countCooperations } from "@/actions/my-trainers"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { BackButton } from "@/components/common/back-button"
@@ -23,18 +23,18 @@ export default async function TrainersCatalogPage({
   const cityQuery = resolvedSearchParams?.city?.trim() ?? ""
   const hasActiveFilters = nameQuery.length > 0 || cityQuery.length > 0
 
-  const [trainersResult, hasResult] = await Promise.all([
+  const [trainersResult, countResult] = await Promise.all([
     getCatalogTrainers({ name: nameQuery, city: cityQuery }),
-    hasTrainerCooperation(),
+    countCooperations(),
   ])
 
-  const pageError = trainersResult.error ?? hasResult.error
+  const pageError = trainersResult.error ?? countResult.error
   const trainers = trainersResult.data ?? []
-  const hasAnyCooperation = hasResult.data ?? false
+  const cooperationsCount = countResult.data ?? 0
 
   return (
     <div className="space-y-4 p-3">
-      {hasAnyCooperation && <BackButton label="Wróć do moich trenerów" />}
+      {cooperationsCount > 0 && <BackButton label="Wróć do moich trenerów" />}
 
       <h1 className="font-michroma text-center text-2xl sm:text-left md:ml-1">
         Katalog trenerów

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 import {
   getMyTrainerBySlug,
-  hasTrainerCooperation,
+  countCooperations,
 } from "@/actions/my-trainers"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -22,14 +22,14 @@ export default async function TrainerDetailsPage({
   params,
 }: TrainerDetailsPageProps) {
   const { slug } = await params
-  const [trainerResult, cooperationResult] = await Promise.all([
+  const [trainerResult, countResult] = await Promise.all([
     getMyTrainerBySlug(slug),
-    hasTrainerCooperation(),
+    countCooperations(),
   ])
 
-  const pageError = trainerResult.error ?? cooperationResult.error
+  const pageError = trainerResult.error ?? countResult.error
   const cooperation = trainerResult.data
-  const hasAnyCooperation = cooperationResult.data ?? false
+  const cooperationsCount = countResult.data ?? 0
 
   if (!pageError && !cooperation) {
     redirect("/dashboard/trainers")
@@ -63,7 +63,7 @@ export default async function TrainerDetailsPage({
 
       {!pageError && selectedTrainer && (
         <div className="space-y-4">
-          {hasAnyCooperation ? (
+          {cooperationsCount > 1 ? (
             <div className="flex justify-center">
               <button className="bg-dirty-blue hover:bg-hover mb-5 flex items-center gap-2 rounded-2xl p-3 pr-4 text-sm">
                 <ChevronLeft size={14} />{" "}

@@ -106,7 +106,7 @@ export async function getMyTrainerBySlug(slug: string) {
   }
 }
 
-export async function hasTrainerCooperation() {
+export async function countCooperations() {
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
@@ -117,17 +117,14 @@ export async function hasTrainerCooperation() {
   }
 
   try {
-    const cooperation = await prisma.cooperation.findFirst({
+    const count = await prisma.cooperation.count({
       where: {
         trainee_id: session.user.id,
         status: "active",
       },
-      select: {
-        trainer_id: true,
-      },
     })
 
-    return { success: true, data: Boolean(cooperation) }
+    return { success: true, data: count}
   } catch (error) {
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }

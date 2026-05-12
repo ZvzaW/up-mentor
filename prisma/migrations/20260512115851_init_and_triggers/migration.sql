@@ -301,20 +301,19 @@ ALTER TABLE "refresh_token" ADD CONSTRAINT "refresh_token_user_id_fkey" FOREIGN 
 
 
 
---TRIGGERY
+--TRIGGERY - POWIADOMIENIA
 
--- 1. TRIGGER DLA TRENERA 
+-- 1. NOWY TRENER
 CREATE OR REPLACE FUNCTION notify_on_new_trainer()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO notification (user_id, title, message, redirect_url, type, is_read)
+    INSERT INTO notification (user_id, title, message, redirect_url, type)
     VALUES (
         NEW.id, 
         'Witaj w systemie UpMentor!',
         'Przejdź do swojego profilu i uzupełnij wizytówkę, aby przyszli podopieczni mogli poznać Twoją ofertę.',
         'dashboard/profile',
-        'system',
-        false
+        'system'
     );
     RETURN NEW;
 END;
@@ -326,18 +325,17 @@ FOR EACH ROW
 EXECUTE FUNCTION notify_on_new_trainer();
 
 
--- 2. TRIGGER DLA PODOPTECZNEGO
+-- 2. NOWY PODOPIECZNY
 CREATE OR REPLACE FUNCTION notify_on_new_trainee()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO notification (user_id, title, message, redirect_url, type, is_read)
+    INSERT INTO notification (user_id, title, message, redirect_url, type)
     VALUES (
         NEW.id,
         'Witaj w systemie UpMentor!',
         'Przejdź do swojego profilu i uzupełnij ankietę startową niezbędną do współpracy z Twoim przyszłym trenerem.',
         'dashboard/profile',
-        'system',
-        false
+        'system'
     );
     RETURN NEW;
 END;
@@ -347,3 +345,53 @@ CREATE TRIGGER trigger_new_trainee
 AFTER INSERT ON trainee
 FOR EACH ROW
 EXECUTE FUNCTION notify_on_new_trainee();
+
+
+-- 3. NOWA PROSBA O WSPOLPRACE
+CREATE OR REPLACE FUNCTION notify_trainer_on_coaching_request()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO notification (user_id, title, message, redirect_url, type)
+    VALUES (
+        NEW.trainer_id, 
+        'Nowa prośba o współpracę!',
+        'Otrzymałeś nową prośbę o nawiązanie współpracy. Sprawdź szczegóły.',
+        '/dashboard/trainees', 
+        'request'
+
+    );
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trigger_notify_trainer_request ON coaching_request;
+
+CREATE TRIGGER trigger_notify_trainer_request
+AFTER INSERT ON coaching_request
+FOR EACH ROW
+EXECUTE FUNCTION notify_trainer_on_coaching_request();
+
+
+
+-- 4. PROSBA ZAAKCEPTOWANA
+CREATE OR REPLACE FUNCTION notify_trainee_on_cooperation()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO notification (user_id, title, message, redirect_url, type)
+    VALUES (
+        NEW.trainee_id,
+        'Współpraca rozpoczęta!',
+        'Twój trener zaakceptował prośbę o współpracę.',
+        '/dashboard/trainers', 
+        'system'
+    );
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trigger_notify_trainee_cooperation ON cooperation;
+
+CREATE TRIGGER trigger_notify_trainee_cooperation
+AFTER INSERT ON cooperation
+FOR EACH ROW
+EXECUTE FUNCTION notify_trainee_on_cooperation();
