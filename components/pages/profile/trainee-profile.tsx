@@ -1,9 +1,8 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { ClipboardList } from "lucide-react"
 import SettingsDialog from "@/components/dialogs/settings"
+import { FillSurveyDialog } from "@/components/dialogs/trainee/fill-survey"
 
 interface TraineeProfileProps {
   baseData: {
@@ -23,6 +22,7 @@ export default function TraineeProfile({
   baseData,
   specificData,
 }: TraineeProfileProps) {
+  
   return (
     <section className="grid grid-cols-1 gap-10 lg:grid-cols-5">
       {/* PROFIL*/}
@@ -38,11 +38,7 @@ export default function TraineeProfile({
               <p className="mt-4 truncate text-zinc-400"> {baseData.email} </p>
 
               <div className="mt-6 flex w-full max-w-[250px] flex-col gap-4">
-                {/*TO-DO: dodac funkcjonalnosc ankiety startowej */}
-                <Button variant="secondary">
-                  {" "}
-                  <ClipboardList /> Ankieta startowa
-                </Button>
+                <FillSurveyDialog />
                 <SettingsDialog
                   baseData={baseData}
                   specificData={specificData}
@@ -53,7 +49,7 @@ export default function TraineeProfile({
         </Card>
       </div>
 
-      {/*TO-DO: Podpiac logike do pobierania rekordow z bazy, tworzenie nowych rekordow i edycja */}
+      {/*TO-DO: Replace with workind server actions*/}
       {/* REKORDY OSOBISTE */}
       <div className="lg:col-span-3">
         <Card className="h-full">

@@ -95,7 +95,7 @@ export default async function TrainersCatalogPage({
             </div>
           )}
           {!pageError && trainers.length > 0 && (
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               {trainers.map((trainer) => (
                 <Link
                   key={trainer.id}
