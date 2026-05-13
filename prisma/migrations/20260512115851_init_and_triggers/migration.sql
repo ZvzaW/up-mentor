@@ -86,7 +86,7 @@ CREATE TABLE "section" (
     "workout_plan_id" UUID NOT NULL,
     "name" VARCHAR(255),
     "body_part" VARCHAR(100),
-    "order_index" INTEGER NOT NULL,
+    "order" INTEGER NOT NULL,
 
     CONSTRAINT "section_pk" PRIMARY KEY ("id")
 );
@@ -99,7 +99,7 @@ CREATE TABLE "exercise_set" (
     "series_count" INTEGER NOT NULL,
     "reps_count" INTEGER NOT NULL,
     "weight" DECIMAL(5,2),
-    "order_index" INTEGER NOT NULL,
+    "order" INTEGER NOT NULL,
 
     CONSTRAINT "exercise_set_pk" PRIMARY KEY ("id")
 );

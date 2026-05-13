@@ -159,7 +159,7 @@ CREATE TABLE notification (
     redirect_url text NULL,
     type varchar(30) NOT NULL,
     is_read boolean NOT NULL DEFAULT false, 
-    created_at timestamp  NOT NULL DEFAULT now(),
+    created_at timestamptz  NOT NULL DEFAULT now(),
     CONSTRAINT notification_pk PRIMARY KEY (id)
 );
 
@@ -167,7 +167,7 @@ CREATE TABLE refresh_token (
     id uuid  NOT NULL DEFAULT gen_random_uuid(),
     user_id uuid  NOT NULL,
     token text  NOT NULL UNIQUE,
-    expires_at timestamp  NOT NULL,
+    expires_at timestamptz  NOT NULL,
     CONSTRAINT refresh_token_pk PRIMARY KEY (id)
 );
 
@@ -217,6 +217,8 @@ INSERT INTO survey_question (question, "order") VALUES
 ('Czy w ciągu ostatnich 6 miesięcy miałeś/aś wykonywane jakieś zabiegi chirurgiczne?', 8);
 
 
+
+--HASLO DO WSZYSTKICH KONT - ABCabc11
 --TRAINEE
 INSERT INTO "user" (id, name, surname, email, phone, password, role) VALUES
 ('049392cf-fdc8-4c95-b89b-2cf48ce2485e', 'Anna', 'Kowalska', 'zw@op.pl', '123456789', '$argon2id$v=19$m=65536,t=3,p=4$2u37KIx7dz9gZuBZU8BPwQ$BUa5wRmJylz43DFJ7mko79H/+dk33D4NKOjGgyzTVSs', 'trainee'),
@@ -229,9 +231,9 @@ INSERT INTO trainee (id, birthdate, slug) VALUES
 
 --TRAINER
 INSERT INTO "user" (id, name, surname, email, phone, password, role) VALUES
-('11111111-1111-1111-1111-111111111111', 'Piotr', 'Nowak', 'wz4@op.pl', '987654321', '$argon2id$v=19$m=65536,t=3,p=4$2u37KIx7dz9gZuBZU8BPwQ$BUa5wRmJylz43DFJ7mko79H/+dk33D4NKOjGgyzTVSs', 'trainer'),
-('22222222-2222-2222-2222-222222222222', 'Karolina', 'Wiśniewska', 'wz3@op.pl', '555444333', '$argon2id$v=19$m=65536,t=3,p=4$2u37KIx7dz9gZuBZU8BPwQ$BUa5wRmJylz43DFJ7mko79H/+dk33D4NKOjGgyzTVSs', 'trainer'),
-('33333333-3333-3333-3333-333333333333', 'Tomasz', 'Wójcik', 'wz2@op.pl', '111222333', '$argon2id$v=19$m=65536,t=3,p=4$2u37KIx7dz9gZuBZU8BPwQ$BUa5wRmJylz43DFJ7mko79H/+dk33D4NKOjGgyzTVSs', 'trainer'),
+('11111111-1111-1111-1111-111111111111', 'Piotr', 'Nowak', 'wz3@op.pl', '987654321', '$argon2id$v=19$m=65536,t=3,p=4$2u37KIx7dz9gZuBZU8BPwQ$BUa5wRmJylz43DFJ7mko79H/+dk33D4NKOjGgyzTVSs', 'trainer'),
+('22222222-2222-2222-2222-222222222222', 'Karolina', 'Wiśniewska', 'wz2@op.pl', '555444333', '$argon2id$v=19$m=65536,t=3,p=4$2u37KIx7dz9gZuBZU8BPwQ$BUa5wRmJylz43DFJ7mko79H/+dk33D4NKOjGgyzTVSs', 'trainer'),
+('33333333-3333-3333-3333-333333333333', 'Tomasz', 'Wójcik', 'wz1@op.pl', '111222333', '$argon2id$v=19$m=65536,t=3,p=4$2u37KIx7dz9gZuBZU8BPwQ$BUa5wRmJylz43DFJ7mko79H/+dk33D4NKOjGgyzTVSs', 'trainer'),
 ('44444444-4444-4444-4444-444444444444', 'Jan', 'Kowalski', 'wz@op.pl', '123456789', '$argon2id$v=19$m=65536,t=3,p=4$2u37KIx7dz9gZuBZU8BPwQ$BUa5wRmJylz43DFJ7mko79H/+dk33D4NKOjGgyzTVSs', 'trainer');
 
 INSERT INTO trainer (id, work_description, price_per_training, is_public, slug) VALUES
