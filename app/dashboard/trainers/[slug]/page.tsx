@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Banknote, BookOpen, ChevronLeft, MapPin } from "lucide-react"
 import { TrainerQuickActions } from "@/components/pages/my-trainers/trainer-quick-actions"
 import { ManageOpinionDialog } from "@/components/dialogs/trainee/manage-opinion"
-import { TrainerOpinionsUI } from "@/components/pages/trainer-opinions-list"
+import { TrainerOpinionsUI } from "@/components/common/trainer-opinions-list"
 import { SkeletonOpinions } from "@/components/ui/skeleton"
 import { BackButton } from "@/components/common/back-button"
 
@@ -39,7 +39,7 @@ export default async function TrainerDetailsPage({
     opinionsResult = await getTrainerOpinions(cooperation.trainer_id)
   }
 
-  const pageError = trainerResult.error ?? countResult.error ?? opinionsResult?.error
+  const pageError = trainerResult.error ?? countResult.error 
   const cooperationsCount = countResult.data ?? 0
 
   if (!pageError && !cooperation) {

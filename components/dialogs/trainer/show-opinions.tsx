@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Star } from "lucide-react"
-import { TrainerOpinionsFetch } from "@/components/pages/trainer-opinions-list"
+import { TrainerOpinionsFetch } from "@/components/common/trainer-opinions-list"
 
 export function ShowOpinionsDialog({ trainerId }: { trainerId: string }) {
   return (
