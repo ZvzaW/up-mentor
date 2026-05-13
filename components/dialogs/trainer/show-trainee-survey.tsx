@@ -10,10 +10,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { ClipboardList, Loader2, Info } from "lucide-react"
+import { ClipboardList,  Info } from "lucide-react"
 import { getSurveyDataAction } from "@/actions/survey"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { SkeletonTable } from "@/components/ui/skeleton"
+import { SkeletonList  } from "@/components/ui/skeleton"
 
 interface QuestionData {
   id: string
@@ -96,7 +96,7 @@ export function ShowTraineeSurveyDialog({ traineeId, name }: ShowTraineeSurveyDi
         {/*PYTANIA I ODPOWIEDZI*/}
         <div className="custom-scrollbar bg-dirty-blue space-y-12 overflow-y-auto rounded-lg p-6">
           {isLoading ? (
-            <SkeletonTable/>
+            <SkeletonList/>
           ) : error ? (
             <Alert variant="destructive" className="mx-auto">
               <AlertDescription>{error}</AlertDescription>

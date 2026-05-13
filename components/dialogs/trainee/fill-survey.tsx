@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button"
 import { ClipboardList, Loader2, Info } from "lucide-react"
 import { toast } from "sonner"
 import { saveSurveyAnswersAction, getSurveyDataAction } from "@/actions/survey"
-import { SkeletonTable } from "@/components/ui/skeleton"
+import { SkeletonList } from "@/components/ui/skeleton"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 interface QuestionData {
@@ -120,7 +120,7 @@ export function FillSurveyDialog() {
         {/*PYTANIA*/}
         <div className="custom-scrollbar space-y-10 overflow-y-auto p-6 bg-dirty-blue rounded-lg">
           {isLoadingData ? (
-             <SkeletonTable/>
+             <SkeletonList/>
           ) : error ? (
 <Alert variant="destructive" className="mx-auto">
                 <AlertDescription>{error}</AlertDescription>

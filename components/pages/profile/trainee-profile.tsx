@@ -35,8 +35,6 @@ export default function TraineeProfile({
                 <p className="truncate">{baseData.surname}</p>
               </div>
 
-              <p className="mt-4 truncate text-zinc-400"> {baseData.email} </p>
-
               <div className="mt-6 flex w-full max-w-[250px] flex-col gap-4">
                 <FillSurveyDialog />
                 <SettingsDialog
@@ -49,7 +47,7 @@ export default function TraineeProfile({
         </Card>
       </div>
 
-      {/*TO-DO: Replace with workind server actions*/}
+      {/*TO-DO: Replace with working server actions*/}
       {/* REKORDY OSOBISTE */}
       <div className="lg:col-span-3">
         <Card className="h-full">

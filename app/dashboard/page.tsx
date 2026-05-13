@@ -13,7 +13,7 @@ import TrainerStats from "@/components/pages/statistics/trainer-stats"
 import TraineeStats from "@/components/pages/statistics/trainee-stats"
 
 import { getNotifications, getUnreadCount, markAsRead } from "@/actions/notifications"
-import { SkeletonTable } from "@/components/ui/skeleton"
+import { SkeletonList } from "@/components/ui/skeleton"
 
 interface Notification {
   id: string
@@ -141,7 +141,7 @@ function NotificationsPanel({
 
           <div className="custom-scrollbar h-full space-y-6 overflow-y-auto pr-5 pb-10">
             {isLoading ? (
-              <SkeletonTable/>
+              <SkeletonList/>
             ) : (
               <>
                 {hasNotifications ? (

@@ -3,6 +3,7 @@ import { Mina, Michroma } from "next/font/google"
 import { AuthProvider } from "@/components/providers/session-provider"
 import "./globals.css"
 import { auth } from "@/auth"
+import { Toaster } from "sonner"
 
 const mina = Mina({
   subsets: ["latin", "latin-ext"],
@@ -35,6 +36,7 @@ export default async function RootLayout({
       <body className={`${mina.className} ${michroma.variable} overflow-x-hidden antialiased`}>
         <AuthProvider session={session}>
           {children}
+          <Toaster richColors theme="dark" position="top-right" />
         </AuthProvider>
       </body>
     </html>

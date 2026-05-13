@@ -3,7 +3,6 @@
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { trainerOpinionSchema } from "@/lib/validations"
-import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
 export async function getMyOpinion(trainerId: string) {
@@ -41,6 +40,8 @@ export async function getMyOpinion(trainerId: string) {
         comment: opinion.comment,
       },
     }
+
+
   } catch {
     return { error: "Nie udało się pobrać opinii. Spróbuj ponownie" }
   }
@@ -95,6 +96,7 @@ export async function getTrainerOpinions(trainerId: string) {
         reviews,
       },
     }
+
   } catch {
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę" }
   }
@@ -158,7 +160,6 @@ export async function upsertOpinion(input: unknown) {
     }
   }
 
-  revalidatePath("/dashboard/trainers")
   return { success: true as const }
 }
 
@@ -183,6 +184,5 @@ export async function deleteOpinion(trainerId: string) {
     return { error: "Wystąpił błąd podczas usuwania danych. Spróbuj ponownie." }
   }
 
-  revalidatePath("/dashboard/trainers")
   return { success: true as const }
 }
