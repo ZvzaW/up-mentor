@@ -5,7 +5,7 @@ import { signOut } from "next-auth/react"
 
 export default function LogoutTrigger() {
   useEffect(() => {
-    signOut({ callbackUrl: "/" })
+    signOut({ callbackUrl: "/?unauthorized=true"})
   }, [])
 
   return null

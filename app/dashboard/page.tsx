@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, JSX } from "react"
-import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Users, MessageSquare, ChevronRight, Bell, MessageCircle, Calendar, Loader2 } from "lucide-react"
 
@@ -33,90 +32,49 @@ const ICONS: Record<string, JSX.Element> = {
   system: <Bell size={16} />,
 }
 
-// POWIADOMIENIA
-function NotificationsPanel({ 
-  userId,
+interface NotificationsPanelProps {
+  unreadCount: number
+  decrementCount: () => void
+  groupedNotifications: Record<string, Notification[]>
+  setGroupedNotifications: React.Dispatch<React.SetStateAction<Record<string, Notification[]>>>
+  isLoading: boolean
+  hasMore: boolean
+  isLoadingMore: boolean
+  loadMore: () => Promise<void>
+  error: string | null
+}
+
+
+//PANELI POWIADOMIEŃ
+function NotificationsPanel({
   unreadCount,
-  decrementCount
-}: { 
-  userId?: string;
-  unreadCount: number; 
-  decrementCount: () => void; 
-}) {
+  decrementCount,
+  groupedNotifications,
+  setGroupedNotifications,
+  isLoading,
+  hasMore,
+  isLoadingMore,
+  loadMore,
+  error,
+}: NotificationsPanelProps) {
   const router = useRouter()
-
-
-  const [groupedNotifications, setGroupedNotifications] = useState<Record<string, Notification[]>>({})
-  const [page, setPage] = useState(0)
-  const [hasMore, setHasMore] = useState(true)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isLoadingMore, setIsLoadingMore] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!userId) return;
-
-    setIsLoading(true);
-    setError(null);
-
-    getNotifications(0).then((res) => {
-      if (res.error) {
-        setError(res.error)
-      } else {
-        setGroupedNotifications(res.grouped as Record<string, Notification[]> || {})
-        setHasMore(res.hasMore ?? false)
-        setPage(0)
-      }
-      setIsLoading(false)
-    })
-  }, [userId])
-
-  const loadMore = async () => {
-    if (isLoadingMore || !hasMore) return;
-    setIsLoadingMore(true);
-
-    const nextPage = page + 1;
-    const res = await getNotifications(nextPage);
-
-    if (res.error) {
-      setError(res.error);
-    } else {
-      setGroupedNotifications((prev) => {
-        const updated = { ...prev };
-        const newGrouped = (res.grouped as Record<string, Notification[]>) || {};
-        
-        Object.entries(newGrouped).forEach(([label, items]) => {
-          const merged = [...(updated[label] || []), ...items];
-          updated[label] = Array.from(new Map(merged.map((n) => [n.id, n])).values());
-        });
-        
-        return updated;
-      });
-      setHasMore(res.hasMore ?? false);
-      setPage(nextPage);
-    }
-    
-    setIsLoadingMore(false);
-  }
-
 
   const handleNotificationClick = async (notif: Notification) => {
     if (notif.redirect_url) router.push(notif.redirect_url)
 
     if (!notif.is_read) {
-      setGroupedNotifications(prev => {
-        const newGrouped = { ...prev };
+      setGroupedNotifications((prev) => {
+        const newGrouped = { ...prev }
         for (const label in newGrouped) {
-          newGrouped[label] = newGrouped[label].map(n => 
+          newGrouped[label] = newGrouped[label].map((n) =>
             n.id === notif.id ? { ...n, is_read: true } : n
-          );
+          )
         }
-        return newGrouped;
-      });
-      
-      decrementCount();
+        return newGrouped
+      })
 
-      await markAsRead(notif.id);
+      decrementCount()
+      await markAsRead(notif.id)
     }
   }
 
@@ -141,7 +99,7 @@ function NotificationsPanel({
 
           <div className="custom-scrollbar h-full space-y-6 overflow-y-auto pr-5 pb-10">
             {isLoading ? (
-              <SkeletonList/>
+              <SkeletonList />
             ) : (
               <>
                 {hasNotifications ? (
@@ -152,7 +110,7 @@ function NotificationsPanel({
                         <span className="text-gold text-xs font-medium uppercase">{label}</span>
                         <Separator className="flex-1" />
                       </div>
-                      
+
                       <div className="space-y-3">
                         {items.map((notif) => (
                           <button
@@ -163,19 +121,25 @@ function NotificationsPanel({
                             }`}
                           >
                             <div className="space-y-3 text-sm">
-                              <div className={`flex gap-2 font-semibold ${!notif.is_read ? "text-baby-blue" : "text-zinc-300"}`}>
+                              <div
+                                className={`flex gap-2 font-semibold ${
+                                  !notif.is_read ? "text-baby-blue" : "text-zinc-300"
+                                }`}
+                              >
                                 {notif.title} {ICONS[notif.type] || ICONS.system}
                               </div>
                               <p className="leading-relaxed text-zinc-400">{notif.message}</p>
                             </div>
-                            <ChevronRight className={`shrink-0 ${!notif.is_read ? "text-baby-blue" : "text-zinc-300"}`} />
+                            <ChevronRight
+                              className={`shrink-0 ${!notif.is_read ? "text-baby-blue" : "text-zinc-300"}`}
+                            />
                           </button>
                         ))}
                       </div>
                     </div>
                   ))
-                ) : !error && (
-                  <p className="text-center text-zinc-400">Brak powiadomień.</p>
+                ) : (
+                  !error && <p className="text-center text-zinc-400">Brak powiadomień.</p>
                 )}
 
                 {hasMore && !error && (
@@ -198,7 +162,8 @@ function NotificationsPanel({
   )
 }
 
-//STATYSTYKI
+
+//PANEL STATYSTYK
 function StatsPanel({ role }: { role?: string }) {
   return (
     <section>
@@ -219,30 +184,83 @@ function StatsPanel({ role }: { role?: string }) {
   )
 }
 
-//DASHBOARD 
-export default function DashboardPage() {
-  const { data: session } = useSession()
-  const [mobileTab, setMobileTab] = useState<"notifications" | "stats">("notifications")
-  
-  const userId = session?.user?.id
 
+//DASHBOARD
+export default function DashboardPage({ userRole }: { userRole?: string }) {
+  const [mobileTab, setMobileTab] = useState<"notifications" | "stats">("notifications")
   const [unreadCount, setUnreadCount] = useState(0)
 
-  useEffect(() => {
-    if (!userId) {
-      setUnreadCount(0);
-      return;
-    }
+  const [groupedNotifications, setGroupedNotifications] = useState<Record<string, Notification[]>>({})
+  const [page, setPage] = useState(0)
+  const [hasMore, setHasMore] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
+
+  useEffect(() => {
     getUnreadCount().then((res) => {
       if (!res.error) {
         setUnreadCount(res.count || 0)
       }
     })
-  }, [userId])
+
+    setIsLoading(true)
+    setError(null)
+    getNotifications(0).then((res) => {
+      if (res.error) {
+        setError(res.error)
+      } else {
+        setGroupedNotifications((res.grouped as Record<string, Notification[]>) || {})
+        setHasMore(res.hasMore ?? false)
+        setPage(0)
+      }
+      setIsLoading(false)
+    })
+  }, [])
 
   const decrementCount = () => {
     setUnreadCount((prev) => Math.max(0, prev - 1))
+  }
+
+  const loadMore = async () => {
+    if (isLoadingMore || !hasMore) return
+    setIsLoadingMore(true)
+
+    const nextPage = page + 1
+    const res = await getNotifications(nextPage)
+
+    if (res.error) {
+      setError(res.error)
+    } else {
+      setGroupedNotifications((prev) => {
+        const updated = { ...prev }
+        const newGrouped = (res.grouped as Record<string, Notification[]>) || {}
+
+        Object.entries(newGrouped).forEach(([label, items]) => {
+          const merged = [...(updated[label] || []), ...items]
+          updated[label] = Array.from(new Map(merged.map((n) => [n.id, n])).values())
+        })
+
+        return updated
+      })
+      setHasMore(res.hasMore ?? false)
+      setPage(nextPage)
+    }
+
+    setIsLoadingMore(false)
+  }
+
+  const notificationProps = {
+    unreadCount,
+    decrementCount,
+    groupedNotifications,
+    setGroupedNotifications,
+    isLoading,
+    hasMore,
+    isLoadingMore,
+    loadMore,
+    error,
   }
 
   return (
@@ -252,31 +270,25 @@ export default function DashboardPage() {
         <Tabs value={mobileTab} onValueChange={(v) => setMobileTab(v as any)} className="w-full">
           <TabsList className="bg-dark-navy font-michroma border-baby-blue/40 z-1 mb-8 grid w-full grid-cols-2 border">
             <TabsTrigger value="notifications" className="text-xs">
-              Powiadomienia <span>{unreadCount > 99 ? "99+" : unreadCount}</span>
+              Powiadomienia <span className="ml-1">{unreadCount > 99 ? "99+" : unreadCount}</span>
             </TabsTrigger>
-            <TabsTrigger value="stats" className="text-xs">Statystyki</TabsTrigger>
+            <TabsTrigger value="stats" className="text-xs">
+              Statystyki
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="notifications">
-            <NotificationsPanel 
-              userId={userId} 
-              unreadCount={unreadCount} 
-              decrementCount={decrementCount} 
-            />
+            <NotificationsPanel {...notificationProps} />
           </TabsContent>
           <TabsContent value="stats">
-            <StatsPanel role={session?.user?.role} />
+            <StatsPanel role={userRole} />
           </TabsContent>
         </Tabs>
       </div>
 
       {/* Widok Desktop (Grid) */}
       <div className="hidden gap-12 lg:grid lg:grid-cols-2">
-        <NotificationsPanel 
-          userId={userId} 
-          unreadCount={unreadCount} 
-          decrementCount={decrementCount} 
-        />
-        <StatsPanel role={session?.user?.role} />
+        <NotificationsPanel {...notificationProps} />
+        <StatsPanel role={userRole} />
       </div>
     </div>
   )
