@@ -4,7 +4,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
-  ClipboardList,
   Clock3,
   MapPin,
   NotebookPen,
@@ -14,6 +13,7 @@ import {
 import { getMyTraineeBySlug } from "@/actions/my-trainees"
 import { TraineeQuickActions } from "@/components/pages/my-trainees/trainee-quick-actions"
 import { TraineeNoteEditor } from "@/components/pages/my-trainees/trainee-note-editor"
+import { ShowTraineeSurveyDialog } from "@/components/dialogs/trainer/show-trainee-survey"
 
 type TraineeDetailsPageProps = {
   params: Promise<{
@@ -110,16 +110,11 @@ export default async function TraineeDetailsPage({
                   <span className="truncate">{selectedTrainee.workplace}</span>
                 </div>
 
-                {/*TO-DO: Replace with actual working Dialogs */}
+                
                 <div className="border-baby-blue/80 divide-baby-blue w-[90%] max-w-sm flex-col divide-y overflow-hidden rounded-2xl border md:flex md:w-full md:flex-row md:divide-x md:divide-y-0">
-                  <Button
-                    variant="secondary"
-                    type="button"
-                    className="h-11 w-full flex-1 rounded-none"
-                  >
-                    <ClipboardList />
-                    Ankieta startowa
-                  </Button>
+                  <ShowTraineeSurveyDialog traineeId={selectedTrainee.id} name={selectedTrainee.fullName}/>
+                  
+                  {/*TO-DO: Replace with actual working Dialog */}
                   <Button
                     variant="secondary"
                     type="button"

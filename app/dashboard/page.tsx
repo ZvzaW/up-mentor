@@ -1,9 +1,6 @@
 "use client"
 
-import { useState, useMemo, JSX } from "react"
-import { useSession } from "next-auth/react"
-import useSWR from "swr"
-import useSWRInfinite from "swr/infinite"
+import { useState, useEffect, JSX } from "react"
 import { useRouter } from "next/navigation"
 import { Users, MessageSquare, ChevronRight, Bell, MessageCircle, Calendar, Loader2 } from "lucide-react"
 
@@ -15,6 +12,7 @@ import TrainerStats from "@/components/pages/statistics/trainer-stats"
 import TraineeStats from "@/components/pages/statistics/trainee-stats"
 
 import { getNotifications, getUnreadCount, markAsRead } from "@/actions/notifications"
+import { SkeletonList } from "@/components/ui/skeleton"
 
 interface Notification {
   id: string
@@ -34,61 +32,53 @@ const ICONS: Record<string, JSX.Element> = {
   system: <Bell size={16} />,
 }
 
-const countFetcher = async () => {
-  const res = await getUnreadCount()
-  if (res.error) throw new Error(res.error)
-  return res.count || 0
+interface NotificationsPanelProps {
+  unreadCount: number
+  decrementCount: () => void
+  groupedNotifications: Record<string, Notification[]>
+  setGroupedNotifications: React.Dispatch<React.SetStateAction<Record<string, Notification[]>>>
+  isLoading: boolean
+  hasMore: boolean
+  isLoadingMore: boolean
+  loadMore: () => Promise<void>
+  error: string | null
 }
 
-const notificationFetcher = async (page: number) => {
-  const res = await getNotifications(page)
-  if (res.error) throw new Error(res.error)
-  return res
-}
 
-// POWIADOMIENIA
-function NotificationsPanel({ unreadCount, mutateCount }: { unreadCount: number, mutateCount: () => void }) {
+//PANELI POWIADOMIEŃ
+function NotificationsPanel({
+  unreadCount,
+  decrementCount,
+  groupedNotifications,
+  setGroupedNotifications,
+  isLoading,
+  hasMore,
+  isLoadingMore,
+  loadMore,
+  error,
+}: NotificationsPanelProps) {
   const router = useRouter()
 
-  const { data: pagesData, error, size, setSize, isValidating, mutate: mutateList } = useSWRInfinite(
-    (pageIndex, previousPageData) => {
-      if (previousPageData && !previousPageData.hasMore) return null
-      return `notifications-page-${pageIndex}`
-    },
-    (key) => notificationFetcher(parseInt(key.split("-").pop() || "0")),
-    { revalidateFirstPage: false, revalidateOnFocus: false, persistSize: true }
-  )
-
-  const notificationsGrouped = useMemo(() => {
-    if (!pagesData) return {}
-
-    return pagesData.reduce<Record<string, Notification[]>>((acc, page) => {
-      if (!page?.grouped) return acc
-
-      Object.entries(page.grouped as Record<string, Notification[]>).forEach(([label, items]) => {
-        const merged = [...(acc[label] || []), ...items]
-        acc[label] = Array.from(new Map(merged.map((n) => [n.id, n])).values())
-      })
-
-      return acc
-    }, {})
-  }, [pagesData])
-
-  const handleNotificationClick = (notif: Notification) => {
+  const handleNotificationClick = async (notif: Notification) => {
     if (notif.redirect_url) router.push(notif.redirect_url)
 
     if (!notif.is_read) {
-      markAsRead(notif.id).then(() => {
-        mutateCount()
-        mutateList()
+      setGroupedNotifications((prev) => {
+        const newGrouped = { ...prev }
+        for (const label in newGrouped) {
+          newGrouped[label] = newGrouped[label].map((n) =>
+            n.id === notif.id ? { ...n, is_read: true } : n
+          )
+        }
+        return newGrouped
       })
+
+      decrementCount()
+      await markAsRead(notif.id)
     }
   }
 
-  const isLoadingInitialData = !pagesData && !error
-  const isLoadingMore = isLoadingInitialData || (size > 0 && pagesData && typeof pagesData[size - 1] === "undefined")
-  const hasMore = pagesData?.[pagesData.length - 1]?.hasMore ?? true
-  const hasNotifications = Object.keys(notificationsGrouped).length > 0
+  const hasNotifications = Object.keys(groupedNotifications).length > 0
 
   return (
     <section>
@@ -103,24 +93,24 @@ function NotificationsPanel({ unreadCount, mutateCount }: { unreadCount: number,
         <CardContent className="h-full pr-1">
           {error && (
             <Alert variant="destructive" className="mx-auto mt-[-6px] mb-6">
-              <AlertDescription>{error.message}</AlertDescription>
+              <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
 
           <div className="custom-scrollbar h-full space-y-6 overflow-y-auto pr-5 pb-10">
-            {isLoadingInitialData ? (
-              <Loader2 className="text-baby-blue mx-auto mt-10 animate-spin" />
+            {isLoading ? (
+              <SkeletonList />
             ) : (
               <>
                 {hasNotifications ? (
-                  Object.entries(notificationsGrouped).map(([label, items]) => (
+                  Object.entries(groupedNotifications).map(([label, items]) => (
                     <div key={label} className="space-y-6">
                       <div className="flex items-center gap-4">
                         <Separator className="flex-1" />
                         <span className="text-gold text-xs font-medium uppercase">{label}</span>
                         <Separator className="flex-1" />
                       </div>
-                      
+
                       <div className="space-y-3">
                         {items.map((notif) => (
                           <button
@@ -131,26 +121,32 @@ function NotificationsPanel({ unreadCount, mutateCount }: { unreadCount: number,
                             }`}
                           >
                             <div className="space-y-3 text-sm">
-                              <div className={`flex gap-2 font-semibold ${!notif.is_read ? "text-baby-blue" : "text-zinc-300"}`}>
+                              <div
+                                className={`flex gap-2 font-semibold ${
+                                  !notif.is_read ? "text-baby-blue" : "text-zinc-300"
+                                }`}
+                              >
                                 {notif.title} {ICONS[notif.type] || ICONS.system}
                               </div>
                               <p className="leading-relaxed text-zinc-400">{notif.message}</p>
                             </div>
-                            <ChevronRight className={`shrink-0 ${!notif.is_read ? "text-baby-blue" : "text-zinc-300"}`} />
+                            <ChevronRight
+                              className={`shrink-0 ${!notif.is_read ? "text-baby-blue" : "text-zinc-300"}`}
+                            />
                           </button>
                         ))}
                       </div>
                     </div>
                   ))
                 ) : (
-                  <p className="text-center text-zinc-400">Brak powiadomień.</p>
+                  !error && <p className="text-center text-zinc-400">Brak powiadomień.</p>
                 )}
 
                 {hasMore && !error && (
                   <div className="flex justify-center pb-4">
                     <button
-                      onClick={() => setSize(size + 1)}
-                      disabled={isValidating}
+                      onClick={loadMore}
+                      disabled={isLoadingMore}
                       className="text-baby-blue hover:bg-dark-navy/70 bg-dirty-navy/70 flex min-w-[140px] items-center justify-center rounded-lg px-4 py-3 text-sm"
                     >
                       {isLoadingMore ? <Loader2 className="animate-spin" /> : "Załaduj więcej"}
@@ -166,7 +162,8 @@ function NotificationsPanel({ unreadCount, mutateCount }: { unreadCount: number,
   )
 }
 
-// STATYSTYKI
+
+//PANEL STATYSTYK
 function StatsPanel({ role }: { role?: string }) {
   return (
     <section>
@@ -187,15 +184,84 @@ function StatsPanel({ role }: { role?: string }) {
   )
 }
 
-//DASHBOARD PAGE
-export default function DashboardPage() {
-  const { data: session } = useSession()
+
+//DASHBOARD
+export default function DashboardPage({ userRole }: { userRole?: string }) {
   const [mobileTab, setMobileTab] = useState<"notifications" | "stats">("notifications")
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  const [groupedNotifications, setGroupedNotifications] = useState<Record<string, Notification[]>>({})
+  const [page, setPage] = useState(0)
+  const [hasMore, setHasMore] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
 
-  const { data: unreadCount = 0, mutate: mutateCount } = useSWR("unread-count", countFetcher, {
-    revalidateOnFocus: false,
-  })
+  useEffect(() => {
+    getUnreadCount().then((res) => {
+      if (!res.error) {
+        setUnreadCount(res.count || 0)
+      }
+    })
+
+    setIsLoading(true)
+    setError(null)
+    getNotifications(0).then((res) => {
+      if (res.error) {
+        setError(res.error)
+      } else {
+        setGroupedNotifications((res.grouped as Record<string, Notification[]>) || {})
+        setHasMore(res.hasMore ?? false)
+        setPage(0)
+      }
+      setIsLoading(false)
+    })
+  }, [])
+
+  const decrementCount = () => {
+    setUnreadCount((prev) => Math.max(0, prev - 1))
+  }
+
+  const loadMore = async () => {
+    if (isLoadingMore || !hasMore) return
+    setIsLoadingMore(true)
+
+    const nextPage = page + 1
+    const res = await getNotifications(nextPage)
+
+    if (res.error) {
+      setError(res.error)
+    } else {
+      setGroupedNotifications((prev) => {
+        const updated = { ...prev }
+        const newGrouped = (res.grouped as Record<string, Notification[]>) || {}
+
+        Object.entries(newGrouped).forEach(([label, items]) => {
+          const merged = [...(updated[label] || []), ...items]
+          updated[label] = Array.from(new Map(merged.map((n) => [n.id, n])).values())
+        })
+
+        return updated
+      })
+      setHasMore(res.hasMore ?? false)
+      setPage(nextPage)
+    }
+
+    setIsLoadingMore(false)
+  }
+
+  const notificationProps = {
+    unreadCount,
+    decrementCount,
+    groupedNotifications,
+    setGroupedNotifications,
+    isLoading,
+    hasMore,
+    isLoadingMore,
+    loadMore,
+    error,
+  }
 
   return (
     <div className="flex min-h-[calc(100vh-20rem)] w-full flex-col justify-center p-3">
@@ -204,23 +270,25 @@ export default function DashboardPage() {
         <Tabs value={mobileTab} onValueChange={(v) => setMobileTab(v as any)} className="w-full">
           <TabsList className="bg-dark-navy font-michroma border-baby-blue/40 z-1 mb-8 grid w-full grid-cols-2 border">
             <TabsTrigger value="notifications" className="text-xs">
-              Powiadomienia <span>{unreadCount > 99 ? "99+" : unreadCount}</span>
+              Powiadomienia <span className="ml-1">{unreadCount > 99 ? "99+" : unreadCount}</span>
             </TabsTrigger>
-            <TabsTrigger value="stats" className="text-xs">Statystyki</TabsTrigger>
+            <TabsTrigger value="stats" className="text-xs">
+              Statystyki
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="notifications">
-            <NotificationsPanel unreadCount={unreadCount} mutateCount={mutateCount} />
+            <NotificationsPanel {...notificationProps} />
           </TabsContent>
           <TabsContent value="stats">
-            <StatsPanel role={session?.user?.role} />
+            <StatsPanel role={userRole} />
           </TabsContent>
         </Tabs>
       </div>
 
       {/* Widok Desktop (Grid) */}
       <div className="hidden gap-12 lg:grid lg:grid-cols-2">
-        <NotificationsPanel unreadCount={unreadCount} mutateCount={mutateCount} />
-        <StatsPanel role={session?.user?.role} />
+        <NotificationsPanel {...notificationProps} />
+        <StatsPanel role={userRole} />
       </div>
     </div>
   )

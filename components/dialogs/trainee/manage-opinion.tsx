@@ -41,7 +41,7 @@ type OpinionDialogProps = {
   trainerName: string
 }
 
-export function OpinionDialog({ trainerId, trainerName }: OpinionDialogProps) {
+export function ManageOpinionDialog({ trainerId, trainerName }: OpinionDialogProps) {
   const router = useRouter()
   const [open, setOpen] = React.useState(false)
   const [isSaving, startSavingTransition] = React.useTransition()
@@ -56,7 +56,7 @@ export function OpinionDialog({ trainerId, trainerName }: OpinionDialogProps) {
     resolver: zodResolver(trainerOpinionSchema),
     defaultValues: {
       trainer_id: trainerId,
-      rate: 5,
+      rate: 0,
       comment: "",
     },
     mode: "onChange",
@@ -77,7 +77,7 @@ export function OpinionDialog({ trainerId, trainerName }: OpinionDialogProps) {
         setCurrentOpinion(null)
         form.reset({
           trainer_id: trainerId,
-          rate: 5,
+          rate: 0,
           comment: "",
         })
         setIsLoadingOpinion(false)
@@ -88,7 +88,7 @@ export function OpinionDialog({ trainerId, trainerName }: OpinionDialogProps) {
       setCurrentOpinion(opinion)
       form.reset({
         trainer_id: trainerId,
-        rate: opinion?.rate ?? 5,
+        rate: opinion ? opinion.rate : 0,
         comment: opinion?.comment ? opinion.comment : "",
       })
       setIsLoadingOpinion(false)
@@ -131,7 +131,7 @@ export function OpinionDialog({ trainerId, trainerName }: OpinionDialogProps) {
       setCurrentOpinion(null)
       form.reset({
         trainer_id: trainerId,
-        rate: 5,
+        rate: 0,
         comment: "",
       })
       setOpen(false)

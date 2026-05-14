@@ -3,7 +3,7 @@ import { getCatalogTrainerBySlug } from "@/actions/catalog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MapPin } from "lucide-react"
-import { TrainerOpinionsList } from "@/components/pages/trainer-opinions-list"
+import { TrainerOpinionsFetch } from "@/components/common/trainer-opinions-list"
 import { Separator } from "@/components/ui/separator"
 import { BackButton } from "@/components/common/back-button"
 import { getCooperationStatus } from "@/actions/coaching-request"
@@ -145,7 +145,7 @@ export default async function TrainerCatalogDetailsPage({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <TrainerOpinionsList trainerId={trainer.id} />
+              <TrainerOpinionsFetch trainerId={trainer.id}/>
               </CardContent>
             </Card>
           </div>

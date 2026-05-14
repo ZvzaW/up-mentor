@@ -177,8 +177,9 @@ export const trainerOpinionSchema = z.object({
   rate: z
     .number()
     .int()
-    .min(1, "Wybierz ocenę od 1 do 5")
-    .max(5, "Wybierz ocenę od 1 do 5"),
+    .min(0)
+    .max(5)
+    .refine((n) => n >= 1, { message: "Wybierz ocenę od 1 do 5" }),
   comment: z
     .string()
     .trim()
@@ -189,8 +190,8 @@ export const trainerOpinionSchema = z.object({
 })
 export type TrainerOpinionFormValues = z.infer<typeof trainerOpinionSchema>
 
-// --- MORE SCHEMAS ---
 
+// ---OTHER---
 export const changePasswordSchema = z
   .object({
     currentPassword: z.string().min(1, "Podaj obecne hasło"),

@@ -5,6 +5,10 @@ export const authConfig = {
   pages: {
     signIn: "/",
   },
+  session: {
+    strategy: "jwt",
+    maxAge: 7 * 24 * 60 * 60,
+  },
   callbacks: {
     authorized({ auth, request }) {
       const { nextUrl, headers } = request;

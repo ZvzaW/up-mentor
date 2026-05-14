@@ -1,9 +1,9 @@
 import type { Metadata } from "next"
 import { Mina, Michroma } from "next/font/google"
-import { Toaster } from "@/components/ui/sonner"
 import { AuthProvider } from "@/components/providers/session-provider"
-import { TooltipProvider } from "@/components/ui/tooltip"
 import "./globals.css"
+import { auth } from "@/auth"
+import { Toaster } from "sonner"
 
 const mina = Mina({
   subsets: ["latin", "latin-ext"],
@@ -22,20 +22,22 @@ export const metadata: Metadata = {
   description: "Aplikacja dla trenerów personalnych i podopiecznych",
 }
 
-export default function RootLayout({
+
+export default async function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
+
+  const session = await auth()
+
   return (
     <html lang="pl">
-      <body
-        className={`${mina.className} ${michroma.variable} overflow-x-hidden antialiased`}
-      >
-        <AuthProvider>
-          <TooltipProvider>{children}</TooltipProvider>
+      <body className={`${mina.className} ${michroma.variable} overflow-x-hidden antialiased`}>
+        <AuthProvider session={session}>
+          {children}
+          <Toaster richColors theme="dark" position="top-right" />
         </AuthProvider>
-        <Toaster richColors position="top-right" />
       </body>
     </html>
   )

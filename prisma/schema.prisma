@@ -22,19 +22,6 @@ model user {
   refresh_token    refresh_token[]
 }
 
-model trainee {
-  id               String             @id(map: "trainee_pk") @db.Uuid
-  birthdate        DateTime           @db.Date
-  slug               String           @unique @db.Text
-  coaching_request coaching_request[]
-  cooperation      cooperation[]
-  opinion          opinion[]
-  personal_record  personal_record[]
-  survey_answer    survey_answer[]
-  user             user               @relation(fields: [id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "trainee_user")
-  workout_plan     workout_plan[]
-}
-
 model trainer {
   id                 String             @id(map: "trainer_pk") @db.Uuid
   work_description   String?
@@ -48,6 +35,19 @@ model trainer {
   user               user               @relation(fields: [id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "trainer_user")
   workout_plan       workout_plan[]
   workplace          workplace[]
+}
+
+model trainee {
+  id               String             @id(map: "trainee_pk") @db.Uuid
+  birthdate        DateTime           @db.Date
+  slug               String           @unique @db.Text
+  coaching_request coaching_request[]
+  cooperation      cooperation[]
+  opinion          opinion[]
+  personal_record  personal_record[]
+  survey_answer    survey_answer[]
+  user             user               @relation(fields: [id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "trainee_user")
+  workout_plan     workout_plan[]
 }
 
 model coaching_request {
@@ -81,6 +81,56 @@ model cooperation {
   @@id([trainer_id, trainee_id], map: "cooperation_pk")
 }
 
+model workplace {
+  id               String             @id(map: "workplace_pk") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  trainer_id       String             @db.Uuid
+  name             String             @db.VarChar(120)
+  street           String             @db.VarChar(120)
+  building_number  String             @db.VarChar(20)
+  flat_number      String?            @db.VarChar(20)
+  city             String             @db.VarChar(120)
+  
+  coaching_request coaching_request[]
+  cooperation      cooperation[]      
+  training         training[]
+  trainer          trainer            @relation(fields: [trainer_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "workplace_trainer")
+}
+
+model workout_plan {
+  id          String    @id(map: "workout_plan_pk") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  trainer_id  String    @db.Uuid
+  name        String    @db.VarChar(255)
+  difficulty  String?   @db.VarChar(100)
+  description String?
+  trainee_id  String?    @db.Uuid
+  section     section[]
+  trainee     trainee?   @relation(fields: [trainee_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "workout_plan_client")
+  trainer     trainer   @relation(fields: [trainer_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "workout_plan_trainer")
+}
+
+model section {
+  id              String         @id(map: "section_pk") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workout_plan_id String         @db.Uuid
+  name            String?        @db.VarChar(255)
+  body_part       String?        @db.VarChar(100)
+  order     Int
+  exercise_set    exercise_set[]
+  workout_plan    workout_plan   @relation(fields: [workout_plan_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "section_workout_plan")
+  training        training[]
+}
+
+model exercise_set {
+  id           String   @id(map: "exercise_set_pk") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  exercise_id  String   @db.Uuid
+  section_id   String   @db.Uuid
+  series_count Int
+  reps_count   Int
+  weight       Decimal? @db.Decimal(5, 2)
+  order  Int
+  exercise     exercise @relation(fields: [exercise_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "set_exercise")
+  section      section  @relation(fields: [section_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "set_section")
+}
+
 model exercise {
   id              String            @id(map: "exercise_pk") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   trainer_id      String?            @db.Uuid
@@ -91,81 +141,6 @@ model exercise {
   exercise_set    exercise_set[]
   personal_record personal_record[]
 }
-
-model exercise_set {
-  id           String   @id(map: "exercise_set_pk") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  exercise_id  String   @db.Uuid
-  section_id   String   @db.Uuid
-  series_count Int
-  reps_count   Int
-  weight       Decimal? @db.Decimal(5, 2)
-  order_index  Int
-  exercise     exercise @relation(fields: [exercise_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "set_exercise")
-  section      section  @relation(fields: [section_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "set_section")
-}
-
-model notification {
-  id           String   @id(map: "notification_pk") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  user_id      String   @db.Uuid
-  title        String   @db.VarChar(255)
-  message      String   @db.VarChar(255)
-  redirect_url String?
-  type         String   @db.VarChar(30)
-  is_read      Boolean  @default(false)
-  created_at   DateTime @default(now()) @db.Timestamp
-  user         user     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "notification_user")
-}
-
-model opinion {
-  trainee_id String  @db.Uuid
-  trainer_id String  @db.Uuid
-  rate       Int
-  comment    String?
-  created_at DateTime @default(now()) @db.Timestamptz(6)
-  trainee    trainee @relation(fields: [trainee_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "opinion_trainee")
-  trainer    trainer @relation(fields: [trainer_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "opinion_trainer")
-
-  @@id([trainee_id, trainer_id], map: "opinion_pk")
-}
-
-model personal_record {
-  id          String   @id(map: "personal_record_pk") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  trainee_id  String   @db.Uuid
-  exercise_id String   @db.Uuid
-  weight      Decimal  @db.Decimal(5, 2)
-  date        DateTime @default(dbgenerated("CURRENT_DATE")) @db.Date
-  exercise    exercise @relation(fields: [exercise_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "record_exercise")
-  trainee     trainee  @relation(fields: [trainee_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "record_trainee")
-}
-
-model section {
-  id              String         @id(map: "section_pk") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  workout_plan_id String         @db.Uuid
-  name            String?        @db.VarChar(255)
-  body_part       String?        @db.VarChar(100)
-  order_index     Int
-  exercise_set    exercise_set[]
-  workout_plan    workout_plan   @relation(fields: [workout_plan_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "section_workout_plan")
-  training        training[]
-}
-
-model survey_answer {
-  trainee_id      String          @db.Uuid
-  question_id     String          @db.Uuid
-  answer          String
-  survey_question survey_question @relation(fields: [question_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "answer_question")
-  trainee         trainee         @relation(fields: [trainee_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "answer_trainee")
-
-  @@id([trainee_id, question_id], map: "survey_answer_pk")
-}
-
-model survey_question {
-  id            String          @id(map: "survey_question_pk") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  question      String
-  survey_answer survey_answer[]
-}
-
-
 
 model training {
   id               String             @id(map: "training_pk") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -191,37 +166,65 @@ model training_comment {
   user        user     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "comment_user")
 }
 
+
+model personal_record {
+  id          String   @id(map: "personal_record_pk") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  trainee_id  String   @db.Uuid
+  exercise_id String   @db.Uuid
+  weight      Decimal  @db.Decimal(5, 2)
+  date        DateTime @default(dbgenerated("CURRENT_DATE")) @db.Date
+  exercise    exercise @relation(fields: [exercise_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "record_exercise")
+  trainee     trainee  @relation(fields: [trainee_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "record_trainee")
+}
+
+model opinion {
+  trainee_id String  @db.Uuid
+  trainer_id String  @db.Uuid
+  rate       Int
+  comment    String?
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  trainee    trainee @relation(fields: [trainee_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "opinion_trainee")
+  trainer    trainer @relation(fields: [trainer_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "opinion_trainer")
+
+  @@id([trainee_id, trainer_id], map: "opinion_pk")
+}
+
+model survey_answer {
+  trainee_id      String          @db.Uuid
+  question_id     String          @db.Uuid
+  answer          String
+  survey_question survey_question @relation(fields: [question_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "answer_question")
+  trainee         trainee         @relation(fields: [trainee_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "answer_trainee")
+
+  @@id([trainee_id, question_id], map: "survey_answer_pk")
+}
+
+model survey_question {
+  id            String          @id(map: "survey_question_pk") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  question      String
+  order         Int
+  survey_answer survey_answer[]
+}
+
+model notification {
+  id           String   @id(map: "notification_pk") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id      String   @db.Uuid
+  title        String   @db.VarChar(255)
+  message      String   @db.VarChar(255)
+  redirect_url String?
+  type         String   @db.VarChar(30)
+  is_read      Boolean  @default(false)
+  created_at   DateTime @default(now()) @db.Timestamptz
+  user         user     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "notification_user")
+}
+
 model refresh_token {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   user_id    String   @db.Uuid
   token      String   @unique @db.Text
-  expires_at DateTime @db.Timestamp
+  expires_at DateTime @db.Timestamptz
   user       user     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
-model workout_plan {
-  id          String    @id(map: "workout_plan_pk") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  trainer_id  String    @db.Uuid
-  name        String    @db.VarChar(255)
-  difficulty  String?   @db.VarChar(100)
-  description String?
-  trainee_id  String?    @db.Uuid
-  section     section[]
-  trainee     trainee?   @relation(fields: [trainee_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "workout_plan_client")
-  trainer     trainer   @relation(fields: [trainer_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "workout_plan_trainer")
-}
 
-model workplace {
-  id               String             @id(map: "workplace_pk") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  trainer_id       String             @db.Uuid
-  name             String             @db.VarChar(120)
-  street           String             @db.VarChar(120)
-  building_number  String             @db.VarChar(20)
-  flat_number      String?            @db.VarChar(20)
-  city             String             @db.VarChar(120)
-  
-  coaching_request coaching_request[]
-  cooperation      cooperation[]      
-  training         training[]
-  trainer          trainer            @relation(fields: [trainer_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "workplace_trainer")
-}
+

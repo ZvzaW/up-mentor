@@ -1,34 +1,21 @@
-"use client"
-
-import { useEffect } from "react"
-import { useSession, signOut } from "next-auth/react"
+import { auth } from "@/auth"
 import Navbar from "@/components/layout/navbar"
+import LogoutTrigger from "@/components/auth/logout-trigger"
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const { data: session, status } = useSession()
+  const session = await auth()
+  const userRole = (session?.user as any)?.role || ""
 
-  useEffect(() => {
-    if (session?.error === "RefreshTokenError") {
-      signOut({ callbackUrl: "/" })
-    }
-  }, [session])
-
-  if (status === "loading") {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="border-baby-blue h-8 w-8 animate-spin rounded-full border-4 border-t-transparent"></div>
-      </div>
-    )
-  }
-
-  const userRole = session?.user?.role || ""
+  const hasAuthError = session?.error === "RefreshTokenError"
 
   return (
     <div className="flex min-h-screen flex-col">
+      {hasAuthError && <LogoutTrigger />}
+      
       <Navbar role={userRole} />
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-12 sm:px-6 lg:px-8">
         {children}
