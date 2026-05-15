@@ -20,7 +20,7 @@ export function DeleteExerciseButton({
     startTransition(async () => {
       const result = await deleteTrainerExercise(exerciseId)
 
-      if ("error" in result) {
+      if (result.error) {
         toast.error(result.error)
         return
       }
