@@ -1,5 +1,6 @@
 import { z } from "zod"
 
+
 const isAtLeast15 = (dateString: string) => {
   const birth = new Date(dateString)
   if (isNaN(birth.getTime())) return false
@@ -145,6 +146,7 @@ export const trainerCardSchema = z.object({
   work_description: z
     .string()
     .trim()
+    .max(2000, "Opis może mieć maksymalnie 2000 znaków")
     .optional()
     .nullable()
     .transform((val) => (val === "" ? null : val)),
@@ -190,6 +192,41 @@ export const trainerOpinionSchema = z.object({
 })
 export type TrainerOpinionFormValues = z.infer<typeof trainerOpinionSchema>
 
+export const trainerExerciseFormSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, "Nazwa ćwiczenia jest wymagana")
+    .max(255, "Nazwa może mieć maksymalnie 255 znaków"),
+  body_part: z
+    .string()
+    .min(1, "Wybierz partię ciała z listy")
+    .max(100, "Maksymalnie 100 znaków"),
+  video_url: z
+    .string()
+    .trim()
+    .max(2000)
+    .refine(
+      (val) =>
+        val === "" ||
+        z.string().url({ message: "Podaj poprawny adres URL (http/https)" }).safeParse(val).success,
+      { message: "Podaj poprawny adres URL (http/https)" }
+    ),
+})
+export type TrainerExerciseFormInput = {
+  name: string
+  body_part: string
+  video_url: string
+}
+
+export type TrainerExerciseFormValues = z.infer<typeof trainerExerciseFormSchema>
+
+export const editTrainerExerciseSchema = trainerExerciseFormSchema.extend({
+  id: z.string(),
+})
+export type EditTrainerExerciseFormValues = z.infer<
+  typeof editTrainerExerciseSchema
+>
 
 // ---OTHER---
 export const changePasswordSchema = z

@@ -249,10 +249,54 @@ INSERT INTO workplace (id, trainer_id, name, street, building_number, flat_numbe
 ('dddddddd-dddd-dddd-dddd-dddddddddddd', '44444444-4444-4444-4444-444444444444', 'Zdrofit', 'Wałowa', '10', NULL, 'Warszawa');
 
 
+--EXERCISE
+INSERT INTO exercise (name, body_part, video_url) VALUES
+  -- Klatka piersiowa
+  ('Pompki na TRX', 'Klatka piersiowa', NULL),
+  ('Wyciskanie sztangi na ławce', 'Klatka piersiowa', NULL),
+
+  -- Plecy
+  ('Martwy ciąg', 'Plecy', NULL),
+  ('Ściąganie drążka w siadzie', 'Plecy', NULL),
+
+  -- Barki
+  ('Wyciskanie sztangi zza głowy', 'Barki', 'https://www.youtube.com/watch?v=0uG8lIiAPpY'),
+  ('Podciąganie sztangi wzdłuż tułowia', 'Barki', 'https://www.youtube.com/watch?v=UJN3gVIvNk4'),
+
+  -- Biceps
+  ('Uginanie ramion z hantlami nachwytem', 'Biceps', 'https://www.fabrykasily.pl/atlas-cwiczen/biceps/uginanie-ramion-z-hantlami-nachwytem'),
+  ('Uginanie ramion na TRX', 'Biceps', 'https://www.fabrykasily.pl/atlas-cwiczen/biceps/uginanie-ramion-na-trx'),
+
+  -- Triceps
+  ('Wyciskanie francuskie sztangi łamanej leżąc', 'Triceps', 'https://www.fabrykasily.pl/atlas-cwiczen/triceps/wyciskanie-francuskie-w-lezeniu-na-podlodze'),
+  ('Pompki na poręczach', 'Triceps', 'https://www.fabrykasily.pl/atlas-cwiczen/triceps/pompki-na-poreczach-samo-opuszczanie'),
+
+  -- Przedramiona
+  ('Uginanie nadgarstków podchwytem ze sztangą', 'Przedramiona', NULL),
+  ('Uginanie nadgarstków nachwytem ze sztangą', 'Przedramiona', NULL),
+
+  -- Brzuch / Core
+  ('Plank (Deska)', 'Brzuch / Core', NULL),
+  ('Nożyce nogami', 'Brzuch / Core', 'https://www.fabrykasily.pl/atlas-cwiczen/brzuch/nozyce-nogami'),
+
+  -- Pośladki / Tylna część ud
+  ('Hip thrust', 'Pośladki / Tylna część ud', NULL),
+  ('Przywodzenie nóg na maszynie', 'Pośladki / Tylna część ud', 'https://www.fabrykasily.pl/atlas-cwiczen/dwuglowe-uda-posladki/przywodzenie-nog-na-maszynie'),
+
+  -- Uda (przód)
+  ('Przysiad bułgarski', 'Uda (przód)', 'https://www.fabrykasily.pl/atlas-cwiczen/czworoglowe-uda/przysiad-bulgarski-wersja-posladkowa-z-hantlami'),
+  ('Wyciskanie nóg na suwnicy', 'Uda (przód)', NULL),
+
+  -- Łydki
+  ('Wspięcia na palcach na suwnicy', 'Łydki', 'https://www.fabrykasily.pl/cwiczenia/na-lydki/wspiecia-na-palcach-na-suwnicy-calf'),
+  ('Wspięcia na palce ze sztangą na plecach', 'Łydki', NULL),
+
+  -- Full body
+  ('Padnij-powstań (Burpees)', 'Full body', NULL),
+  ('Zarzut sztangi na klatkę (Power clean)', 'Full body', NULL);
 
 
---TRIGGERY
-
+--TRIGGERY---
 -- 1. TRIGGER DLA TRENERA 
 CREATE OR REPLACE FUNCTION notify_on_new_trainer()
 RETURNS TRIGGER AS $$

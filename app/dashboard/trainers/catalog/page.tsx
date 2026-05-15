@@ -64,13 +64,13 @@ export default async function TrainersCatalogPage({
                 name="name"
                 defaultValue={nameQuery}
                 placeholder="Szukaj po imieniu i nazwisku"
-                className="bg-dirty-blue rounded-xl placeholder:text-zinc-400"
+                className=" rounded-xl placeholder:text-zinc-400"
               />
               <Input
                 name="city"
                 defaultValue={cityQuery}
                 placeholder="Szukaj po mieście"
-                className="bg-dirty-blue rounded-xl placeholder:text-zinc-400"
+                className=" rounded-xl placeholder:text-zinc-400"
               />
               <div className="flex justify-center gap-2">
                 <Button type="submit">Szukaj</Button>
