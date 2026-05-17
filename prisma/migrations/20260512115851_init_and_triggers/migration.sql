@@ -81,6 +81,13 @@ CREATE TABLE "workout_plan" (
 );
 
 -- CreateTable
+CREATE TABLE "plans_library" (
+    trainee_id uuid NOT NULL,
+    workout_plan_id uuid NOT NULL,
+    CONSTRAINT plans_library_pk PRIMARY KEY (trainee_id, workout_plan_id)
+);
+
+-- CreateTable
 CREATE TABLE "section" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "workout_plan_id" UUID NOT NULL,
@@ -140,17 +147,6 @@ CREATE TABLE "training_comment" (
 );
 
 -- CreateTable
-CREATE TABLE "personal_record" (
-    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
-    "trainee_id" UUID NOT NULL,
-    "exercise_id" UUID NOT NULL,
-    "weight" DECIMAL(5,2) NOT NULL,
-    "date" DATE NOT NULL DEFAULT CURRENT_DATE,
-
-    CONSTRAINT "personal_record_pk" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "opinion" (
     "trainee_id" UUID NOT NULL,
     "trainer_id" UUID NOT NULL,
@@ -188,7 +184,7 @@ CREATE TABLE "notification" (
     "redirect_url" TEXT,
     "type" VARCHAR(30) NOT NULL,
     "is_read" BOOLEAN NOT NULL DEFAULT false,
-    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "notification_pk" PRIMARY KEY ("id")
 );
@@ -198,9 +194,9 @@ CREATE TABLE "refresh_token" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "user_id" UUID NOT NULL,
     "token" TEXT NOT NULL,
-    "expires_at" TIMESTAMP NOT NULL,
+    "expires_at" TIMESTAMPTZ NOT NULL,
 
-    CONSTRAINT "refresh_token_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "refresh_token_pk" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -249,6 +245,12 @@ ALTER TABLE "workout_plan" ADD CONSTRAINT "workout_plan_client" FOREIGN KEY ("tr
 ALTER TABLE "workout_plan" ADD CONSTRAINT "workout_plan_trainer" FOREIGN KEY ("trainer_id") REFERENCES "trainer"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
+ALTER TABLE "plans_library" ADD CONSTRAINT "plans_library_trainee" FOREIGN KEY ("trainee_id") REFERENCES "trainee"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "plans_library" ADD CONSTRAINT "plans_library_workout" FOREIGN KEY ("workout_plan_id") REFERENCES "workout_plan"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
+-- AddForeignKey
 ALTER TABLE "section" ADD CONSTRAINT "section_workout_plan" FOREIGN KEY ("workout_plan_id") REFERENCES "workout_plan"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
@@ -274,12 +276,6 @@ ALTER TABLE "training_comment" ADD CONSTRAINT "comment_training" FOREIGN KEY ("t
 
 -- AddForeignKey
 ALTER TABLE "training_comment" ADD CONSTRAINT "comment_user" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-
--- AddForeignKey
-ALTER TABLE "personal_record" ADD CONSTRAINT "record_exercise" FOREIGN KEY ("exercise_id") REFERENCES "exercise"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-
--- AddForeignKey
-ALTER TABLE "personal_record" ADD CONSTRAINT "record_trainee" FOREIGN KEY ("trainee_id") REFERENCES "trainee"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "opinion" ADD CONSTRAINT "opinion_trainee" FOREIGN KEY ("trainee_id") REFERENCES "trainee"("id") ON DELETE CASCADE ON UPDATE NO ACTION;

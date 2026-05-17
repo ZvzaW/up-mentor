@@ -66,8 +66,13 @@ CREATE TABLE workout_plan (
     name varchar(255) NOT NULL,
     difficulty varchar(100) NULL,
     description text NULL,
-    trainee_id uuid NULL,
     CONSTRAINT workout_plan_pk PRIMARY KEY (id)
+);
+
+CREATE TABLE plans_library (
+    trainee_id uuid NOT NULL,
+    workout_plan_id uuid NOT NULL,
+    CONSTRAINT plans_library_pk PRIMARY KEY (trainee_id, workout_plan_id)
 );
 
 CREATE TABLE section (
@@ -119,14 +124,6 @@ CREATE TABLE training_comment (
     CONSTRAINT training_comment_pk PRIMARY KEY (id)
 );
 
-CREATE TABLE personal_record (
-    id uuid NOT NULL DEFAULT gen_random_uuid(),
-    trainee_id uuid NOT NULL,
-    exercise_id uuid NOT NULL,
-    weight decimal(5,2) NOT NULL,
-    date date NOT NULL DEFAULT CURRENT_DATE,
-    CONSTRAINT personal_record_pk PRIMARY KEY (id)
-);
 
 CREATE TABLE survey_question (
     id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -172,6 +169,15 @@ CREATE TABLE refresh_token (
 );
 
 
+
+CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
+
+CREATE UNIQUE INDEX "trainer_slug_key" ON "trainer"("slug");
+
+CREATE UNIQUE INDEX "trainee_slug_key" ON "trainee"("slug");
+
+CREATE UNIQUE INDEX "refresh_token_token_key" ON "refresh_token"("token");
+
 -- Foreign Keys
 ALTER TABLE trainer ADD CONSTRAINT trainer_user FOREIGN KEY (id) REFERENCES "user" (id) ON DELETE CASCADE;
 ALTER TABLE trainee ADD CONSTRAINT trainee_user FOREIGN KEY (id) REFERENCES "user" (id) ON DELETE CASCADE;
@@ -184,16 +190,15 @@ ALTER TABLE cooperation ADD CONSTRAINT cooperation_workplace FOREIGN KEY (workpl
 ALTER TABLE cooperation ADD CONSTRAINT cooperation_trainee FOREIGN KEY (trainee_id) REFERENCES trainee (id);
 ALTER TABLE cooperation ADD CONSTRAINT cooperation_trainer FOREIGN KEY (trainer_id) REFERENCES trainer (id);
 ALTER TABLE exercise ADD CONSTRAINT exercise_trainer FOREIGN KEY (trainer_id) REFERENCES trainer (id);
-ALTER TABLE workout_plan ADD CONSTRAINT workout_plan_client FOREIGN KEY (trainee_id) REFERENCES trainee (id);
 ALTER TABLE workout_plan ADD CONSTRAINT workout_plan_trainer FOREIGN KEY (trainer_id) REFERENCES trainer (id);
+ALTER TABLE plans_library ADD CONSTRAINT plans_library_trainee FOREIGN KEY (trainee_id) REFERENCES trainee(id) ON DELETE CASCADE;
+ALTER TABLE plans_library ADD CONSTRAINT plans_library_workout FOREIGN KEY (workout_plan_id) REFERENCES workout_plan(id) ON DELETE CASCADE;
 ALTER TABLE section ADD CONSTRAINT section_workout_plan FOREIGN KEY (workout_plan_id) REFERENCES workout_plan (id) ON DELETE CASCADE;
 ALTER TABLE exercise_set ADD CONSTRAINT set_exercise FOREIGN KEY (exercise_id) REFERENCES exercise (id);
 ALTER TABLE exercise_set ADD CONSTRAINT set_section FOREIGN KEY (section_id) REFERENCES section (id) ON DELETE CASCADE;
 ALTER TABLE training ADD CONSTRAINT training_cooperation FOREIGN KEY (trainer_id, trainee_id) REFERENCES cooperation (trainer_id, trainee_id);
 ALTER TABLE training ADD CONSTRAINT training_section FOREIGN KEY (section_id) REFERENCES section (id);
 ALTER TABLE training ADD CONSTRAINT training_workplace FOREIGN KEY (workplace_id) REFERENCES workplace (id);
-ALTER TABLE personal_record ADD CONSTRAINT record_trainee FOREIGN KEY (trainee_id) REFERENCES trainee (id);
-ALTER TABLE personal_record ADD CONSTRAINT record_exercise FOREIGN KEY (exercise_id) REFERENCES exercise (id);
 ALTER TABLE opinion ADD CONSTRAINT opinion_trainee FOREIGN KEY (trainee_id) REFERENCES trainee (id);
 ALTER TABLE opinion ADD CONSTRAINT opinion_trainer FOREIGN KEY (trainer_id) REFERENCES trainer (id);
 ALTER TABLE notification ADD CONSTRAINT notification_user FOREIGN KEY (user_id) REFERENCES "user" (id) ON DELETE CASCADE;
