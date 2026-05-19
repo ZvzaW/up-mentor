@@ -237,9 +237,6 @@ ALTER TABLE "cooperation" ADD CONSTRAINT "cooperation_workplace" FOREIGN KEY ("w
 ALTER TABLE "workplace" ADD CONSTRAINT "workplace_trainer" FOREIGN KEY ("trainer_id") REFERENCES "trainer"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "workout_plan" ADD CONSTRAINT "workout_plan_client" FOREIGN KEY ("trainee_id") REFERENCES "trainee"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-
--- AddForeignKey
 ALTER TABLE "workout_plan" ADD CONSTRAINT "workout_plan_trainer" FOREIGN KEY ("trainer_id") REFERENCES "trainer"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
