@@ -429,7 +429,11 @@ function SortableSection({
                   Partia ciała (opcjonalnie)
                 </FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="np. Góra ciała" />
+                  <Input
+                    {...field}
+                    value={field.value ?? ""}
+                    placeholder="np. Góra ciała"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

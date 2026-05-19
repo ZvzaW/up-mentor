@@ -245,19 +245,20 @@ const workoutPlanExerciseSetSchema = z.object({
 const workoutPlanSectionSchema = z.object({
   id: z.string().optional(),
   uid: z.string(),
-  body_part: z.string(),
+  body_part: z.string().max(100, "Partia ciała może mieć maksymalnie 100 znaków").optional().nullable(),
   order: z.number(),
   exercise_sets: z
     .array(workoutPlanExerciseSetSchema),
 })
 
 export const workoutPlanFormSchema = z.object({
-  name: z.string().trim().min(1, "Nazwa planu treningowego jest wymagana."),
-  difficulty: z.string(),
-  description: z.string(),
+  name: z.string().trim().min(1, "Nazwa planu treningowego jest wymagana.").max(255, "Nazwa może mieć maksymalnie 255 znaków"),
+  difficulty: z.string().max(100, "Poziom może mieć maksymalnie 100 znaków"),
+  description: z.string().max(1000, "Opis może mieć maksymalnie 1000 znaków"),
   sections: z
     .array(workoutPlanSectionSchema)
-    .min(1, "Plan musi zawierać co najmniej jedną sekcję"),
+    .min(1, "Plan musi zawierać co najmniej jedną sekcję")
+    .max(20, "Plan może mieć maksymalnie 10 sekcji"),
 })
 
 export type WorkoutPlanFormValues = z.infer<typeof workoutPlanFormSchema>
