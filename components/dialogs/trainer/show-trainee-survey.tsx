@@ -75,7 +75,6 @@ export function ShowTraineeSurveyDialog({ traineeId, name }: ShowTraineeSurveyDi
         <Button
           variant="secondary"
           type="button"
-          className="h-11 w-full flex-1 rounded-none"
         >
           <ClipboardList/>
           Ankieta startowa

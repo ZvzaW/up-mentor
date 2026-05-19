@@ -95,18 +95,18 @@ export default async function TrainersCatalogPage({
             </div>
           )}
           {!pageError && trainers.length > 0 && (
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-5">
               {trainers.map((trainer) => (
                 <Link
                   key={trainer.id}
                   href={`/dashboard/trainers/catalog/${trainer.slug}`}
-                  className="bg-dirty-blue hover:bg-hover group flex items-center justify-between rounded-xl p-5 text-left transition-all"
+                  className="bg-dirty-blue hover:bg-hover group flex items-center justify-between rounded-xl p-5 transition-all"
                 >
-                  <div className="w-[95%] space-y-3">
-                    <h2 className="text-gold truncate text-lg">
+                  <div className="w-[95%] space-y-3 sm:space-y-0 sm:grid grid-cols-8 items-center">
+                    <p className="text-gold truncate text-md col-span-3  pr-3">
                       {trainer.name}
-                    </h2>
-                    <div className="flex items-center gap-2 text-sm text-gray-300">
+                    </p>
+                    <div className="flex items-center gap-2 text-sm text-gray-300  col-span-3 pr-8">
                       <MapPin className="text-baby-blue h-4 w-4 shrink-0" />
                       <span className="mt-0.5 truncate">
                         {trainer.workplaces.length > 0
@@ -114,7 +114,7 @@ export default async function TrainersCatalogPage({
                           : "Brak miejsc pracy"}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-300">
+                    <div className="flex items-center gap-2 text-sm text-gray-300 col-span-2">
                       <Star className="text-baby-blue h-4 w-4 shrink-0" />
                       <span className="">
                         {trainer.averageRate !== null

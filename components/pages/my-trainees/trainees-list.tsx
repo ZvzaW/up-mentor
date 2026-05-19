@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import Link from "next/link"
 
 interface Trainee {
-  key: string
+  id: string
   slug: string
   name: string
   workplace: string
@@ -42,7 +42,7 @@ export default function TraineesList({ initialTrainees }: TraineesListProps) {
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
         {filteredTrainees.map((trainee) => (
           <Link
-            key={trainee.key}
+            key={trainee.id}
             href={`/dashboard/trainees/${trainee.slug}`}
             className="bg-dirty-blue hover:bg-hover group flex items-center justify-between rounded-xl p-5 text-left transition-all"
           >

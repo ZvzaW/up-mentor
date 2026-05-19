@@ -24,7 +24,7 @@ export default function TraineeProfile({
 }: TraineeProfileProps) {
   
   return (
-    <section className="w-[50%] mx-auto">
+    <section className="w-full">
       {/* PROFIL*/}
       <div >
         <Card>

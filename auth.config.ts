@@ -39,6 +39,14 @@ export const authConfig = {
         return Response.redirect(new URL("/dashboard", nextUrl));
       }
 
+      if (path.startsWith("/dashboard/workout-plans/edit") && userRole !== "trainer") {
+        return Response.redirect(new URL("/dashboard/workout-plans", nextUrl));
+      }
+
+      if (path.startsWith("/dashboard/workout-plans/create") && userRole !== "trainer") {
+        return Response.redirect(new URL("/dashboard/workout-plans", nextUrl));
+      }
+
       return true; 
     },
 

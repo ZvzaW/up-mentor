@@ -111,19 +111,9 @@ export default async function TraineeDetailsPage({
                 </div>
 
                 
-                <div className="border-baby-blue/80 divide-baby-blue w-[90%] max-w-sm flex-col divide-y overflow-hidden rounded-2xl border md:flex md:w-full md:flex-row md:divide-x md:divide-y-0">
                   <ShowTraineeSurveyDialog traineeId={selectedTrainee.id} name={selectedTrainee.fullName}/>
                   
-                  {/*TO-DO: Replace with actual working Dialog */}
-                  <Button
-                    variant="secondary"
-                    type="button"
-                    className="h-11 w-full flex-1 rounded-none"
-                  >
-                    <Trophy />
-                    Rekordy osobiste
-                  </Button>
-                </div>
+
 
                 <div className="mt-2 w-[90%] md:w-full">
                   <p className="mb-2 flex items-center gap-2 text-sm text-zinc-300">
