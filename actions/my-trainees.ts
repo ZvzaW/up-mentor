@@ -46,7 +46,7 @@ export async function getMyTrainees() {
     })
 
     const mappedCooperations = cooperations.map((cooperation) => ({
-      key: cooperation.trainee.id,
+      id: cooperation.trainee.id,
       slug: cooperation.trainee.slug,
       name: `${cooperation.trainee.user.name} ${cooperation.trainee.user.surname}`,
       workplace: `${cooperation.workplace.name} - ul. ${cooperation.workplace.street}, ${cooperation.workplace.city}`,

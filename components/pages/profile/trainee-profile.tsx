@@ -24,9 +24,9 @@ export default function TraineeProfile({
 }: TraineeProfileProps) {
   
   return (
-    <section className="grid grid-cols-1 gap-10 lg:grid-cols-5">
+    <section className="w-full">
       {/* PROFIL*/}
-      <div className="lg:col-span-2">
+      <div >
         <Card>
           <CardContent>
             <div className="flex flex-col items-center text-center">
@@ -42,36 +42,6 @@ export default function TraineeProfile({
                   specificData={specificData}
                 />
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/*TO-DO: Replace with working server actions*/}
-      {/* REKORDY OSOBISTE */}
-      <div className="lg:col-span-3">
-        <Card className="h-full">
-          <CardContent>
-            <p className="text-baby-blue font-michroma mb-8 text-xl">
-              Rekordy osobiste
-            </p>
-
-            <div className="space-y-6">
-              {[
-                { label: "Wyciskanie leżąc", value: "100 kg" },
-                { label: "Martwy ciąg", value: "140 kg" },
-                { label: "Przysiad", value: "120 kg" },
-              ].map((rekord) => (
-                <div
-                  key={rekord.label}
-                  className="flex items-center justify-between border-b border-zinc-700/50 pb-3"
-                >
-                  <span className="text-md text-zinc-400">{rekord.label}</span>
-                  <span className="text-gold text-lg font-bold">
-                    {rekord.value}
-                  </span>
-                </div>
-              ))}
             </div>
           </CardContent>
         </Card>

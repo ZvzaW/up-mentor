@@ -78,7 +78,6 @@ CREATE TABLE plans_library (
 CREATE TABLE section (
     id uuid NOT NULL DEFAULT gen_random_uuid(),
     workout_plan_id uuid NOT NULL,
-    name varchar(255) NULL,
     body_part varchar(100) NULL,
     order_index int NOT NULL,
     CONSTRAINT section_pk PRIMARY KEY (id)

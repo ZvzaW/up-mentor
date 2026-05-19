@@ -1,6 +1,5 @@
 import { z } from "zod"
 
-
 const isAtLeast15 = (dateString: string) => {
   const birth = new Date(dateString)
   if (isNaN(birth.getTime())) return false
@@ -209,7 +208,10 @@ export const trainerExerciseFormSchema = z.object({
     .refine(
       (val) =>
         val === "" ||
-        z.string().url({ message: "Podaj poprawny adres URL (http/https)" }).safeParse(val).success,
+        z
+          .string()
+          .url({ message: "Podaj poprawny adres URL (http/https)" })
+          .safeParse(val).success,
       { message: "Podaj poprawny adres URL (http/https)" }
     ),
 })
@@ -219,7 +221,9 @@ export type TrainerExerciseFormInput = {
   video_url: string
 }
 
-export type TrainerExerciseFormValues = z.infer<typeof trainerExerciseFormSchema>
+export type TrainerExerciseFormValues = z.infer<
+  typeof trainerExerciseFormSchema
+>
 
 export const editTrainerExerciseSchema = trainerExerciseFormSchema.extend({
   id: z.string(),
@@ -227,6 +231,37 @@ export const editTrainerExerciseSchema = trainerExerciseFormSchema.extend({
 export type EditTrainerExerciseFormValues = z.infer<
   typeof editTrainerExerciseSchema
 >
+
+const workoutPlanExerciseSetSchema = z.object({
+  id: z.string().optional(),
+  uid: z.string(),
+  exercise_id: z.string().min(1, "Wybierz ćwiczenie"),
+  series_count: z.number().min(1, "Minimum 1 seria"),
+  reps_count: z.number().min(1, "Minimum 1 powtórzenie"),
+  weight: z.number().nullable(),
+  order: z.number(),
+})
+
+const workoutPlanSectionSchema = z.object({
+  id: z.string().optional(),
+  uid: z.string(),
+  body_part: z.string().max(100, "Partia ciała może mieć maksymalnie 100 znaków").optional().nullable(),
+  order: z.number(),
+  exercise_sets: z
+    .array(workoutPlanExerciseSetSchema),
+})
+
+export const workoutPlanFormSchema = z.object({
+  name: z.string().trim().min(1, "Nazwa planu treningowego jest wymagana.").max(255, "Nazwa może mieć maksymalnie 255 znaków"),
+  difficulty: z.string().max(100, "Poziom może mieć maksymalnie 100 znaków"),
+  description: z.string().max(1000, "Opis może mieć maksymalnie 1000 znaków"),
+  sections: z
+    .array(workoutPlanSectionSchema)
+    .min(1, "Plan musi zawierać co najmniej jedną sekcję")
+    .max(20, "Plan może mieć maksymalnie 10 sekcji"),
+})
+
+export type WorkoutPlanFormValues = z.infer<typeof workoutPlanFormSchema>
 
 // ---OTHER---
 export const changePasswordSchema = z

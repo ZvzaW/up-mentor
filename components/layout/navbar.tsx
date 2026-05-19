@@ -36,14 +36,14 @@ export default function Navbar({ role }: NavbarProps) {
 
   const navLinks = [
     { name: "Czat", href: "/dashboard/chat" },
-    { name: "Treningi", href: "/dashboard/workouts" },
+    { name: "Treningi", href: "/dashboard/trainings" },
     roleSpecificLink,
   ]
 
   //Dropdown menu - ZASOBY
   const resourceLinks = [
     { name: "Ćwiczenia", href: "/dashboard/exercises" },
-    { name: "Plany treningowe", href: "/dashboard/plans" },
+    { name: "Plany treningowe", href: "/dashboard/workout-plans" },
   ]
 
   const isActive = (path: string) => pathname.startsWith(path)

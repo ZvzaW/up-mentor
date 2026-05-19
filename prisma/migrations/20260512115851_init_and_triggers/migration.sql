@@ -75,7 +75,6 @@ CREATE TABLE "workout_plan" (
     "name" VARCHAR(255) NOT NULL,
     "difficulty" VARCHAR(100),
     "description" TEXT,
-    "trainee_id" UUID,
 
     CONSTRAINT "workout_plan_pk" PRIMARY KEY ("id")
 );
@@ -91,7 +90,6 @@ CREATE TABLE "plans_library" (
 CREATE TABLE "section" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "workout_plan_id" UUID NOT NULL,
-    "name" VARCHAR(255),
     "body_part" VARCHAR(100),
     "order" INTEGER NOT NULL,
 
@@ -237,9 +235,6 @@ ALTER TABLE "cooperation" ADD CONSTRAINT "cooperation_workplace" FOREIGN KEY ("w
 
 -- AddForeignKey
 ALTER TABLE "workplace" ADD CONSTRAINT "workplace_trainer" FOREIGN KEY ("trainer_id") REFERENCES "trainer"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-
--- AddForeignKey
-ALTER TABLE "workout_plan" ADD CONSTRAINT "workout_plan_client" FOREIGN KEY ("trainee_id") REFERENCES "trainee"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "workout_plan" ADD CONSTRAINT "workout_plan_trainer" FOREIGN KEY ("trainer_id") REFERENCES "trainer"("id") ON DELETE CASCADE ON UPDATE NO ACTION;

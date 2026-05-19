@@ -93,7 +93,7 @@ export async function getExercises() {
 
     return { success: true as const, data }
   } catch {
-    return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
+    return { error: "Nie udało się pobrać ćwiczeń. Spróbuj odświeżyć stronę." }
   }
 }
 
