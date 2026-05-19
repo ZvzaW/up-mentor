@@ -5,6 +5,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { WorkoutPlanList } from "@/components/pages/workout-plans/workout-plan-list" 
+import { getMyTrainees } from "@/actions/my-trainees"
+import { Plus } from "lucide-react"
 
 export default async function WorkoutPlansPage() {
   const session = await auth()
@@ -12,6 +14,12 @@ export default async function WorkoutPlansPage() {
 
   const result = await getWorkoutPlans()
   const plans = result.data ?? []
+
+  let trainees: any[] = []
+  if(role === "trainer"){
+    const traineesResult = await getMyTrainees()
+     trainees = traineesResult.data ?? []
+  } 
 
   return (
     <div className="space-y-6 p-3">
@@ -21,8 +29,10 @@ export default async function WorkoutPlansPage() {
         </h1>
       
         {role === "trainer" && (
-          <Button asChild className="mt-4 sm:mt-0">
-            <Link href="/dashboard/workout-plans/create">
+          <Button asChild className="mt-6 sm:mt-0 w-fit mx-auto sm:mx-0">
+
+            <Link href="/dashboard/workout-plans/create"> 
+            <Plus  />
               Stwórz nowy plan
             </Link>
           </Button>
@@ -40,7 +50,7 @@ export default async function WorkoutPlansPage() {
       )}
 
       {!result.error && (
-        <WorkoutPlanList plans={plans} role={role} />
+        <WorkoutPlanList plans={plans} role={role} trainees={trainees} />
       )}
     </div>
   )

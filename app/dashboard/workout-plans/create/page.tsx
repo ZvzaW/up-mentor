@@ -1,15 +1,9 @@
-import { auth } from "@/auth"
 import { getExercises } from "@/actions/exercise"
-import { redirect } from "next/navigation"
 import { WorkoutPlanForm } from "@/components/pages/workout-plans/workout-plan-form"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
+
 export default async function CreateWorkoutPlanPage() {
-  const session = await auth()
-  
-  if (session?.user?.role !== "trainer") {
-    redirect("/dashboard/workout-plans")
-  }
 
   const result = await getExercises()
   const exercises = result.data ?? []

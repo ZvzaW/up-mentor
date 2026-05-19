@@ -1,6 +1,5 @@
 import { z } from "zod"
 
-
 const isAtLeast15 = (dateString: string) => {
   const birth = new Date(dateString)
   if (isNaN(birth.getTime())) return false
@@ -209,7 +208,10 @@ export const trainerExerciseFormSchema = z.object({
     .refine(
       (val) =>
         val === "" ||
-        z.string().url({ message: "Podaj poprawny adres URL (http/https)" }).safeParse(val).success,
+        z
+          .string()
+          .url({ message: "Podaj poprawny adres URL (http/https)" })
+          .safeParse(val).success,
       { message: "Podaj poprawny adres URL (http/https)" }
     ),
 })
@@ -219,7 +221,9 @@ export type TrainerExerciseFormInput = {
   video_url: string
 }
 
-export type TrainerExerciseFormValues = z.infer<typeof trainerExerciseFormSchema>
+export type TrainerExerciseFormValues = z.infer<
+  typeof trainerExerciseFormSchema
+>
 
 export const editTrainerExerciseSchema = trainerExerciseFormSchema.extend({
   id: z.string(),
@@ -227,6 +231,36 @@ export const editTrainerExerciseSchema = trainerExerciseFormSchema.extend({
 export type EditTrainerExerciseFormValues = z.infer<
   typeof editTrainerExerciseSchema
 >
+
+const workoutPlanExerciseSetSchema = z.object({
+  id: z.string().optional(),
+  uid: z.string(),
+  exercise_id: z.string().min(1, "Wybierz ćwiczenie"),
+  series_count: z.number().min(1, "Minimum 1 seria"),
+  reps_count: z.number().min(1, "Minimum 1 powtórzenie"),
+  weight: z.number().nullable(),
+  order: z.number(),
+})
+
+const workoutPlanSectionSchema = z.object({
+  id: z.string().optional(),
+  uid: z.string(),
+  body_part: z.string(),
+  order: z.number(),
+  exercise_sets: z
+    .array(workoutPlanExerciseSetSchema),
+})
+
+export const workoutPlanFormSchema = z.object({
+  name: z.string().trim().min(1, "Nazwa planu treningowego jest wymagana."),
+  difficulty: z.string(),
+  description: z.string(),
+  sections: z
+    .array(workoutPlanSectionSchema)
+    .min(1, "Plan musi zawierać co najmniej jedną sekcję"),
+})
+
+export type WorkoutPlanFormValues = z.infer<typeof workoutPlanFormSchema>
 
 // ---OTHER---
 export const changePasswordSchema = z

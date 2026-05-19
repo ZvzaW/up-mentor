@@ -1,369 +1,741 @@
 "use client"
 
-import { useState } from "react"
+import { useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { createWorkoutPlan, WorkoutPlanInput } from "@/actions/workout-plan"
+import {
+  useFieldArray,
+  useForm,
+  useFormContext,
+  type UseFormReturn,
+} from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import {
+  createWorkoutPlan,
+  updateWorkoutPlan,
+  WorkoutPlanInput,
+} from "@/actions/workout-plan"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Plus, Trash2, Dumbbell, GripVertical, Loader2 } from "lucide-react"
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core"
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
+import { toast } from "sonner"
+import {
+  workoutPlanFormSchema,
+  type WorkoutPlanFormValues,
+} from "@/lib/validations"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Plus, Trash2, ArrowLeft, Save, Dumbbell, Calendar, Layers, GripVertical } from "lucide-react"
-import Link from "next/link"
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core'
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
 
-
-type FormExerciseSet = {
-  uid: string
-  exercise_id: string
-  series_count: number
-  reps_count: number
-  weight: number | null
-  order: number
-}
-
-type FormSection = {
-  uid: string
+type WorkoutPlanFormExercise = {
+  id: string
   name: string
   body_part: string
-  order: number
-  exercise_sets: FormExerciseSet[]
 }
 
 interface WorkoutPlanFormProps {
-  exercises: any[]
+  exercises: WorkoutPlanFormExercise[]
+  initialPlan?: WorkoutPlanFormInitialData
 }
 
-// --- SUB-KOMPONENT: Sortowalne Ćwiczenie ---
-function SortableExerciseSet({ 
-  set, eIndex, exercises, updateField, removeSet 
-}: { 
-  set: FormExerciseSet, eIndex: number, exercises: any[], updateField: (f: keyof FormExerciseSet, v: any) => void, removeSet: () => void 
+type WorkoutPlanFormInitialData = {
+  id: string
+  name: string
+  difficulty: string | null
+  description: string | null
+  section: {
+    id: string
+    body_part: string | null
+    order: number
+    exercise_set: {
+      id: string
+      exercise_id: string
+      series_count: number
+      reps_count: number
+      weight: number | null
+      order: number
+    }[]
+  }[]
+}
+
+function buildDefaultValues(
+  initialPlan?: WorkoutPlanFormInitialData
+): WorkoutPlanFormValues {
+  return {
+    name: initialPlan?.name ?? "",
+    difficulty: initialPlan?.difficulty ?? "",
+    description: initialPlan?.description ?? "",
+    sections: initialPlan
+      ? initialPlan.section
+          .slice()
+          .sort((a, b) => a.order - b.order)
+          .map((sec) => ({
+            id: sec.id,
+            uid: sec.id,
+            body_part: sec.body_part ?? "",
+            order: sec.order,
+            exercise_sets: sec.exercise_set
+              .slice()
+              .sort((a, b) => a.order - b.order)
+              .map((set) => ({
+                id: set.id,
+                uid: set.id,
+                exercise_id: set.exercise_id,
+                series_count: set.series_count,
+                reps_count: set.reps_count,
+                weight: set.weight,
+                order: set.order,
+              })),
+          }))
+      : [],
+  }
+}
+
+function mapToWorkoutPlanInput(data: WorkoutPlanFormValues): WorkoutPlanInput {
+  return {
+    name: data.name,
+    difficulty: data.difficulty || null,
+    description: data.description || null,
+    sections: data.sections.map((sec) => ({
+      id: sec.id,
+      body_part: sec.body_part || null,
+      order: sec.order,
+      exercise_sets: sec.exercise_sets.map((set) => ({
+        id: set.id,
+        exercise_id: set.exercise_id,
+        series_count: set.series_count,
+        reps_count: set.reps_count,
+        weight: set.weight,
+        order: set.order,
+      })),
+    })),
+  }
+}
+
+function reorderSectionOrders(form: UseFormReturn<WorkoutPlanFormValues>) {
+  const sections = form.getValues("sections")
+  sections.forEach((_, idx) => {
+    form.setValue(`sections.${idx}.order`, idx + 1)
+  })
+}
+
+function SortableExerciseSet({
+  sectionIndex,
+  exerciseIndex,
+  exerciseUid,
+  exercises,
+  onRemove,
+}: {
+  sectionIndex: number
+  exerciseIndex: number
+  exerciseUid: string
+  exercises: WorkoutPlanFormExercise[]
+  onRemove: () => void
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: set.uid })
-  const style = { transform: CSS.Transform.toString(transform), transition, zIndex: isDragging ? 10 : 1 }
+  const form = useFormContext<WorkoutPlanFormValues>()
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: exerciseUid })
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : 1,
+  }
+
+  const baseName =
+    `sections.${sectionIndex}.exercise_sets.${exerciseIndex}` as const
 
   return (
-    <div ref={setNodeRef} style={style} className={`grid grid-cols-1 sm:grid-cols-12 gap-2 bg-card p-3 border rounded-md shadow-sm items-end relative pr-10 ${isDragging ? "opacity-50 ring-2 ring-primary" : ""}`}>
-
-      <div {...attributes} {...listeners} className="absolute left-1 top-1/2 -translate-y-1/2 p-1 cursor-grab text-muted-foreground hover:text-foreground">
-        <GripVertical className="h-4 w-4" />
-      </div>
-
-
-      <div className="sm:col-span-5 space-y-1 pl-6">
-        <label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Nazwa ćwiczenia</label>
-        <select
-          value={set.exercise_id}
-          onChange={(e) => updateField("exercise_id", e.target.value)}
-          className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs ring-offset-background focus-visible:outline-none focus-visible:ring-2"
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`bg-dark-navy relative flex w-full flex-col rounded-md border p-3 pt-1 ${isDragging ? "ring-primary opacity-50 ring-2" : ""}`}
+    >
+      <div className="mb-1 flex items-center justify-between">
+        <div
+          {...attributes}
+          {...listeners}
+          className="text-muted-foreground hover:text-foreground cursor-grab"
         >
-          {exercises.map((ex) => (
-            <option key={ex.id} value={ex.id}>{ex.name} ({ex.body_part})</option>
-          ))}
-        </select>
+          <GripVertical className="h-4 w-4" />
+        </div>
+
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={onRemove}
+          className="text-destructive hover:text-destructive"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
       </div>
 
-      <div className="sm:col-span-2 space-y-1">
-        <label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Serie</label>
-        <Input type="number" min={1} value={set.series_count} onChange={(e) => updateField("series_count", parseInt(e.target.value) || 1)} className="h-9 text-xs font-mono" />
-      </div>
+      <div className="flex flex-col gap-4 sm:flex-row sm:gap-4">
+        <FormField
+          control={form.control}
+          name={`${baseName}.exercise_id`}
+          render={({ field }) => (
+            <FormItem className="w-full">
+              <FormLabel className="text-xs uppercase mb-0.5">
+                Ćwiczenie
+              </FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger className="border-baby-blue/80 w-full">
+                    <SelectValue placeholder="Wybierz ćwiczenie..." />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {exercises.map((ex) => (
+                    <SelectItem key={ex.id} value={ex.id}>
+                      <div className="flex w-full items-baseline gap-4">
+                        <span className="text-gold">{ex.name}</span>
+                        <span className="text-muted-foreground text-xs">-</span>
+                        <span className="text-muted-foreground text-xs">
+                          {ex.body_part}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <div className="sm:col-span-2 space-y-1">
-        <label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Powt.</label>
-        <Input type="number" min={1} value={set.reps_count} onChange={(e) => updateField("reps_count", parseInt(e.target.value) || 1)} className="h-9 text-xs font-mono" />
-      </div>
+        <FormField
+          control={form.control}
+          name={`${baseName}.series_count`}
+          render={({ field }) => (
+            <FormItem className="sm:w-[20%]">
+              <FormLabel className=" text-xs uppercase mb-0.5">
+                Serie
+              </FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  min={1}
+                  value={field.value}
+                  onChange={(e) =>
+                    field.onChange(parseInt(e.target.value, 10) || 1)
+                  }
 
-      <div className="sm:col-span-3 space-y-1">
-        <label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Ciężar (kg)</label>
-        <Input type="number" step="0.25" min={0} placeholder="Masa własna" value={set.weight || ""} onChange={(e) => updateField("weight", e.target.value ? parseFloat(e.target.value) : null)} className="h-9 text-xs font-mono" />
-      </div>
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <Button type="button" variant="ghost" size="icon" onClick={removeSet} className="absolute right-1 bottom-1 h-7 w-7 text-muted-foreground hover:text-destructive">
-        <Trash2 className="h-3.5 w-3.5" />
-      </Button>
+        <FormField
+          control={form.control}
+          name={`${baseName}.reps_count`}
+          render={({ field }) => (
+            <FormItem className="sm:w-[20%]">
+              <FormLabel className="text-xs uppercase mb-0.5">
+                Powtórzenia
+              </FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  min={1}
+                  value={field.value}
+                  onChange={(e) =>
+                    field.onChange(parseInt(e.target.value, 10) || 1)
+                  }
+                  
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name={`${baseName}.weight`}
+          render={({ field }) => (
+            <FormItem className="sm:w-[20%]">
+              <FormLabel className="text-xs uppercase mb-0.5">
+                Ciężar (kg)
+              </FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  step="0.25"
+                  min={0}
+                  value={field.value ?? ""}
+                  onChange={(e) =>
+                    field.onChange(
+                      e.target.value ? parseFloat(e.target.value) : null
+                    )
+                  }
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
     </div>
   )
 }
 
-// --- SUB-KOMPONENT: Sortowalna Sekcja ---
-function SortableSection({ 
-  section, sIndex, exercises, updateSection, removeSection, addExerciseSet, updateExerciseSet, removeExerciseSet, handleExerciseDragEnd 
-}: { 
-  section: FormSection, sIndex: number, exercises: any[], updateSection: (f: keyof FormSection, v: any) => void, removeSection: () => void, addExerciseSet: () => void, updateExerciseSet: (eIndex: number, f: keyof FormExerciseSet, v: any) => void, removeExerciseSet: (eIndex: number) => void, handleExerciseDragEnd: (event: DragEndEvent, sIndex: number) => void
+function SortableSection({
+  sectionIndex,
+  sectionUid,
+  exercises,
+  onRemoveSection,
+}: {
+  sectionIndex: number
+  sectionUid: string
+  exercises: WorkoutPlanFormExercise[]
+  onRemoveSection: () => void
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: section.uid })
-  const style = { transform: CSS.Transform.toString(transform), transition, zIndex: isDragging ? 10 : 1 }
+  const form = useFormContext<WorkoutPlanFormValues>()
+  const sectionOrder = form.watch(`sections.${sectionIndex}.order`)
 
+  const {
+    fields: exerciseFields,
+    append: appendExercise,
+    remove: removeExercise,
+    move: moveExercise,
+  } = useFieldArray({
+    control: form.control,
+    name: `sections.${sectionIndex}.exercise_sets`,
+    keyName: "uid",
+  })
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: sectionUid })
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : 1,
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   )
 
-  return (
-    <Card ref={setNodeRef} style={style} className={`border-l-4 border-l-primary relative ${isDragging ? "opacity-50 ring-2 ring-primary" : ""}`}>
+  const handleExerciseDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
 
-      <div {...attributes} {...listeners} className="absolute left-2 top-4 p-1 cursor-grab text-muted-foreground hover:text-foreground">
+    const oldIndex = exerciseFields.findIndex((f) => f.uid === active.id)
+    const newIndex = exerciseFields.findIndex((f) => f.uid === over.id)
+    if (oldIndex === -1 || newIndex === -1) return
+
+    moveExercise(oldIndex, newIndex)
+    const sets = form.getValues(`sections.${sectionIndex}.exercise_sets`)
+    sets.forEach((_, idx) => {
+      form.setValue(
+        `sections.${sectionIndex}.exercise_sets.${idx}.order`,
+        idx + 1
+      )
+    })
+  }
+
+  const handleAddExercise = () => {
+    if (exercises.length === 0) return
+    appendExercise({
+      uid: crypto.randomUUID(),
+      exercise_id: exercises[0].id,
+      series_count: 3,
+      reps_count: 10,
+      weight: null,
+      order: exerciseFields.length + 1,
+    })
+  }
+
+  return (
+    <Card
+      ref={setNodeRef}
+      style={style}
+      className={`border-l-gold relative border-l-4 ${isDragging ? "ring-gold opacity-50 ring-2" : ""}`}
+    >
+      <div
+        {...attributes}
+        {...listeners}
+        className="text-muted-foreground hover:text-foreground absolute top-4 left-2 cursor-grab p-1"
+      >
         <GripVertical className="h-5 w-5" />
       </div>
 
-      <Button type="button" variant="ghost" size="icon" onClick={removeSection} className="absolute top-3 right-3 text-muted-foreground hover:text-destructive">
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        onClick={onRemoveSection}
+        className="text-destructive hover:text-destructive absolute top-3 right-3"
+      >
         <Trash2 className="h-4 w-4" />
       </Button>
 
-      <CardHeader className="pb-3 pr-12 pl-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">Nazwa sekcji (np. Dzień A)</label>
-            <Input placeholder={`Dzień ${section.order}`} value={section.name} onChange={(e) => updateSection("name", e.target.value)} />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">Partia ciała</label>
-            <Input placeholder="np. Góra ciała" value={section.body_part} onChange={(e) => updateSection("body_part", e.target.value)} />
-          </div>
+      <CardHeader>
+        <div className="flex flex-col justify-center ">
+          <p className="text-gold mx-auto mb-6 text-lg font-semibold">
+            Sekcja {sectionOrder}
+          </p>
+          <FormField
+            control={form.control}
+            name={`sections.${sectionIndex}.body_part`}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  Partia ciała (opcjonalnie)
+                </FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="np. Góra ciała" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
       </CardHeader>
 
-      <CardContent className="bg-muted/10 border-t pt-4 space-y-3">
-        <div className="flex items-center justify-between pl-6">
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-            <Dumbbell className="h-3.5 w-3.5" /> Ćwiczenia w tej sekcji
+      <CardContent className="space-y-3 border-t pt-4">
+        <div className="py-3">
+          <h4 className="text-muted-foreground flex items-center gap-1.5 text-xs font-semibold uppercase">
+            <Dumbbell className="h-4 w-4" /> Ćwiczenia w tej sekcji
           </h4>
-          <Button type="button" variant="link" size="sm" onClick={addExerciseSet} disabled={exercises.length === 0} className="p-0 h-auto text-xs">
-            + Dodaj ćwiczenie
-          </Button>
         </div>
 
-        {section.exercise_sets.length === 0 ? (
-          <p className="text-xs text-muted-foreground italic py-2 text-center">Brak dodanych ćwiczeń do tego dnia.</p>
+        {exerciseFields.length === 0 ? (
+          <p className="text-muted-foreground py-2 text-center text-xs italic">
+            Brak dodanych ćwiczeń do tej sekcji.
+          </p>
         ) : (
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleExerciseDragEnd(e, sIndex)}>
-            <SortableContext items={section.exercise_sets.map(s => s.uid)} strategy={verticalListSortingStrategy}>
-              <div className="space-y-2 pl-6">
-                {section.exercise_sets.map((set, eIndex) => (
-                  <SortableExerciseSet 
-                    key={set.uid} 
-                    set={set} 
-                    eIndex={eIndex} 
+          <DndContext
+            id={`dnd-context-exercises-${sectionIndex}`}
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleExerciseDragEnd}
+          >
+            <SortableContext
+              items={exerciseFields.map((s) => s.uid)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-3">
+                {exerciseFields.map((field, eIndex) => (
+                  <SortableExerciseSet
+                    key={field.uid}
+                    sectionIndex={sectionIndex}
+                    exerciseIndex={eIndex}
+                    exerciseUid={field.uid}
                     exercises={exercises}
-                    updateField={(field, value) => updateExerciseSet(eIndex, field, value)}
-                    removeSet={() => removeExerciseSet(eIndex)}
+                    onRemove={() => {
+                      removeExercise(eIndex)
+                      const sets = form.getValues(
+                        `sections.${sectionIndex}.exercise_sets`
+                      )
+                      sets.forEach((_, idx) => {
+                        form.setValue(
+                          `sections.${sectionIndex}.exercise_sets.${idx}.order`,
+                          idx + 1
+                        )
+                      })
+                    }}
                   />
                 ))}
               </div>
             </SortableContext>
           </DndContext>
         )}
+
+        <div className="flex justify-center">
+          <Button
+            type="button"
+            onClick={handleAddExercise}
+            disabled={exercises.length === 0}
+            className="bg-gold hover:bg-gold/60 mt-3 gap-1"
+          >
+            <Plus className="h-4 w-4" /> Dodaj ćwiczenie
+          </Button>
+        </div>
       </CardContent>
     </Card>
   )
 }
 
-// --- GŁÓWNY KOMPONENT: Kreator ---
-export function WorkoutPlanForm({ exercises }: WorkoutPlanFormProps) {
+export function WorkoutPlanForm({
+  exercises,
+  initialPlan,
+}: WorkoutPlanFormProps) {
   const router = useRouter()
-  const [name, setName] = useState("")
-  const [difficulty, setDifficulty] = useState("")
-  const [description, setDescription] = useState("")
-  const [sections, setSections] = useState<FormSection[]>([])
-  
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [isSubmitting, startSubmitTransition] = useTransition()
 
+  const form = useForm<WorkoutPlanFormValues>({
+    resolver: zodResolver(workoutPlanFormSchema),
+    defaultValues: buildDefaultValues(initialPlan),
+    mode: "onChange",
+  })
+
+  const {
+    fields: sectionFields,
+    append: appendSection,
+    remove: removeSection,
+    move: moveSection,
+  } = useFieldArray({
+    control: form.control,
+    name: "sections",
+    keyName: "uid",
+  })
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   )
 
- 
-  const generateUID = () => Math.random().toString(36).substring(2, 9)
-
-  // --- Logika Sekcji ---
-  const addSection = () => {
-    const newSection: FormSection = { uid: generateUID(), name: "", body_part: "", order: sections.length + 1, exercise_sets: [] }
-    setSections([...sections, newSection])
-  }
-
-  const removeSection = (sIndex: number) => {
-    const updated = sections.filter((_, idx) => idx !== sIndex).map((sec, i) => ({ ...sec, order: i + 1 }))
-    setSections(updated)
-  }
-
-  const updateSectionField = (sIndex: number, field: keyof FormSection, value: any) => {
-    const updated = [...sections]
-    updated[sIndex] = { ...updated[sIndex], [field]: value }
-    setSections(updated)
-  }
+  const sectionsError = form.formState.errors.sections?.message
 
   const handleSectionDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
-    if (over && active.id !== over.id) {
-      setSections((items) => {
-        const oldIndex = items.findIndex((i) => i.uid === active.id)
-        const newIndex = items.findIndex((i) => i.uid === over.id)
-        const reordered = arrayMove(items, oldIndex, newIndex)
-        return reordered.map((sec, idx) => ({ ...sec, order: idx + 1 }))
-      })
-    }
+    if (!over || active.id === over.id) return
+
+    const oldIndex = sectionFields.findIndex((s) => s.uid === active.id)
+    const newIndex = sectionFields.findIndex((s) => s.uid === over.id)
+    if (oldIndex === -1 || newIndex === -1) return
+
+    moveSection(oldIndex, newIndex)
+    reorderSectionOrders(form)
   }
 
-  // --- Logika Ćwiczeń ---
-  const addExerciseSet = (sIndex: number) => {
-    if (exercises.length === 0) return
-    const updated = [...sections]
-    const newSet: FormExerciseSet = { uid: generateUID(), exercise_id: exercises[0].id, series_count: 3, reps_count: 10, weight: null, order: updated[sIndex].exercise_sets.length + 1 }
-    updated[sIndex].exercise_sets.push(newSet)
-    setSections(updated)
+  const handleAddSection = () => {
+    appendSection({
+      uid: crypto.randomUUID(),
+      body_part: "",
+      order: sectionFields.length + 1,
+      exercise_sets: [],
+    })
   }
 
-  const removeExerciseSet = (sIndex: number, eIndex: number) => {
-    const updated = [...sections]
-    updated[sIndex].exercise_sets = updated[sIndex].exercise_sets.filter((_, idx) => idx !== eIndex).map((set, i) => ({ ...set, order: i + 1 }))
-    setSections(updated)
+  const handleRemoveSection = (index: number) => {
+    removeSection(index)
+    reorderSectionOrders(form)
   }
 
-  const updateExerciseSetField = (sIndex: number, eIndex: number, field: keyof FormExerciseSet, value: any) => {
-    const updated = [...sections]
-    updated[sIndex].exercise_sets[eIndex] = { ...updated[sIndex].exercise_sets[eIndex], [field]: value }
-    setSections(updated)
-  }
+  const onSubmit = (data: WorkoutPlanFormValues) => {
+    startSubmitTransition(async () => {
+      const payload = mapToWorkoutPlanInput(data)
+      const res = initialPlan
+        ? await updateWorkoutPlan(initialPlan.id, payload)
+        : await createWorkoutPlan(payload)
 
-  const handleExerciseDragEnd = (event: DragEndEvent, sIndex: number) => {
-    const { active, over } = event
-    if (over && active.id !== over.id) {
-      setSections((items) => {
-        const updated = [...items]
-        const oldIndex = updated[sIndex].exercise_sets.findIndex((i) => i.uid === active.id)
-        const newIndex = updated[sIndex].exercise_sets.findIndex((i) => i.uid === over.id)
-        const reordered = arrayMove(updated[sIndex].exercise_sets, oldIndex, newIndex)
-        updated[sIndex].exercise_sets = reordered.map((set, idx) => ({ ...set, order: idx + 1 }))
-        return updated
-      })
-    }
-  }
+      if (res.error) {
+        toast.error(res.error)
+        return
+      }
 
-  // --- Zapis Formularza ---
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!name.trim()) {
-      setError("Nazwa planu treningowego jest wymagana.")
-      return
-    }
-    setIsSubmitting(true)
-    setError(null)
-
-    const payload: WorkoutPlanInput = {
-      name,
-      difficulty: difficulty || null,
-      description: description || null,
-      sections: sections.map(sec => ({
-        name: sec.name || null,
-        body_part: sec.body_part || null,
-        order: sec.order,
-        exercise_sets: sec.exercise_sets.map(set => ({
-          exercise_id: set.exercise_id,
-          series_count: set.series_count,
-          reps_count: set.reps_count,
-          weight: set.weight,
-          order: set.order
-        }))
-      }))
-    }
-
-    const res = await createWorkoutPlan(payload)
-    setIsSubmitting(false)
-
-    if (res.error) {
-      setError(res.error)
-    } else {
+      toast.success(
+        initialPlan ? "Plan został zaktualizowany." : "Plan został zapisany."
+      )
       router.push("/dashboard/workout-plans")
       router.refresh()
-    }
+    })
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-5xl mx-auto pb-12">
-      {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit, () => {
+          toast.error("Popraw błędy w formularzu przed zapisem.")
+        })}
+        className="mx-auto space-y-6 pb-12"
+      >
+        <Card>
+          <CardContent className="w-full space-y-4">
+            <div className="flex flex-col gap-4 sm:flex-row">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>
+                      Nazwa planu*
+                    </FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="np. Push/Pull/Legs" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold flex items-center gap-2">
-            <Layers className="h-5 w-5 text-primary" />
-            Informacje podstawowe
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="md:col-span-2 space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Nazwa Planu *</label>
-              <Input placeholder="np. Push/Pull/Legs" value={name} onChange={(e) => setName(e.target.value)} required />
+              <FormField
+                control={form.control}
+                name="difficulty"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>
+                      Poziom zaawansowania (opcjonalnie)
+                    </FormLabel>
+                    <Select
+                      onValueChange={(value) =>
+                        field.onChange(value === "none" ? "" : value)
+                      }
+                      value={field.value || "none"}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="border-baby-blue/80 w-full">
+                          <SelectValue placeholder="Wybierz poziom..." />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="none">Wybierz poziom...</SelectItem>
+                        <SelectItem value="Początkujący">
+                          Początkujący
+                        </SelectItem>
+                        <SelectItem value="Średniozaawansowany">
+                          Średniozaawansowany
+                        </SelectItem>
+                        <SelectItem value="Zaawansowany">
+                          Zaawansowany
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Poziom zaawansowania</label>
-              <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2">
-                <option value="">Wybierz poziom...</option>
-                <option value="Początkujący">Początkujący</option>
-                <option value="Średniozaawansowany">Średniozaawansowany</option>
-                <option value="Zaawansowany">Zaawansowany</option>
-              </select>
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Opis planu</label>
-            <textarea placeholder="Założenia makrocyklu..." value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
-          </div>
-        </CardContent>
-      </Card>
 
-      <div className="space-y-4">
-        <div className="flex items-center justify-between border-b pb-2">
-          <h2 className="text-lg font-semibold font-michroma flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-primary" /> Struktura dni treningowych
-          </h2>
-          <Button type="button" variant="outline" size="sm" onClick={addSection} className="gap-1">
-            <Plus className="h-4 w-4" /> Dodaj dzień
-          </Button>
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Opis planu (opcjonalnie)
+                  </FormLabel>
+                  <FormControl>
+                    <textarea
+                      {...field}
+                      placeholder="Założenia makrocyklu..."
+                      rows={3}
+                      className="ring-baby-blue/80 focus-visible:ring-baby-blue/80 w-full rounded-md p-3 text-sm ring focus-visible:ring-1 focus-visible:outline-none"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </CardContent>
+        </Card>
+
+        <div className="space-y-6">
+          <div className="border-gold border-t pt-6">
+            <h2 className="flex justify-center text-lg font-semibold">
+              Struktura planu treningowego
+            </h2>
+          </div>
+
+          {sectionFields.length === 0 ? (
+            <div className="bg-muted/20 text-muted-foreground rounded-lg border border-dashed p-8 text-center text-sm">
+              Brak sekcji w planie.
+            </div>
+          ) : (
+            <DndContext
+              id="dnd-context-sections"
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleSectionDragEnd}
+            >
+              <SortableContext
+                items={sectionFields.map((s) => s.uid)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="space-y-7">
+                  {sectionFields.map((field, sIndex) => (
+                    <SortableSection
+                      key={field.uid}
+                      sectionIndex={sIndex}
+                      sectionUid={field.uid}
+                      exercises={exercises}
+                      onRemoveSection={() => handleRemoveSection(sIndex)}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+          )}
+
+{sectionsError && (
+            <Alert variant="destructive" className="mx-auto">
+              <AlertDescription>{sectionsError}</AlertDescription>
+            </Alert>  
+          )}
+          
+          <div className="flex justify-center">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleAddSection}
+              className="bg-dark-navy/80 gap-1"
+            >
+              <Plus className="h-4 w-4" /> Dodaj sekcję
+            </Button>
+          </div>
         </div>
 
-        {sections.length === 0 ? (
-          <div className="text-center p-8 border border-dashed rounded-lg bg-muted/20 text-muted-foreground text-sm">
-            Brak sekcji w planie.
-          </div>
-        ) : (
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSectionDragEnd}>
-            <SortableContext items={sections.map(s => s.uid)} strategy={verticalListSortingStrategy}>
-              <div className="space-y-4">
-                {sections.map((sec, sIndex) => (
-                  <SortableSection 
-                    key={sec.uid} 
-                    section={sec} 
-                    sIndex={sIndex} 
-                    exercises={exercises}
-                    updateSection={(field, value) => updateSectionField(sIndex, field, value)}
-                    removeSection={() => removeSection(sIndex)}
-                    addExerciseSet={() => addExerciseSet(sIndex)}
-                    updateExerciseSet={(eIndex, field, value) => updateExerciseSetField(sIndex, eIndex, field, value)}
-                    removeExerciseSet={(eIndex) => removeExerciseSet(sIndex, eIndex)}
-                    handleExerciseDragEnd={handleExerciseDragEnd}
-                  />
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
-        )}
-      </div>
-
-      <div className="flex items-center justify-between border-t pt-4">
-        <Button asChild variant="ghost" type="button">
-          <Link href="/dashboard/workouts" className="gap-1.5 text-xs"><ArrowLeft className="h-4 w-4" /> Wróć</Link>
-        </Button>
-        <Button type="submit" disabled={isSubmitting} className="gap-1.5 text-xs px-5">
-          <Save className="h-4 w-4" /> {isSubmitting ? "Zapisywanie..." : "Zapisz plan"}
-        </Button>
-      </div>
-    </form>
+        <div className="border-gold flex items-center justify-center gap-6 border-t pt-6">
+          <Button
+            variant="destructive"
+            type="button"
+            disabled={isSubmitting}
+            onClick={() => router.push("/dashboard/workout-plans")}
+          >
+            Anuluj
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? <Loader2 className="animate-spin" /> : "Zapisz"}
+          </Button>
+        </div>
+      </form>
+    </Form>
   )
 }
