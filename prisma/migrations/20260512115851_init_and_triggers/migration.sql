@@ -75,7 +75,6 @@ CREATE TABLE "workout_plan" (
     "name" VARCHAR(255) NOT NULL,
     "difficulty" VARCHAR(100),
     "description" TEXT,
-    "trainee_id" UUID,
 
     CONSTRAINT "workout_plan_pk" PRIMARY KEY ("id")
 );
@@ -91,7 +90,6 @@ CREATE TABLE "plans_library" (
 CREATE TABLE "section" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "workout_plan_id" UUID NOT NULL,
-    "name" VARCHAR(255),
     "body_part" VARCHAR(100),
     "order" INTEGER NOT NULL,
 
