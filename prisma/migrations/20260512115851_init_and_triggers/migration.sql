@@ -125,23 +125,10 @@ CREATE TABLE "training" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "trainer_id" UUID NOT NULL,
     "trainee_id" UUID NOT NULL,
-    "section_id" UUID,
-    "workplace_id" UUID NOT NULL,
-    "date" DATE NOT NULL,
-    "start_time" TIME(6) NOT NULL,
+    "scheduled_at" TIMESTAMPTZ NOT NULL,
     "duration" DECIMAL(3,1) NOT NULL,
 
     CONSTRAINT "training_pk" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "training_comment" (
-    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
-    "user_id" UUID NOT NULL,
-    "training_id" UUID NOT NULL,
-    "content" TEXT NOT NULL,
-
-    CONSTRAINT "training_comment_pk" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -231,7 +218,7 @@ ALTER TABLE "cooperation" ADD CONSTRAINT "cooperation_trainee" FOREIGN KEY ("tra
 ALTER TABLE "cooperation" ADD CONSTRAINT "cooperation_trainer" FOREIGN KEY ("trainer_id") REFERENCES "trainer"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "cooperation" ADD CONSTRAINT "cooperation_workplace" FOREIGN KEY ("workplace_id") REFERENCES "workplace"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "cooperation" ADD CONSTRAINT "cooperation_workplace" FOREIGN KEY ("workplace_id") REFERENCES "workplace"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "workplace" ADD CONSTRAINT "workplace_trainer" FOREIGN KEY ("trainer_id") REFERENCES "trainer"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
@@ -259,18 +246,6 @@ ALTER TABLE "exercise" ADD CONSTRAINT "exercise_trainer" FOREIGN KEY ("trainer_i
 
 -- AddForeignKey
 ALTER TABLE "training" ADD CONSTRAINT "training_cooperation" FOREIGN KEY ("trainer_id", "trainee_id") REFERENCES "cooperation"("trainer_id", "trainee_id") ON DELETE NO ACTION ON UPDATE NO ACTION;
-
--- AddForeignKey
-ALTER TABLE "training" ADD CONSTRAINT "training_section" FOREIGN KEY ("section_id") REFERENCES "section"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-
--- AddForeignKey
-ALTER TABLE "training" ADD CONSTRAINT "training_workplace" FOREIGN KEY ("workplace_id") REFERENCES "workplace"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-
--- AddForeignKey
-ALTER TABLE "training_comment" ADD CONSTRAINT "comment_training" FOREIGN KEY ("training_id") REFERENCES "training"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-
--- AddForeignKey
-ALTER TABLE "training_comment" ADD CONSTRAINT "comment_user" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "opinion" ADD CONSTRAINT "opinion_trainee" FOREIGN KEY ("trainee_id") REFERENCES "trainee"("id") ON DELETE CASCADE ON UPDATE NO ACTION;

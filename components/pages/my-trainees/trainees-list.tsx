@@ -4,22 +4,18 @@ import { useState } from "react"
 import { Search, MapPin, ChevronRight } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
+import { TraineeDTO, WorkplaceAddress } from "@/lib/types"
+import { formatWorkplaceAddress } from "@/lib/utils"
 
-interface Trainee {
-  id: string
-  slug: string
-  name: string
-  workplace: string
-}
 
 interface TraineesListProps {
-  initialTrainees: Trainee[]
+  initialTrainees: TraineeDTO[]
 }
 
 export default function TraineesList({ initialTrainees }: TraineesListProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const filteredTrainees = initialTrainees.filter((trainee) =>
-    trainee.name.toLowerCase().includes(searchQuery.toLowerCase())
+    trainee.fullName.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   return (
@@ -48,13 +44,13 @@ export default function TraineesList({ initialTrainees }: TraineesListProps) {
           >
             <div className="w-[95%] text-sm">
               <h2 className="text-gold mb-4 truncate text-lg">
-                {trainee.name}
+                {trainee.fullName}
               </h2>
 
               <div className="flex gap-2 text-xs">
                 <MapPin className="text-baby-blue h-3.5 w-3.5" />
                 <span className="mt-0.5 truncate text-zinc-300">
-                  {trainee.workplace}
+                  {formatWorkplaceAddress(trainee.workplace as WorkplaceAddress)}
                 </span>
               </div>
             </div>

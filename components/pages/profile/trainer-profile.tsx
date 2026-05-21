@@ -15,32 +15,14 @@ import {
   PopoverDescription,
 } from "@/components/ui/popover"
 import { Switch } from "@/components/ui/switch"
-import { InfoIcon, Star } from "lucide-react"
+import { InfoIcon } from "lucide-react"
 import { toast } from "sonner"
 import { ShowOpinionsDialog } from "@/components/dialogs/trainer/show-opinions"
+import { TrainerDTO, UserDTO } from "@/lib/types"
 
 interface TrainerProfileProps {
-  baseData: {
-    id: string
-    name: string
-    surname: string
-    email: string
-    phone: string
-    role: string
-  }
-  specificData: {
-    work_description: string | null
-    price_per_training: number | null
-    is_public: boolean
-    workplace: {
-      id: string
-      name: string
-      street: string
-      building_number: string
-      flat_number: string | null
-      city: string
-    }[]
-  }
+  baseData: UserDTO
+  specificData: TrainerDTO
 }
 
 export default function TrainerProfile({

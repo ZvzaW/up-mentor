@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/dialog"
 
 import { acceptRequest, rejectRequest } from "@/actions/coaching-request"
-import { string } from "zod"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 type Request = {

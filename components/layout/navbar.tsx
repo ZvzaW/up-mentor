@@ -91,7 +91,7 @@ export default function Navbar({ role }: NavbarProps) {
                   suppressHydrationWarning 
                   className={`hover:text-baby-blue flex items-center py-7 transition-colors ${
                     isActive("/dashboard/exercises") ||
-                    isActive("/dashboard/plans")
+                    isActive("/dashboard/workout-plans")
                       ? "text-baby-blue"
                       : "text-white"
                   }`}

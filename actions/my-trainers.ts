@@ -3,6 +3,8 @@
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
+import { formatWorkplaceAddress } from "@/lib/utils"
+import { WorkplaceAddress } from "@/lib/types"
 
 export async function getMyTrainers() {
   const session = await auth()
@@ -47,12 +49,12 @@ export async function getMyTrainers() {
     const mappedCooperations = cooperations.map((cooperation) => ({
       key: cooperation.trainer_id,
       name: `${cooperation.trainer.user.name} ${cooperation.trainer.user.surname}`,
-      workplace: `${cooperation.workplace.name} - ul. ${cooperation.workplace.street} ${cooperation.workplace.building_number}${cooperation.workplace.flat_number ? `/${cooperation.workplace.flat_number}` : ""}, ${cooperation.workplace.city}`,
+      workplace: formatWorkplaceAddress(cooperation.workplace as WorkplaceAddress),
       slug: cooperation.trainer.slug,
     }))
 
     return { success: true, data: mappedCooperations }
-  } catch (error) {
+  } catch {
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }
@@ -101,7 +103,7 @@ export async function getMyTrainerBySlug(slug: string) {
     })
 
     return { success: true, data: cooperation }
-  } catch (error) {
+  } catch {
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }
@@ -125,7 +127,7 @@ export async function countCooperations() {
     })
 
     return { success: true, data: count}
-  } catch (error) {
+  } catch {
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }

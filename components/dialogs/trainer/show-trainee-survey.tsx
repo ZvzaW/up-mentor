@@ -51,7 +51,7 @@ export function ShowTraineeSurveyDialog({ traineeId, name }: ShowTraineeSurveyDi
         } else if (result.data) {
           setQuestions(result.data)
         }
-      } catch (err) {
+      } catch {
         if (isMounted) {
           setError("Wystąpił nieoczekiwany błąd serwera. Spróbuj ponownie później.")
         }

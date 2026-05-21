@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { WorkoutPlanList } from "@/components/pages/workout-plans/workout-plan-list" 
 import { getMyTrainees } from "@/actions/my-trainees"
 import { Plus } from "lucide-react"
+import { TraineeDTO } from "@/lib/types"
 
 export default async function WorkoutPlansPage() {
   const session = await auth()
@@ -15,7 +16,7 @@ export default async function WorkoutPlansPage() {
   const result = await getWorkoutPlans()
   const plans = result.data ?? []
 
-  let trainees: any[] = []
+  let trainees: TraineeDTO[] = []
   if(role === "trainer"){
     const traineesResult = await getMyTrainees()
      trainees = traineesResult.data ?? []

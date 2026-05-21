@@ -10,7 +10,7 @@ import {
   createWorkplaceSchema,
   editWorkplaceSchema,
 } from "@/lib/validations"
-import { Prisma } from "@prisma/client"
+import { Prisma, workplace } from "@prisma/client"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
@@ -49,7 +49,7 @@ export async function updatePersonalData(input: unknown) {
         })
       }
     })
-  } catch (e: any) {
+  } catch {
     return {
       error: "Wystąpił błąd podczas aktualizacji danych. Spróbuj ponownie.",
     }
@@ -85,7 +85,7 @@ export async function updateTrainerCard(input: unknown) {
         work_description: data.work_description,
       },
     })
-  } catch (e: any) {
+  } catch {
     return {
       error: "Wystąpił błąd podczas aktualizacji danych. Spróbuj ponownie.",
     }
@@ -95,7 +95,7 @@ export async function updateTrainerCard(input: unknown) {
   return { success: true }
 }
 
-export async function editWorkplace(input: unknown) {
+export async function editWorkplace(workplace: workplace) {
   const session = await auth()
 
   if (!session?.user?.id) {
@@ -106,7 +106,7 @@ export async function editWorkplace(input: unknown) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
-  const validated = editWorkplaceSchema.safeParse(input)
+  const validated = editWorkplaceSchema.safeParse(workplace)
   if (!validated.success) {
     return { error: "Nieprawidłowe dane wejściowe." }
   }
@@ -134,7 +134,7 @@ export async function editWorkplace(input: unknown) {
 
     revalidatePath("/dashboard/profile")
     return { success: true }
-  } catch (error) {
+  } catch {
     return {
       error: "Wystąpił błąd podczas aktualizacji danych. Spróbuj ponownie.",
     }
@@ -172,7 +172,7 @@ export async function addWorkplace(input: unknown) {
 
     revalidatePath("/dashboard/profile")
     return { success: true }
-  } catch (error) {
+  } catch {
     return {
       error: "Wystąpił błąd podczas zapisywania danych. Spróbuj ponownie.",
     }
@@ -215,7 +215,7 @@ export async function deleteWorkplace(workplaceId: string) {
 
     revalidatePath("/dashboard/profile")
     return { success: true }
-  } catch (error) {
+  } catch {
     return { error: "Wystąpił błąd podczas usuwania danych. Spróbuj ponownie." }
   }
 }
@@ -239,7 +239,7 @@ export async function changeProfileVisibility(isPublic: boolean) {
 
     revalidatePath("/dashboard/profile")
     return { success: true }
-  } catch (error) {
+  } catch {
     return {
       error: "Wystąpił błąd podczas zapisywania zmian. Spróbuj ponownie.",
     }

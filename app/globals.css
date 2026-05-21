@@ -106,8 +106,9 @@
     min-height: 100vh;
   }
 
-  input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(0.8);
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-time-picker-indicator {
+    filter: invert(1);
     cursor: pointer;
   }
 }

@@ -1,53 +1,22 @@
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  Clock3,
-  MapPin,
-  NotebookPen,
-  ChevronLeft,
-  Trophy,
-} from "lucide-react"
+import { MapPin, NotebookPen, ChevronLeft } from "lucide-react"
 import { getMyTraineeBySlug } from "@/actions/my-trainees"
+import { getTrainingsForTrainee } from "@/actions/training"
 import { TraineeQuickActions } from "@/components/pages/my-trainees/trainee-quick-actions"
 import { TraineeNoteEditor } from "@/components/pages/my-trainees/trainee-note-editor"
+import { TraineeTrainingsList } from "@/components/pages/my-trainees/trainee-trainings-list"
 import { ShowTraineeSurveyDialog } from "@/components/dialogs/trainer/show-trainee-survey"
+import { WorkplaceAddress } from "@/lib/types"
+import { formatWorkplaceAddress } from "@/lib/utils"
 
 type TraineeDetailsPageProps = {
   params: Promise<{
     slug: string
   }>
 }
-
-//TO-DO: Replace with actual trainings data from database
-const mockTrainings = [
-  {
-    id: "training-1",
-    date: "2026-05-06",
-    startTime: "17:30",
-    duration: "1.5 h",
-    workplace: "Fit Zone, ul. Lipowa 12, Gdańsk",
-    sectionName: "Push day",
-  },
-  {
-    id: "training-2",
-    date: "2026-05-08",
-    startTime: "18:00",
-    duration: "1.0 h",
-    workplace: "Fit Zone, ul. Lipowa 12, Gdańsk",
-    sectionName: "Pull day",
-  },
-  {
-    id: "training-3",
-    date: "2026-05-11",
-    startTime: "17:00",
-    duration: "1.5 h",
-    workplace: "Fit Zone, ul. Lipowa 12, Gdańsk",
-    sectionName: "Legs + core",
-  },
-]
 
 export default async function TraineeDetailsPage({
   params,
@@ -56,6 +25,13 @@ export default async function TraineeDetailsPage({
   const result = await getMyTraineeBySlug(slug)
 
   const cooperation = result.data
+  const traineeId = cooperation?.trainee.user.id
+
+  const trainingsResult = traineeId
+    ? await getTrainingsForTrainee(traineeId)
+    : null
+  const trainingsError = trainingsResult?.error
+  const trainingGroups = trainingsResult?.data ?? []
 
   if (!result.error && !cooperation) {
     redirect("/dashboard/trainees")
@@ -66,7 +42,7 @@ export default async function TraineeDetailsPage({
         id: cooperation.trainee.user.id,
         fullName: `${cooperation.trainee.user.name} ${cooperation.trainee.user.surname}`,
         phone: cooperation.trainee.user.phone,
-        workplace: `${cooperation.workplace.name} - ul. ${cooperation.workplace.street} ${cooperation.workplace.building_number}${cooperation.workplace.flat_number ? `/${cooperation.workplace.flat_number}` : ""}, ${cooperation.workplace.city}`,
+        workplace: formatWorkplaceAddress(cooperation.workplace as WorkplaceAddress),
       }
     : null
 
@@ -134,28 +110,14 @@ export default async function TraineeDetailsPage({
                   Treningi podopiecznego
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {mockTrainings.map((training) => (
-                  <div
-                    key={training.id}
-                    className="bg-dirty-blue/40 space-y-2 rounded-lg border border-zinc-700/70 p-4"
-                  >
-                    <p className="text-gold font-semibold">
-                      {training.sectionName}
-                    </p>
-                    <div className="flex items-center gap-2 text-sm text-zinc-300">
-                      <Clock3 className="text-baby-blue h-4 w-4" />
-                      <span>
-                        {training.date} o {training.startTime} (
-                        {training.duration})
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-zinc-400">
-                      <MapPin className="text-baby-blue h-4 w-4" />
-                      <span>{training.workplace}</span>
-                    </div>
-                  </div>
-                ))}
+              <CardContent>
+                {trainingsError ? (
+                  <Alert variant="destructive" className="mx-auto">
+                    <AlertDescription>{trainingsError}</AlertDescription>
+                  </Alert>
+                ) : (
+                  <TraineeTrainingsList groups={trainingGroups} />
+                )}
               </CardContent>
             </Card>
           </div>

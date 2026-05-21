@@ -110,7 +110,7 @@ export default function SettingsDialog({
     }
   }, [view])
 
-  const getEditDefaultValues = () => {
+  const editDefaultValues = React.useMemo(() => {
     const base = {
       name: baseData.name ?? "",
       surname: baseData.surname ?? "",
@@ -127,19 +127,25 @@ export default function SettingsDialog({
     }
 
     return base
-  }
+  }, [
+    baseData.name,
+    baseData.surname,
+    baseData.phone,
+    isTrainer,
+    specificData?.birthdate,
+  ])
 
   const editForm = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: getEditDefaultValues(),
+    defaultValues: editDefaultValues,
     mode: "onChange",
   })
 
   React.useEffect(() => {
     if (view === "edit-data") {
-      editForm.reset(getEditDefaultValues())
+      editForm.reset(editDefaultValues)
     }
-  }, [view, editForm, baseData, specificData])
+  }, [view, editForm, editDefaultValues])
 
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen)
@@ -472,7 +478,7 @@ export default function SettingsDialog({
                     }
 
                     toast.success("Zapisano dane!")
-                    editForm.reset(getEditDefaultValues())
+                    editForm.reset(editDefaultValues)
                     setView("main")
                   })
                 })}

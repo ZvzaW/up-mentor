@@ -107,22 +107,10 @@ CREATE TABLE training (
     id uuid NOT NULL DEFAULT gen_random_uuid(),
     trainer_id uuid NOT NULL,
     trainee_id uuid NOT NULL,
-    section_id uuid NULL,
-    workplace_id uuid NOT NULL,
-    date date NOT NULL,
-    start_time time NOT NULL,
+    scheduled_at timestamptz NOT NULL,
     duration decimal(3,1) NOT NULL,
     CONSTRAINT training_pk PRIMARY KEY (id)
 );
-
-CREATE TABLE training_comment (
-    id uuid NOT NULL DEFAULT gen_random_uuid(),
-    user_id uuid NOT NULL,
-    training_id uuid NOT NULL,
-    content text NOT NULL,
-    CONSTRAINT training_comment_pk PRIMARY KEY (id)
-);
-
 
 CREATE TABLE survey_question (
     id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -196,15 +184,11 @@ ALTER TABLE section ADD CONSTRAINT section_workout_plan FOREIGN KEY (workout_pla
 ALTER TABLE exercise_set ADD CONSTRAINT set_exercise FOREIGN KEY (exercise_id) REFERENCES exercise (id);
 ALTER TABLE exercise_set ADD CONSTRAINT set_section FOREIGN KEY (section_id) REFERENCES section (id) ON DELETE CASCADE;
 ALTER TABLE training ADD CONSTRAINT training_cooperation FOREIGN KEY (trainer_id, trainee_id) REFERENCES cooperation (trainer_id, trainee_id);
-ALTER TABLE training ADD CONSTRAINT training_section FOREIGN KEY (section_id) REFERENCES section (id);
-ALTER TABLE training ADD CONSTRAINT training_workplace FOREIGN KEY (workplace_id) REFERENCES workplace (id);
 ALTER TABLE opinion ADD CONSTRAINT opinion_trainee FOREIGN KEY (trainee_id) REFERENCES trainee (id);
 ALTER TABLE opinion ADD CONSTRAINT opinion_trainer FOREIGN KEY (trainer_id) REFERENCES trainer (id);
 ALTER TABLE notification ADD CONSTRAINT notification_user FOREIGN KEY (user_id) REFERENCES "user" (id) ON DELETE CASCADE;
 ALTER TABLE survey_answer ADD CONSTRAINT answer_trainee FOREIGN KEY (trainee_id) REFERENCES trainee (id);
 ALTER TABLE survey_answer ADD CONSTRAINT answer_question FOREIGN KEY (question_id) REFERENCES survey_question (id);
-ALTER TABLE training_comment ADD CONSTRAINT comment_training FOREIGN KEY (training_id) REFERENCES training (id) ON DELETE CASCADE;
-ALTER TABLE training_comment ADD CONSTRAINT comment_user FOREIGN KEY (user_id) REFERENCES "user" (id);
 
 
 
@@ -225,12 +209,12 @@ INSERT INTO survey_question (question, "order") VALUES
 --HASLO DO WSZYSTKICH KONT - ABCabc11
 --TRAINEE
 INSERT INTO "user" (id, name, surname, email, phone, password, role) VALUES
-('049392cf-fdc8-4c95-b89b-2cf48ce2485e', 'Anna', 'Kowalska', 'zw@op.pl', '123456789', '$argon2id$v=19$m=65536,t=3,p=4$2u37KIx7dz9gZuBZU8BPwQ$BUa5wRmJylz43DFJ7mko79H/+dk33D4NKOjGgyzTVSs', 'trainee'),
-('7a691694-f4c9-4677-8a90-d80a184e5773', 'Michał', 'Wróbel', 'zw1@op.pl', '123456789', '$argon2id$v=19$m=65536,t=3,p=4$2u37KIx7dz9gZuBZU8BPwQ$BUa5wRmJylz43DFJ7mko79H/+dk33D4NKOjGgyzTVSs', 'trainee');
+('55555555-5555-5555-5555-555555555555', 'Anna', 'Kowalska', 'zw@op.pl', '123456789', '$argon2id$v=19$m=65536,t=3,p=4$2u37KIx7dz9gZuBZU8BPwQ$BUa5wRmJylz43DFJ7mko79H/+dk33D4NKOjGgyzTVSs', 'trainee'),
+('66666666-6666-6666-6666-666666666666', 'Michał', 'Wróbel', 'zw1@op.pl', '123456789', '$argon2id$v=19$m=65536,t=3,p=4$2u37KIx7dz9gZuBZU8BPwQ$BUa5wRmJylz43DFJ7mko79H/+dk33D4NKOjGgyzTVSs', 'trainee');
 
 INSERT INTO trainee (id, birthdate, slug) VALUES
-('049392cf-fdc8-4c95-b89b-2cf48ce2485e', '2000-02-20', 'anna-kowalska'),
-('7a691694-f4c9-4677-8a90-d80a184e5773', '2000-01-12', 'michal-wrobel');
+('55555555-5555-5555-5555-555555555555', '2000-02-20', 'anna-kowalska'),
+('66666666-6666-6666-6666-666666666666', '2000-01-12', 'michal-wrobel');
 
 
 --TRAINER
@@ -251,6 +235,11 @@ INSERT INTO workplace (id, trainer_id, name, street, building_number, flat_numbe
 ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '22222222-2222-2222-2222-222222222222', 'Zdrofit Wilanów', 'Klimczaka', '1', '2A', 'Warszawa'),
 ('cccccccc-cccc-cccc-cccc-cccccccccccc', '33333333-3333-3333-3333-333333333333', 'Fabryka Formy', 'Bałtycka', '5', NULL, 'Poznań'),
 ('dddddddd-dddd-dddd-dddd-dddddddddddd', '44444444-4444-4444-4444-444444444444', 'Zdrofit', 'Wałowa', '10', NULL, 'Warszawa');
+
+
+--COOPERATION
+INSERT INTO cooperation (trainer_id, trainee_id, workplace_id, trainer_note, status) VALUES
+('44444444-4444-4444-4444-444444444444', '55555555-5555-5555-5555-555555555555', 'dddddddd-dddd-dddd-dddd-dddddddddddd', NULL, 'active');
 
 
 --EXERCISE

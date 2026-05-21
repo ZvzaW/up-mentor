@@ -30,6 +30,7 @@ import {
   editWorkplaceSchema,
   type EditWorkplaceFormValues,
 } from "@/lib/validations"
+import { workplace } from "@prisma/client"
 
 interface EditWorkplaceDialogProps {
   workplace: {
@@ -75,7 +76,7 @@ export default function EditWorkplaceDialog({
 
   const handleSave = (data: EditWorkplaceFormValues) => {
     startSavingTransition(async () => {
-      const result = await editWorkplace(data)
+      const result = await editWorkplace({ ...workplace, ...data } as workplace)
 
       if (result?.error) {
         toast.error(result.error)

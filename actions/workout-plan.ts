@@ -28,25 +28,6 @@ export type WorkoutPlanInput = {
   sections: SectionInput[]
 }
 
-export type WorkoutPlanDetails = {
-  id: string
-  name: string
-  difficulty: string | null
-  description: string | null
-  section: {
-    id: string
-    body_part: string | null
-    order: number
-    exercise_set: {
-      id: string
-      exercise_id: string
-      series_count: number
-      reps_count: number
-      weight: number | null
-      order: number
-    }[]
-  }[]
-}
 
 export type WorkoutPlanListItem = {
   id: string
@@ -311,7 +292,7 @@ export async function createWorkoutPlan(data: WorkoutPlanInput) {
       },
     })
 
-    revalidatePath("/dashboard/workouts")
+    revalidatePath("/dashboard/workout-plans")
     return { data: newPlan }
   } catch {
     return { error: "Wystąpił błąd podczas zapisywania planu. Spróbuj ponownie." }
@@ -500,7 +481,7 @@ export async function cloneWorkoutPlan(planId: string) {
       },
     })
 
-    revalidatePath("/dashboard/workouts")
+    revalidatePath("/dashboard/workout-plans")
     return { success: true }
   } catch {
     return { error: "Wystąpił błąd podczas klonowania planu. Spróbuj ponownie." }
@@ -552,7 +533,7 @@ export async function assignPlanToTrainee(planId: string, traineeId: string) {
       },
     })
 
-    revalidatePath("/dashboard/workouts")
+    revalidatePath("/dashboard/workout-plans")
     return { success: true, data: assignment }
   } catch (error: any) {
     if(error.code === "P2002") {
