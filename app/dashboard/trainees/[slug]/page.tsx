@@ -28,24 +28,18 @@ const mockTrainings = [
     date: "2026-05-06",
     startTime: "17:30",
     duration: "1.5 h",
-    workplace: "Fit Zone, ul. Lipowa 12, Gdańsk",
-    sectionName: "Push day",
   },
   {
     id: "training-2",
     date: "2026-05-08",
     startTime: "18:00",
     duration: "1.0 h",
-    workplace: "Fit Zone, ul. Lipowa 12, Gdańsk",
-    sectionName: "Pull day",
   },
   {
     id: "training-3",
     date: "2026-05-11",
     startTime: "17:00",
     duration: "1.5 h",
-    workplace: "Fit Zone, ul. Lipowa 12, Gdańsk",
-    sectionName: "Legs + core",
   },
 ]
 
@@ -140,9 +134,6 @@ export default async function TraineeDetailsPage({
                     key={training.id}
                     className="bg-dirty-blue/40 space-y-2 rounded-lg border border-zinc-700/70 p-4"
                   >
-                    <p className="text-gold font-semibold">
-                      {training.sectionName}
-                    </p>
                     <div className="flex items-center gap-2 text-sm text-zinc-300">
                       <Clock3 className="text-baby-blue h-4 w-4" />
                       <span>
@@ -152,7 +143,7 @@ export default async function TraineeDetailsPage({
                     </div>
                     <div className="flex items-center gap-2 text-sm text-zinc-400">
                       <MapPin className="text-baby-blue h-4 w-4" />
-                      <span>{training.workplace}</span>
+                      <span>{selectedTrainee.workplace}</span>
                     </div>
                   </div>
                 ))}

@@ -263,6 +263,37 @@ export const workoutPlanFormSchema = z.object({
 
 export type WorkoutPlanFormValues = z.infer<typeof workoutPlanFormSchema>
 
+const trainingDurationSchema = z
+  .number()
+  .refine(
+    (v) => [0.5, 1, 1.5, 2, 2.5, 3].includes(v),
+    { message: "Wybierz czas trwania z listy" }
+  )
+
+export const trainingFormSchema = z
+  .object({
+    trainee_id: z.string().min(1, "Wybierz podopiecznego"),
+    date: z.string().min(1, "Data jest wymagana"),
+    start_time: z
+      .string()
+      .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Podaj poprawną godzinę (HH:MM)"),
+    duration: trainingDurationSchema,
+  })
+
+export const trainingDialogSchema = trainingFormSchema.extend({
+  id: z.string().optional(),
+})
+
+export const createTrainingSchema = trainingFormSchema
+export const updateTrainingSchema = trainingFormSchema.extend({
+  id: z.string().min(1, "Wybierz trening"),
+})
+
+export type TrainingFormValues = z.infer<typeof trainingFormSchema>
+export type TrainingDialogFormValues = z.infer<typeof trainingDialogSchema>
+export type CreateTrainingFormValues = z.infer<typeof createTrainingSchema>
+export type UpdateTrainingFormValues = z.infer<typeof updateTrainingSchema>
+
 // ---OTHER---
 export const changePasswordSchema = z
   .object({
