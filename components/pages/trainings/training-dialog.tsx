@@ -83,6 +83,7 @@ export default function TrainingDialog({
   onSaved,
 }: TrainingDialogProps) {
   const [isPending, startTransition] = React.useTransition()
+  const wasOpenRef = React.useRef(false)
   const readOnly = mode === "view" || !isTrainer
 
   const defaultValues: TrainingDialogFormValues = React.useMemo(() => {
@@ -112,11 +113,14 @@ export default function TrainingDialog({
     mode: "onChange",
   })
 
+  const { reset } = form
+
   React.useEffect(() => {
-    if (open) {
-      form.reset(defaultValues)
+    if (open && !wasOpenRef.current) {
+      reset(defaultValues)
     }
-  }, [open, defaultValues, form])
+    wasOpenRef.current = open
+  }, [open, defaultValues, reset])
 
   const watchTraineeId = useWatch({
     control: form.control,
@@ -132,6 +136,7 @@ export default function TrainingDialog({
     : null
 
   const handleSubmit = (data: TrainingDialogFormValues) => {
+    onOpenChange(false)
     startTransition(async () => {
       const result =
         mode === "edit" && data.id
@@ -157,14 +162,14 @@ export default function TrainingDialog({
       toast.success(
         mode === "edit" ? "Zaktualizowano trening." : "Zaplanowano trening."
       )
-      onOpenChange(false)
       onSaved()
     })
   }
 
   const handleDeleteClick = () => {
     if (!training?.id) return
-    if (!window.confirm("Czy na pewno chcesz usunąć ten trening?")) return
+    if (!confirm("Czy na pewno chcesz usunąć ten trening?")) return
+    onOpenChange(false)
     startTransition(async () => {
       const result = await deleteTraining(training.id)
       if (result?.error) {
@@ -172,7 +177,6 @@ export default function TrainingDialog({
         return
       }
       toast.success("Usunięto trening.")
-      onOpenChange(false)
       onSaved()
     })
   }

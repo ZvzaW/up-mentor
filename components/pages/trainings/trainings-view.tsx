@@ -26,6 +26,13 @@ type DialogState = {
   initialSlot: TrainingSlot | null
 }
 
+const CLOSED_DIALOG: DialogState = {
+  open: false,
+  mode: "create",
+  training: null,
+  initialSlot: null,
+}
+
 export default function TrainingsView({
   role,
   initialTrainings,
@@ -48,12 +55,7 @@ export default function TrainingsView({
     return day === 0 ? 6 : day - 1
   })
 
-  const [dialog, setDialog] = React.useState<DialogState>({
-    open: false,
-    mode: "create",
-    training: null,
-    initialSlot: null,
-  })
+  const [dialog, setDialog] = React.useState<DialogState>(CLOSED_DIALOG)
 
   const refreshTrainings = React.useCallback(async (anchor: Date) => {
     const result = await getTrainingsForWeek(anchor.toISOString())
@@ -93,6 +95,10 @@ export default function TrainingsView({
     })
   }
 
+  const handleSaved = () => {
+    void refreshTrainings(weekAnchor)
+  }
+
   return (
     <div className="relative flex flex-col gap-6">
       <TrainingsCalendar
@@ -111,26 +117,30 @@ export default function TrainingsView({
       {isTrainer && trainees && (
         <TrainingDialog
           open={dialog.open}
-          onOpenChange={(open) => setDialog((d) => ({ ...d, open }))}
+          onOpenChange={(open) => {
+            if (!open) setDialog(CLOSED_DIALOG)
+          }}
           mode={dialog.mode}
           training={dialog.training}
           initialSlot={dialog.initialSlot}
           trainees={trainees}
           isTrainer={isTrainer}
-          onSaved={() => refreshTrainings(weekAnchor)}
+          onSaved={handleSaved}
         />
       )}
 
       {!isTrainer && (
         <TrainingDialog
           open={dialog.open}
-          onOpenChange={(open) => setDialog((d) => ({ ...d, open }))}
+          onOpenChange={(open) => {
+            if (!open) setDialog(CLOSED_DIALOG)
+          }}
           mode="view"
           training={dialog.training}
           initialSlot={null}
           trainees={null}
           isTrainer={false}
-          onSaved={() => refreshTrainings(weekAnchor)}
+          onSaved={handleSaved}
         />
       )}
     </div>
