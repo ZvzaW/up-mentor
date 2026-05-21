@@ -2,8 +2,6 @@
 
 import * as React from "react"
 import { startOfDay, getDay } from "date-fns"
-import { toast } from "sonner"
-
 import { getTrainingsForWeek } from "@/actions/training"
 import TrainingDialog from "@/components/pages/trainings/training-dialog"
 import TrainingsCalendar from "@/components/pages/trainings/trainings-calendar"
@@ -17,6 +15,7 @@ type TrainingsViewProps = {
   role: "trainer" | "trainee" | string
   initialTrainings: TrainingDTO[]
   initialWeekAnchor: string
+  initialFetchError?: string | null
   trainees: any[] | null
 }
 
@@ -31,6 +30,7 @@ export default function TrainingsView({
   role,
   initialTrainings,
   initialWeekAnchor,
+  initialFetchError = null,
   trainees,
 }: TrainingsViewProps) {
   const isTrainer = role === "trainer"
@@ -38,6 +38,9 @@ export default function TrainingsView({
     () => new Date(initialWeekAnchor)
   )
   const [trainings, setTrainings] = React.useState(initialTrainings)
+  const [fetchError, setFetchError] = React.useState<string | null>(
+    initialFetchError
+  )
 
   const [mobileDayIndex, setMobileDayIndex] = React.useState(() => {
     const today = new Date()
@@ -56,9 +59,10 @@ export default function TrainingsView({
     const result = await getTrainingsForWeek(anchor.toISOString())
 
     if (result?.error) {
-      toast.error(result.error)
+      setFetchError(result.error)
       return
     }
+    setFetchError(null)
     if (result?.data) {
       setTrainings(result.data)
     }
@@ -95,6 +99,7 @@ export default function TrainingsView({
         weekAnchor={weekAnchor}
         onWeekChange={handleWeekChange}
         trainings={trainings}
+        fetchError={fetchError}
         isTrainer={isTrainer}
         mobileDayIndex={mobileDayIndex}
         onMobileDayIndexChange={setMobileDayIndex}

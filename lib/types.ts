@@ -42,3 +42,11 @@ export type TraineeDTO = {
    fullName: string
    workplace: WorkplaceAddress
 }
+
+export type TrainingListItem = {
+  id: string
+  date: string
+  startTime: string
+  durationLabel: string
+  workplaceAddress: string
+}

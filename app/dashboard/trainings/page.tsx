@@ -18,6 +18,7 @@ export default async function TrainingsPage() {
 
   const trainings = trainingsResult?.data ?? []
   const trainees = traineesResult?.data ?? []
+  const initialFetchError = trainingsResult?.error ?? null
 
   return (
     <div>
@@ -26,6 +27,7 @@ export default async function TrainingsPage() {
       role={role}
       initialTrainings={trainings}
       initialWeekAnchor={weekAnchor.toISOString()}
+      initialFetchError={initialFetchError}
       trainees={trainees}
     />
     </div>

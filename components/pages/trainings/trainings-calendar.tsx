@@ -6,6 +6,7 @@ import { pl } from "date-fns/locale"
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
 
 import type { TrainingDTO } from "@/lib/types"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import {
@@ -28,6 +29,7 @@ type TrainingsCalendarProps = {
   weekAnchor: Date
   onWeekChange: (date: Date) => void
   trainings: TrainingDTO[]
+  fetchError?: string | null
   isTrainer: boolean
   mobileDayIndex: number
   onMobileDayIndexChange: (index: number) => void
@@ -45,6 +47,7 @@ export default function TrainingsCalendar({
   weekAnchor,
   onWeekChange,
   trainings,
+  fetchError,
   isTrainer,
   mobileDayIndex,
   onMobileDayIndexChange,
@@ -259,6 +262,12 @@ export default function TrainingsCalendar({
             <ChevronRight />
           </Button>
         </div>
+
+        {fetchError && (
+          <Alert variant="destructive" className="mb-4 mx-auto shrink-0">
+            <AlertDescription>{fetchError}</AlertDescription>
+          </Alert>
+        )}
 
         <div className="overflow-hidden rounded-md border border-baby-blue bg-dirty-navy/60 min-h-0">
           {/*NAGŁOWEK - DNI*/}

@@ -41,12 +41,16 @@ import {
   formatTrainingDateTime,
   type TrainingSlot,
 } from "@/lib/training-calendar-functions"
-import { toDateInputValue, toTimeInputValue } from "@/lib/utils"
+import {
+  formatWorkplaceAddress,
+  toDateInputValue,
+  toTimeInputValue,
+} from "@/lib/utils"
 import {
   trainingDialogSchema,
   type TrainingDialogFormValues,
 } from "@/lib/validations"
-import { TrainingDTO } from "@/lib/types"
+import { TrainingDTO, WorkplaceAddress } from "@/lib/types"
 
 const DURATION_OPTIONS = [
   { value: 0.5, label: "30 min" },
@@ -119,9 +123,13 @@ export default function TrainingDialog({
     name: "trainee_id",
   })
 
-  const selectedWorkplaceName = trainees?.find(
+  const selectedWorkplace = trainees?.find(
     (t) => t.id === watchTraineeId
-  )?.workplace
+  )?.workplace as WorkplaceAddress | undefined
+
+  const selectedWorkplaceLabel = selectedWorkplace
+    ? formatWorkplaceAddress(selectedWorkplace)
+    : null
 
   const handleSubmit = (data: TrainingDialogFormValues) => {
     startTransition(async () => {
@@ -235,7 +243,7 @@ export default function TrainingDialog({
                             <SelectContent>
                               {trainees?.map((t) => (
                                 <SelectItem key={t.id} value={t.id}>
-                                  {t.name}
+                                  {t.fullName}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -245,10 +253,10 @@ export default function TrainingDialog({
                       )}
                     />
 
-                    {watchTraineeId && selectedWorkplaceName && (
+                    {watchTraineeId && selectedWorkplaceLabel && (
                       <p className="mb-6 break-words rounded-lg bg-dirty-navy/50 px-3 py-2 text-sm text-zinc-300">
                         <span className="text-zinc-400">Miejsce treningu: </span>
-                        {selectedWorkplaceName}
+                        {selectedWorkplaceLabel}
                       </p>
                     )}
 
