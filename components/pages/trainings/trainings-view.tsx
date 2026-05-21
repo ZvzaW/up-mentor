@@ -4,17 +4,18 @@ import * as React from "react"
 import { startOfDay, getDay } from "date-fns"
 import { toast } from "sonner"
 
-import { getTrainingsForWeek, type CalendarTraining } from "@/actions/training"
+import { getTrainingsForWeek } from "@/actions/training"
 import TrainingDialog from "@/components/pages/trainings/training-dialog"
 import TrainingsCalendar from "@/components/pages/trainings/trainings-calendar"
 import {
   getDefaultCreateSlot,
   type TrainingSlot,
 } from "@/lib/training-calendar-functions"
+import { TrainingDTO } from "@/lib/types"
 
 type TrainingsViewProps = {
   role: "trainer" | "trainee" | string
-  initialTrainings: CalendarTraining[]
+  initialTrainings: TrainingDTO[]
   initialWeekAnchor: string
   trainees: any[] | null
 }
@@ -22,7 +23,7 @@ type TrainingsViewProps = {
 type DialogState = {
   open: boolean
   mode: "create" | "edit" | "view"
-  training: CalendarTraining | null
+  training: TrainingDTO | null
   initialSlot: TrainingSlot | null
 }
 
@@ -79,7 +80,7 @@ export default function TrainingsView({
     })
   }
 
-  const openTraining = (training: CalendarTraining) => {
+  const openTraining = (training: TrainingDTO) => {
     setDialog({
       open: true,
       mode: isTrainer ? "edit" : "view",

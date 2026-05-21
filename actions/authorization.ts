@@ -5,7 +5,7 @@ import {
   generateUniqueTraineeSlug,
   generateUniqueTrainerSlug,
 } from "@/lib/slug"
-import { registerTraineeSchema, registerTrainerSchema } from "@/lib/validations"
+import { RegisterTraineeFormValues, registerTraineeSchema, RegisterTrainerFormValues, registerTrainerSchema } from "@/lib/validations"
 import { Prisma } from "@prisma/client"
 import * as argon2 from "argon2"
 import { redirect } from "next/navigation"
@@ -14,7 +14,7 @@ import { signIn } from "@/auth"
 import { AuthError } from "next-auth"
 
 export async function register(
-  formData: any,
+  formData: RegisterTraineeFormValues | RegisterTrainerFormValues,
   role: "trainee" | "trainer"
 ) {
   const schema =
@@ -49,7 +49,7 @@ export async function register(
       })
 
       if (role === "trainer") {
-        const d = data as any
+        const d = data as RegisterTrainerFormValues
         await tx.trainer.create({
           data: { id: newUser.id, slug: generatedSlug },
         })
@@ -59,12 +59,12 @@ export async function register(
             name: d.workplaceName.trim(),
             street: d.street.trim(),
             building_number: d.buildingNumber.trim(),
-            flat_number: d.flatNumber.trim() || null,
+            flat_number: d.flatNumber?.trim() || null,
             city: d.city.trim(),
           },
         })
       } else {
-        const d = data as any
+        const d = data as RegisterTraineeFormValues
         await tx.trainee.create({
           data: {
             id: newUser.id,
@@ -82,7 +82,7 @@ export async function register(
   redirect("/?registered=true")
 }
 
-export async function login(data: any) {
+export async function login(data: { email: string, password: string }) {
   const email = data.email
   const password = data.password
 
@@ -112,7 +112,7 @@ export async function login(data: any) {
 
 export async function logout() {
   const session = await auth()
-  const tokenToDelete = (session as any)?.refreshToken
+  const tokenToDelete = session?.refreshToken
 
   try {
     if (tokenToDelete) {
@@ -120,7 +120,7 @@ export async function logout() {
         where: { token: tokenToDelete },
       })
     }
-  } catch (error) {
+  } catch{
     return { error: "Wystąpił błąd podczas wylogowywania. Spróbuj ponownie." }
   }
 
@@ -139,7 +139,7 @@ export async function logoutAllDevices() {
         user_id: session.user.id,
       },
     })
-  } catch (error) {
+  } catch{
     return {
       error:
         "Wystąpił błąd podczas wylogowywania ze wszystkich urządzeń. Spróbuj ponownie.",

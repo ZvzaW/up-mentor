@@ -3,16 +3,10 @@
 import { Card, CardContent } from "@/components/ui/card"
 import SettingsDialog from "@/components/dialogs/settings"
 import { FillSurveyDialog } from "@/components/dialogs/trainee/fill-survey"
+import { UserDTO } from "@/lib/types"
 
 interface TraineeProfileProps {
-  baseData: {
-    id: string
-    name: string
-    surname: string
-    email: string
-    phone: string
-    role: string
-  }
+  baseData: UserDTO
   specificData: {
     birthdate: Date
   }

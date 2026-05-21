@@ -4,6 +4,7 @@ import { getMyTrainees } from "@/actions/my-trainees"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { getPendingRequests } from "@/actions/coaching-request"
 import { ManageCoachingRequestsDialog } from "@/components/dialogs/trainer/manage-coaching-request"
+import { TraineeDTO } from "@/lib/types"
 
 export default async function TraineesPage() {
   const [traineesResult, requestsResult] = await Promise.all([
@@ -34,7 +35,7 @@ export default async function TraineesPage() {
               <AlertDescription>{traineesResult.error}</AlertDescription>
             </Alert>
           ) : (
-            <TraineesList initialTrainees={trainees} />
+            <TraineesList initialTrainees={trainees as TraineeDTO[]} />
           )}
         </CardContent>
       </Card>

@@ -28,7 +28,6 @@ import { Input } from "@/components/ui/input"
 import {
   TrainerCardInput,
   trainerCardSchema,
-  type TrainerCardValues,
 } from "@/lib/validations"
 import { Loader2 } from "lucide-react"
 

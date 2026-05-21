@@ -1,14 +1,12 @@
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Clock3,
   MapPin,
   NotebookPen,
   ChevronLeft,
-  Trophy,
 } from "lucide-react"
 import { getMyTraineeBySlug } from "@/actions/my-trainees"
 import { TraineeQuickActions } from "@/components/pages/my-trainees/trainee-quick-actions"

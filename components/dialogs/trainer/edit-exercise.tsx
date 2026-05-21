@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Loader2, Pencil } from "lucide-react"
 import { toast } from "sonner"
 
-import type { Exercise } from "@/actions/exercise"
 import { editTrainerExercise } from "@/actions/exercise"
 import { Button } from "@/components/ui/button"
 import {
@@ -40,9 +39,10 @@ import {
   trainerExerciseFormSchema,
   type TrainerExerciseFormInput,
 } from "@/lib/validations"
+import { exercise } from "@prisma/client"
 
 type EditExerciseDialogProps = {
-  exercise: Exercise
+  exercise: exercise
 }
 
 
@@ -71,7 +71,7 @@ export function EditExerciseDialog({ exercise }: EditExerciseDialogProps) {
 
   const handleSave = (data: TrainerExerciseFormInput) => {
     startSavingTransition(async () => {
-      const result = await editTrainerExercise({ id: exercise.id, ...data })
+      const result = await editTrainerExercise({ ...exercise, ...data } as exercise)
 
       if (result.error) {
         toast.error(result.error)

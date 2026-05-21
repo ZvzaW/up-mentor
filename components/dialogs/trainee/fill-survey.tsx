@@ -81,7 +81,7 @@ export function FillSurveyDialog() {
 
     setIsPending(true)
     const payload = Object.entries(answers)
-      .filter(([_, text]) => text.trim() !== "")
+      .filter(([text]) => text.trim() !== "")
       .map(([qId, text]) => ({
         question_id: qId,
         answer: text,

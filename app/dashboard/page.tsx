@@ -13,17 +13,7 @@ import TraineeStats from "@/components/pages/statistics/trainee-stats"
 
 import { getNotifications, getUnreadCount, markAsRead } from "@/actions/notifications"
 import { SkeletonList } from "@/components/ui/skeleton"
-
-interface Notification {
-  id: string
-  user_id: string
-  title: string
-  message: string
-  redirect_url: string | null
-  type: "request" | "comment" | "message" | "system"
-  is_read: boolean
-  created_at: Date
-}
+import { notification } from "@prisma/client"
 
 const ICONS: Record<string, JSX.Element> = {
   request: <Users size={16} />,
@@ -35,8 +25,8 @@ const ICONS: Record<string, JSX.Element> = {
 interface NotificationsPanelProps {
   unreadCount: number
   decrementCount: () => void
-  groupedNotifications: Record<string, Notification[]>
-  setGroupedNotifications: React.Dispatch<React.SetStateAction<Record<string, Notification[]>>>
+  groupedNotifications: Record<string, notification[]>
+  setGroupedNotifications: React.Dispatch<React.SetStateAction<Record<string, notification[]>>>
   isLoading: boolean
   hasMore: boolean
   isLoadingMore: boolean
@@ -59,7 +49,7 @@ function NotificationsPanel({
 }: NotificationsPanelProps) {
   const router = useRouter()
 
-  const handleNotificationClick = async (notif: Notification) => {
+  const handleNotificationClick = async (notif: notification) => {
     if (notif.redirect_url) router.push(notif.redirect_url)
 
     if (!notif.is_read) {
@@ -190,7 +180,7 @@ export default function DashboardPage({ userRole }: { userRole?: string }) {
   const [mobileTab, setMobileTab] = useState<"notifications" | "stats">("notifications")
   const [unreadCount, setUnreadCount] = useState(0)
 
-  const [groupedNotifications, setGroupedNotifications] = useState<Record<string, Notification[]>>({})
+  const [groupedNotifications, setGroupedNotifications] = useState<Record<string, notification[]>>({})
   const [page, setPage] = useState(0)
   const [hasMore, setHasMore] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
@@ -199,24 +189,29 @@ export default function DashboardPage({ userRole }: { userRole?: string }) {
 
 
   useEffect(() => {
+    let cancelled = false
+
     getUnreadCount().then((res) => {
-      if (!res.error) {
+      if (!cancelled && !res.error) {
         setUnreadCount(res.count || 0)
       }
     })
 
-    setIsLoading(true)
-    setError(null)
     getNotifications(0).then((res) => {
+      if (cancelled) return
       if (res.error) {
         setError(res.error)
       } else {
-        setGroupedNotifications((res.grouped as Record<string, Notification[]>) || {})
+        setGroupedNotifications((res.grouped as Record<string, notification[]>) || {})
         setHasMore(res.hasMore ?? false)
         setPage(0)
       }
       setIsLoading(false)
     })
+
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const decrementCount = () => {
@@ -235,7 +230,7 @@ export default function DashboardPage({ userRole }: { userRole?: string }) {
     } else {
       setGroupedNotifications((prev) => {
         const updated = { ...prev }
-        const newGrouped = (res.grouped as Record<string, Notification[]>) || {}
+        const newGrouped = (res.grouped as Record<string, notification[]>) || {}
 
         Object.entries(newGrouped).forEach(([label, items]) => {
           const merged = [...(updated[label] || []), ...items]

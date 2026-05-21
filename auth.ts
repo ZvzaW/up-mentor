@@ -85,7 +85,7 @@ async function refreshAccessToken(token: any) {
       accessToken: crypto.randomBytes(20).toString("hex"),
       accessTokenExpires: Date.now() + 15 * 60 * 1000,
     }
-  } catch (error) {
+  } catch {
     return { ...token, error: "RefreshTokenError" }
   }
 }

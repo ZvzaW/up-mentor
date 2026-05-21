@@ -8,6 +8,8 @@ import {
   type CoachingRequestInput,
 } from "@/lib/validations"
 import { redirect } from "next/navigation"
+import { formatWorkplaceAddress } from "@/lib/utils"
+import {  WorkplaceAddress } from "@/lib/types"
 
 export async function sendCoachingRequest(data: CoachingRequestInput) {
   const session = await auth()
@@ -60,7 +62,7 @@ export async function sendCoachingRequest(data: CoachingRequestInput) {
 
     revalidatePath("/dashboard/trainers/catalog")
     return { success: true }
-  } catch (error) {
+  } catch {
     return {
       error: "Wystąpił błąd podczas wysyłania prośby. Spróbuj ponownie.",
     }
@@ -92,8 +94,7 @@ export async function deleteCoachingRequest(trainerId: string) {
 
     revalidatePath("/dashboard/trainers/catalog")
     return { success: true }
-  } catch (error) {
-    console.error(error)
+  } catch {
     return { error: "Wystąpił błąd podczas usuwania danych. Spróbuj ponownie." }
   }
 }
@@ -172,11 +173,11 @@ export async function getPendingRequests() {
       name: `${req.trainee.user.name} ${req.trainee.user.surname}`,
       message: req.message,
       createdAt: req.created_at,
-      workplace: `${req.workplace.name} - ul. ${req.workplace.street} ${req.workplace.building_number}${req.workplace.flat_number ? `/${req.workplace.flat_number}` : ""}, ${req.workplace.city}`,
+      workplace: formatWorkplaceAddress(req.workplace as WorkplaceAddress),
     }))
 
     return { success: true, data: mappedRequests }
-  } catch (error) {
+  } catch {
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }
@@ -216,8 +217,7 @@ export async function acceptRequest(traineeId: string, workplaceId: string) {
 
     revalidatePath("/dashboard/trainees")
     return { success: true }
-  } catch (error) {
-    console.error(error)
+  } catch {
     return {
       error: "Wystąpił błąd podczas akceptacji prośby. Spróbuj ponownie.",
     }
@@ -249,8 +249,7 @@ export async function rejectRequest(traineeId: string) {
 
     revalidatePath("/dashboard/trainees")
     return { success: true }
-  } catch (error) {
-    console.error(error)
+  } catch {
     return {
       error: "Wystąpił błąd podczas odrzucania prośby. Spróbuj ponownie.",
     }

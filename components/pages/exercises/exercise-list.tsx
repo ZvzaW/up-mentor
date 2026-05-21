@@ -3,7 +3,7 @@
 import * as React from "react"
 import { ExternalLink } from "lucide-react"
 
-import type { Exercise } from "@/actions/exercise"
+
 import { EditExerciseDialog } from "@/components/dialogs/trainer/edit-exercise"
 import { DeleteExerciseButton } from "@/components/pages/exercises/delete-exercise"
 import { Button } from "@/components/ui/button"
@@ -18,16 +18,17 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { EXERCISE_BODY_PARTS } from "@/lib/exercise-body-parts"
+import { exercise } from "@prisma/client"
 
 type OriginFilter = "all" | "predefined" | "author"
 
 type ExerciseListProps = {
-  exercises: Exercise[]
+  exercises: exercise[]
   role: string
 }
 
-function exerciseSourceLabel(ex: Exercise, role: string) {
-  if (ex.isPredefined) return "Baza"
+function exerciseSourceLabel(ex: exercise, role: string) {
+  if (ex.trainer_id === null) return "Baza"
   return role === "trainer" ? "Twoje" : "Trenera"
 }
 
@@ -47,10 +48,10 @@ export function ExerciseList({
       if (bodyPart && ex.body_part !== bodyPart) {
         return false
       }
-      if (origin === "predefined" && !ex.isPredefined) {
+      if (origin === "predefined" && ex.trainer_id !== null) {
         return false
       }
-      if (origin === "author" && ex.isPredefined) {
+      if (origin === "author" && ex.trainer_id === null) {
         return false
       }
       return true
@@ -185,7 +186,7 @@ export function ExerciseList({
                         )}</div>
                        
                       </div>
-                      {role === "trainer" && !ex.isPredefined && (
+                      {role === "trainer" && ex.trainer_id !== null && (
                         <div className="my-auto flex shrink-0 flex-col gap-0.5">
                           <EditExerciseDialog exercise={ex} />
                           <DeleteExerciseButton

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth"
 import { formatDate } from "@/lib/utils"
 import { redirect } from "next/navigation"
-
+import { notification } from "@prisma/client"
 export async function getNotifications(page: number = 0) {
   const session = await auth()
   if (!session?.user?.id) {
@@ -27,7 +27,7 @@ export async function getNotifications(page: number = 0) {
     const grouped = groupNotificationsByDate(notificationsToDisplay)
 
     return { grouped, hasMore }
-  } catch (error: any) {
+  } catch {
     return {
       grouped: {},
       hasMore: false,
@@ -36,12 +36,12 @@ export async function getNotifications(page: number = 0) {
   }
 }
 
-function groupNotificationsByDate(notifications: any[]) {
+function groupNotificationsByDate(notifications: notification[]) {
   const today = new Date()
   const yesterday = new Date(today)
   yesterday.setDate(yesterday.getDate() - 1)
 
-  const groups: Record<string, any[]> = {}
+  const groups: Record<string, notification[]> = {}
 
   notifications.forEach((notif) => {
     const date = new Date(notif.created_at)
@@ -83,7 +83,7 @@ export async function getUnreadCount() {
     })
 
     return { count, error: null }
-  } catch (error: any) {
+  } catch {
     return {
       count: 0,
       error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę",
@@ -107,7 +107,7 @@ export async function markAsRead(id: string) {
     })
 
     return { error: null }
-  } catch (error: any) {
+  } catch {
     return {
       error: "Coś poszło nie tak przy odczytywaniu powiadomienia.",
     }

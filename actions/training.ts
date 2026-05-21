@@ -12,31 +12,10 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { Prisma } from "@prisma/client"
 import { endOfWeek, startOfDay, isBefore, startOfWeek } from "date-fns"
-import { combineDateAndTime } from "@/lib/utils"
+import { combineDateAndTime, formatWorkplaceAddress } from "@/lib/utils"
+import { TrainingDTO,  WorkplaceAddress } from "@/lib/types"
 
-export type CalendarTraining = {
-  id: string
-  trainerId: string
-  traineeId: string
-  traineeName: string
-  trainerName: string
-  workplaceName: string
-  scheduledAt: string
-  duration: number
-}
 
-type WorkplaceAddress = {
-  name: string
-  street: string
-  building_number: string
-  flat_number: string | null
-  city: string
-}
-
-function formatWorkplaceAddress(workplace: WorkplaceAddress) {
-  const flat = workplace.flat_number ? `/${workplace.flat_number}` : ""
-  return `${workplace.name} - ul. ${workplace.street} ${workplace.building_number}${flat}, ${workplace.city}`
-}
 
 function mapTraining(
   t: {
@@ -51,14 +30,14 @@ function mapTraining(
       workplace: WorkplaceAddress
     }
   }
-): CalendarTraining {
+): TrainingDTO {
   return {
     id: t.id,
     trainerId: t.trainer_id,
     traineeId: t.trainee_id,
     traineeName: `${t.cooperation.trainee.user.name} ${t.cooperation.trainee.user.surname}`,
     trainerName: `${t.cooperation.trainer.user.name} ${t.cooperation.trainer.user.surname}`,
-    workplaceName: formatWorkplaceAddress(t.cooperation.workplace),
+    workplaceAddress: formatWorkplaceAddress(t.cooperation.workplace as WorkplaceAddress),
     scheduledAt: t.scheduled_at.toISOString(),
     duration: Number(t.duration),
   }

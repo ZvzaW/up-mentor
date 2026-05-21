@@ -2,7 +2,7 @@
 
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
-import { trainerOpinionSchema } from "@/lib/validations"
+import { TrainerOpinionFormValues, trainerOpinionSchema } from "@/lib/validations"
 import { redirect } from "next/navigation"
 
 export async function getMyOpinion(trainerId: string) {
@@ -102,7 +102,7 @@ export async function getTrainerOpinions(trainerId: string) {
   }
 }
 
-export async function upsertOpinion(input: unknown) {
+export async function upsertOpinion(opinion: TrainerOpinionFormValues) {
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
@@ -112,7 +112,7 @@ export async function upsertOpinion(input: unknown) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
-  const validated = trainerOpinionSchema.safeParse(input)
+  const validated = trainerOpinionSchema.safeParse(opinion)
   if (!validated.success) {
     return { error: "Nieprawidłowe dane formularza." }
   }

@@ -42,6 +42,7 @@ import {
   Search,
 } from "lucide-react"
 import { toast } from "sonner"
+import { TraineeDTO } from "@/lib/types"
 
 const DIFFICULTY_LEVELS = [
   "Początkujący",
@@ -51,10 +52,7 @@ const DIFFICULTY_LEVELS = [
 
 type DifficultyFilter = "all" | (typeof DIFFICULTY_LEVELS)[number] | "none"
 
-type WorkoutPlanListTrainee = {
-  id: string
-  name: string
-}
+
 
 type WorkoutPlanListPlan = {
   id: string
@@ -96,7 +94,7 @@ type WorkoutPlanListPlan = {
 interface WorkoutPlanListProps {
   plans: WorkoutPlanListPlan[]
   role: string
-  trainees?: WorkoutPlanListTrainee[]
+  trainees?: TraineeDTO[]
 }
 
 export function WorkoutPlanList({
@@ -425,7 +423,7 @@ export function WorkoutPlanList({
                       <SelectContent>
                         {trainees.map((t) => (
                           <SelectItem key={t.id} value={t.id}>
-                            {t.name}
+                            {t.fullName}
                           </SelectItem>
                         ))}
                       </SelectContent>

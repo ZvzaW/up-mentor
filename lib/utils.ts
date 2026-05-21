@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { WorkplaceAddress } from "./types"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -30,4 +31,8 @@ export function combineDateAndTime(date: string, time: string) {
   const [y, mo, d] = date.split("-").map(Number)
   const [h, m] = time.split(":").map(Number)
   return new Date(y, mo - 1, d, h, m, 0, 0)
+}
+
+export function formatWorkplaceAddress(workplace : WorkplaceAddress) {
+  return `${workplace.name} - ul. ${workplace.street} ${workplace.building_number}${workplace.flat_number ? `/${workplace.flat_number}` : ""}, ${workplace.city}`
 }

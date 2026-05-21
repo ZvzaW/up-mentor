@@ -34,19 +34,12 @@ import {
 
 import { sendCoachingRequest } from "@/actions/coaching-request"
 import { CoachingRequestInput, coachingRequestSchema } from "@/lib/validations"
-
-type Workplace = {
-  id: string
-  name: string
-  city: string
-  street: string
-  building_number: string
-  flat_number: string | null
-}
+import { formatWorkplaceAddress } from "@/lib/utils"
+import { workplace } from "@prisma/client"
 
 type SendCoachingRequestDialogProps = {
   trainerId: string
-  workplaces: Workplace[]
+  workplaces: workplace[]
 }
 
 export function SendCoachingRequestDialog({
@@ -118,12 +111,7 @@ export function SendCoachingRequestDialog({
                     <SelectContent>
                       {workplaces.map((workplace) => (
                         <SelectItem key={workplace.id} value={workplace.id}>
-                          {workplace.name} - ul. {workplace.street}{" "}
-                          {workplace.building_number}
-                          {workplace.flat_number
-                            ? `/${workplace.flat_number}`
-                            : ""}
-                          , {workplace.city}
+                          {formatWorkplaceAddress(workplace)}
                         </SelectItem>
                       ))}
                     </SelectContent>

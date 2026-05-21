@@ -5,7 +5,7 @@ import { format, isSameDay } from "date-fns"
 import { pl } from "date-fns/locale"
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
 
-import type { CalendarTraining } from "@/actions/training"
+import type { TrainingDTO } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import {
@@ -27,12 +27,12 @@ import { cn } from "@/lib/utils"
 type TrainingsCalendarProps = {
   weekAnchor: Date
   onWeekChange: (date: Date) => void
-  trainings: CalendarTraining[]
+  trainings: TrainingDTO[]
   isTrainer: boolean
   mobileDayIndex: number
   onMobileDayIndexChange: (index: number) => void
   onSlotClick: (slot: TrainingSlot) => void
-  onTrainingClick: (training: CalendarTraining) => void
+  onTrainingClick: (training: TrainingDTO) => void
   onNewClick: () => void
 }
 
@@ -68,7 +68,10 @@ export default function TrainingsCalendar({
   React.useEffect(() => {
     const element = scrollRef.current
     if (!element) return
-    const hourOffset = Math.max(0, now.getHours() - 2)
+    const today = new Date()
+    const days = getWeekDays(weekAnchor)
+    if (!days.some((day) => isSameDay(day, today))) return
+    const hourOffset = Math.max(0, today.getHours() - 2)
     element.scrollTop = hourOffset * HOUR_SLOT_HEIGHT
   }, [weekAnchor])
 
@@ -145,6 +148,7 @@ export default function TrainingsCalendar({
             startsAt,
             training.duration
           )
+          {/* TRENING / */}
           return (
             <button
               key={training.id}
@@ -163,7 +167,7 @@ export default function TrainingsCalendar({
                 {isTrainer ? training.traineeName : training.trainerName}
               </span>
 
-              <span className="text-[10px] break-words opacity-80">· {training.workplaceName.split("-")[0]}</span>
+              <span className="text-[10px] break-words opacity-80">· {training.workplaceAddress.split("-")[0]}</span>
               <span className=" truncate opacity-80 mt-auto text-[10px]">
                 {timeRange}
               </span>

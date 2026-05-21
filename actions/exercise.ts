@@ -6,17 +6,11 @@ import {
   editTrainerExerciseSchema,
   trainerExerciseFormSchema,
 } from "@/lib/validations"
-import type { Prisma } from "@prisma/client"
+import type { exercise, Prisma } from "@prisma/client"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
-export type Exercise = {
-  id: string
-  name: string
-  body_part: string
-  video_url: string | null
-  isPredefined: boolean
-}
+
 
 async function exerciseVisibility(
   userId: string,
@@ -49,21 +43,7 @@ async function exerciseVisibility(
   return { id: { in: [] } }
 }
 
-function mapExerciseRow(row: {
-  id: string
-  name: string
-  body_part: string
-  video_url: string | null
-  trainer_id: string | null
-}): Exercise {
-  return {
-    id: row.id,
-    name: row.name,
-    body_part: row.body_part,
-    video_url: row.video_url,
-    isPredefined: row.trainer_id === null,
-  }
-}
+
 
 export async function getExercises() {
   const session = await auth()
@@ -77,7 +57,7 @@ export async function getExercises() {
       session.user.role
     )
 
-    const rows = await prisma.exercise.findMany({
+    const data = await prisma.exercise.findMany({
       where: visibility,
       select: {
         id: true,
@@ -89,7 +69,6 @@ export async function getExercises() {
       orderBy: { name: "asc" },
     })
 
-    const data = rows.map(mapExerciseRow)
 
     return { success: true as const, data }
   } catch {
@@ -135,7 +114,7 @@ export async function createTrainerExercise(input: unknown) {
   }
 }
 
-export async function editTrainerExercise(input: unknown) {
+export async function editTrainerExercise(exercise: exercise) {
   const session = await auth()
 
   if (!session?.user?.id) {
@@ -146,7 +125,7 @@ export async function editTrainerExercise(input: unknown) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
-  const validated = editTrainerExerciseSchema.safeParse(input)
+  const validated = editTrainerExerciseSchema.safeParse(exercise)
   if (!validated.success) {
     return { error: "Nieprawidłowe dane wejściowe." }
   }

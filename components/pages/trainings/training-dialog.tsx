@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useForm, type Resolver } from "react-hook-form"
+import { useForm, useWatch, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Loader2, Trash2 } from "lucide-react"
 import { toast } from "sonner"
@@ -11,7 +11,6 @@ import {
   createTraining,
   deleteTraining,
   updateTraining,
-  type CalendarTraining,
 } from "@/actions/training"
 import { Button } from "@/components/ui/button"
 import {
@@ -47,6 +46,7 @@ import {
   trainingDialogSchema,
   type TrainingDialogFormValues,
 } from "@/lib/validations"
+import { TrainingDTO } from "@/lib/types"
 
 const DURATION_OPTIONS = [
   { value: 0.5, label: "30 min" },
@@ -61,7 +61,7 @@ type TrainingDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   mode: "create" | "edit" | "view"
-  training: CalendarTraining | null
+  training: TrainingDTO | null
   initialSlot?: TrainingSlot | null
   trainees: any[] | null
   isTrainer: boolean
@@ -114,7 +114,10 @@ export default function TrainingDialog({
     }
   }, [open, defaultValues, form])
 
-  const watchTraineeId = form.watch("trainee_id")
+  const watchTraineeId = useWatch({
+    control: form.control,
+    name: "trainee_id",
+  })
 
   const selectedWorkplaceName = trainees?.find(
     (t) => t.id === watchTraineeId
@@ -202,7 +205,7 @@ export default function TrainingDialog({
                     </p>
                     <p className="break-words">
                       <span className="text-gold">Miejsce: </span>
-                      {training.workplaceName}
+                      {training.workplaceAddress}
                     </p>
                     <p>
                       <span className="text-gold">Termin: </span>

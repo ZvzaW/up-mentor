@@ -9,6 +9,7 @@ import { BackButton } from "@/components/common/back-button"
 import { getCooperationStatus } from "@/actions/coaching-request"
 import { SendCoachingRequestDialog } from "@/components/dialogs/trainee/send-coaching-request"
 import { DeleteCoachingRequestButton } from "@/components/pages/catalog/delete-request"
+import { workplace } from "@prisma/client"
 
 type TrainerCatalogDetailsPageProps = {
   params: Promise<{
@@ -60,7 +61,7 @@ export default async function TrainerCatalogDetailsPage({
                 {canRequest ? (
                   <SendCoachingRequestDialog
                     trainerId={trainer.id}
-                    workplaces={trainer.workplaces}
+                    workplaces={trainer.workplaces as workplace[]}
                   />
                 ) : (
                   <div className="bg-dirty-blue/40 text-baby-blue border-baby-blue/20 flex flex-col gap-3 rounded-xl border px-4 py-3 text-sm font-medium">

@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
+import { TraineeDTO, WorkplaceAddress } from "@/lib/types"
 
 export async function getMyTrainees() {
   const session = await auth()
@@ -36,6 +37,8 @@ export async function getMyTrainees() {
           select: {
             name: true,
             street: true,
+            building_number: true,
+            flat_number: true,
             city: true,
           },
         },
@@ -48,12 +51,12 @@ export async function getMyTrainees() {
     const mappedCooperations = cooperations.map((cooperation) => ({
       id: cooperation.trainee.id,
       slug: cooperation.trainee.slug,
-      name: `${cooperation.trainee.user.name} ${cooperation.trainee.user.surname}`,
-      workplace: `${cooperation.workplace.name} - ul. ${cooperation.workplace.street}, ${cooperation.workplace.city}`,
-    }))
+      fullName: `${cooperation.trainee.user.name} ${cooperation.trainee.user.surname}`,
+      workplace: cooperation.workplace as WorkplaceAddress,
+    })) as TraineeDTO[]
 
     return { success: true, data: mappedCooperations }
-  } catch (error) {
+  } catch {
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }
