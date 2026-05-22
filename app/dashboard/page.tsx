@@ -2,6 +2,7 @@
 
 import { useState, useEffect, JSX } from "react"
 import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { Users, MessageSquare, ChevronRight, Bell, MessageCircle, Calendar, Loader2 } from "lucide-react"
 
 import { Card, CardContent } from "@/components/ui/card"
@@ -12,6 +13,8 @@ import TrainerStats from "@/components/pages/statistics/trainer-stats"
 import TraineeStats from "@/components/pages/statistics/trainee-stats"
 
 import { getNotifications, getUnreadCount, markAsRead } from "@/actions/notifications"
+import { getStatistics } from "@/actions/statistics"
+import type { TrainerStatistics, TraineeStatistics } from "@/actions/statistics"
 import { SkeletonList } from "@/components/ui/skeleton"
 import { notification } from "@prisma/client"
 
@@ -154,20 +157,59 @@ function NotificationsPanel({
 
 
 //PANEL STATYSTYK
-function StatsPanel({ role }: { role?: string }) {
+function StatsPanel({ role }: { role: string }) {
+  const [nextTraining, setNextTraining] = useState<string | null>(null)
+  const [trainerStats, setTrainerStats] = useState<TrainerStatistics | undefined>()
+  const [traineeStats, setTraineeStats] = useState<TraineeStatistics | undefined>()
+  const [statsLoading, setStatsLoading] = useState(true)
+  const [statsError, setStatsError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    getStatistics().then((res) => {
+      if (cancelled) return
+      if ("error" in res && res.error) {
+        setStatsError(res.error)
+      } else if ("success" in res && res.success) {
+        setNextTraining(res.nextTraining)
+        if (res.trainer) setTrainerStats(res.trainer)
+        if (res.trainee) setTraineeStats(res.trainee)
+      }
+      setStatsLoading(false)
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   return (
     <section>
       <h2 className="font-michroma mb-5 hidden justify-center text-2xl text-white lg:flex">Statystyki</h2>
       <Card className="h-[707px]">
-        <CardContent>
-          <div className="bg-dirty-blue flex items-center justify-between rounded-xl py-4">
+        <CardContent className="overflow-hidden">
+          {statsError ? (
+            <Alert variant="destructive" className=" mx-auto">
+              <AlertDescription>{statsError}</AlertDescription>
+            </Alert>
+          ) : (<> <div className="bg-dirty-blue flex items-center justify-between rounded-xl py-4">
             <span className="pr-2 pl-5 text-sm text-zinc-300">KOLEJNY TRENING</span>
             <div className="bg-dirty-navy/60 text-baby-blue mr-4 flex items-center gap-2 rounded-lg px-3 py-3">
               <Calendar size={16} />
-              <span className="mt-1 whitespace-nowrap">20.20.2026, 18:00</span>
+              <span className="mt-1 whitespace-nowrap">
+                {statsLoading
+                  ? "..."
+                  : nextTraining ?? <span className="text-zinc-500">Brak</span>}
+              </span>
             </div>
           </div>
-          {role === "trainer" ? <TrainerStats /> : <TraineeStats />}
+          {role === "trainer" ? (
+            <TrainerStats data={trainerStats} isLoading={statsLoading} />
+          ) : (
+            <TraineeStats data={traineeStats} isLoading={statsLoading} />
+          )}</>)}
+         
         </CardContent>
       </Card>
     </section>
@@ -176,7 +218,10 @@ function StatsPanel({ role }: { role?: string }) {
 
 
 //DASHBOARD
-export default function DashboardPage({ userRole }: { userRole?: string }) {
+export default function DashboardPage() {
+  const { data: session } = useSession()
+  const userRole = session?.user?.role ?? ""
+
   const [mobileTab, setMobileTab] = useState<"notifications" | "stats">("notifications")
   const [unreadCount, setUnreadCount] = useState(0)
 

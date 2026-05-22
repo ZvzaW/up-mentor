@@ -2,6 +2,7 @@
 
 import { Separator } from "@/components/ui/separator"
 import { useEffect, useState } from "react"
+import { Loader2 } from "lucide-react"
 
 import {
   BarChart,
@@ -11,58 +12,33 @@ import {
   LabelList,
   Rectangle,
 } from "recharts"
+import type { TrainerStatistics } from "@/actions/statistics"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
-// MOCK DATA
-const weeklyLoadData = [
-  { day: "Pon", h: 10 },
-  { day: "Wt", h: 9 },
-  { day: "Śr", h: 20 },
-  { day: "Czw", h: 8 },
-  { day: "Pt", h: 11 },
-  { day: "Sob", h: 3 },
-  { day: "Ndz", h: 5 },
-]
+interface TrainerStatsProps {
+  data?: TrainerStatistics
+  isLoading?: boolean
+}
 
-const monthShortNames = [
-  "Sty",
-  "Lut",
-  "Mar",
-  "Kwi",
-  "Maj",
-  "Cze",
-  "Lip",
-  "Sie",
-  "Wrz",
-  "Paź",
-  "Lis",
-  "Gru",
-]
-
-const now = new Date()
-const currentMonthIndex = now.getMonth()
-const previousMonthIndex = (currentMonthIndex + 11) % 12
-
-// MOCK DATA
-const monthlyComparisonData = [
-  {
-    month: monthShortNames[previousMonthIndex],
-    trainings: 10,
-    salary: 160000,
-  },
-  {
-    month: monthShortNames[currentMonthIndex],
-    trainings: 12,
-    salary: 100000,
-  },
-]
-
-export default function TrainerStats() {
+export default function TrainerStats({ data, isLoading }: TrainerStatsProps) {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
     const raf = requestAnimationFrame(() => setReady(true))
     return () => cancelAnimationFrame(raf)
   }, [])
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[400px] items-center justify-center">
+        <Loader2 className="text-baby-blue h-8 w-8 animate-spin" />
+      </div>
+    )
+  }
+
+  const weeklyLoadData = data?.weeklyLoad ?? []
+  const monthlyComparisonData = data?.monthlyComparison ?? []
+  const hasHourlyRate = data?.hasHourlyRate ?? false
 
   return (
     <div className="space-y-8">
@@ -73,8 +49,9 @@ export default function TrainerStats() {
         <h3 className="text-center text-sm text-zinc-300 uppercase">
           Obciążenie tygodniowe
         </h3>
-        <div className="bg-dirty-blue h-[200px] w-full rounded-xl px-4 py-3">
-          {ready ? (
+        
+          {ready && weeklyLoadData.length > 0 ? (
+            <div className="bg-dirty-blue h-[200px] w-full rounded-xl px-4 py-3">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={weeklyLoadData}
@@ -98,8 +75,13 @@ export default function TrainerStats() {
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-          ) : null}
-        </div>
+            </div>
+          ) : (
+            <Alert variant="default" className=" mx-auto bg-dirty-navy/80">
+            <AlertDescription>Brak danych do wyświetlenia.</AlertDescription>
+          </Alert>
+          )}
+        
       </div>
 
       <Separator />
@@ -111,8 +93,9 @@ export default function TrainerStats() {
           <h3 className="text-center text-sm text-zinc-300 uppercase">
             Treningi <br /> zrealizowane
           </h3>
-          <div className="bg-dirty-blue h-[140px] rounded-xl px-3 py-3">
-            {ready ? (
+          
+            {ready && monthlyComparisonData.length > 0 ? (
+              <div className="bg-dirty-blue h-[140px] rounded-xl px-3 py-3">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={monthlyComparisonData}
@@ -147,9 +130,11 @@ export default function TrainerStats() {
                     />
                   </Bar>
                 </BarChart>
-              </ResponsiveContainer>
-            ) : null}
-          </div>
+              </ResponsiveContainer></div>
+            ) : <Alert variant="default" className=" mx-auto bg-dirty-navy/80">
+            <AlertDescription>Brak danych do wyświetlenia.</AlertDescription>
+          </Alert>}
+          
         </div>
 
         {/*Wykres 3: ZAROBEK*/}
@@ -157,8 +142,16 @@ export default function TrainerStats() {
           <h3 className="mt-2 mb-6 text-center text-sm text-zinc-300 uppercase">
             Zarobek
           </h3>
-          <div className="bg-dirty-blue h-[140px] rounded-xl px-3 py-3">
-            {ready ? (
+          
+            {!hasHourlyRate ? (
+              <div className="bg-dirty-blue h-[140px] rounded-xl px-3 py-3">
+              <p className="flex h-full items-center justify-center px-2 text-center text-xs leading-relaxed text-zinc-400">
+                Wykres niedostępny — ustaw stawkę za godzinę treningu w
+                profilu.
+              </p>
+              </div>
+            ) : ready && monthlyComparisonData.length > 0 ? (
+            <div className="bg-dirty-blue h-[140px] rounded-xl px-3 py-3">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={monthlyComparisonData}
@@ -195,8 +188,11 @@ export default function TrainerStats() {
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
-            ) : null}
-          </div>
+              </div>
+            ) : <Alert variant="default" className=" mx-auto bg-dirty-navy/80">
+            <AlertDescription>Brak danych do wyświetlenia.</AlertDescription>
+          </Alert>}
+          
         </div>
       </div>
     </div>

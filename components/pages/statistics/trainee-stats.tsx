@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { Loader2 } from "lucide-react"
 import {
   BarChart,
   Bar,
@@ -11,26 +12,32 @@ import {
   Rectangle,
 } from "recharts"
 import { Separator } from "@/components/ui/separator"
+import type { TraineeStatistics } from "@/actions/statistics"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
-// MOCK DATA
-const weeklyHoursData = [
-  { period: "Ten tydzień", h: 10 },
-  { period: "Zeszły tydz.", h: 20 },
-]
+interface TraineeStatsProps {
+  data?: TraineeStatistics
+  isLoading?: boolean
+}
 
-// MOCK DATA
-const monthlyWorkoutsData = [
-  { period: "Ten miesiąc", trainings: 12 },
-  { period: "Zeszły mies.", trainings: 10 },
-]
-
-export default function TraineeStats() {
+export default function TraineeStats({ data, isLoading }: TraineeStatsProps) {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
     const raf = requestAnimationFrame(() => setReady(true))
     return () => cancelAnimationFrame(raf)
   }, [])
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[400px] items-center justify-center">
+        <Loader2 className="text-baby-blue h-8 w-8 animate-spin" />
+      </div>
+    )
+  }
+
+  const weeklyHoursData = data?.weeklyHours ?? []
+  const monthlyWorkoutsData = data?.monthlyWorkouts ?? []
 
   return (
     <div className="space-y-12">
@@ -41,8 +48,9 @@ export default function TraineeStats() {
         <h3 className="text-center text-sm text-zinc-300 uppercase">
           Czas przeznaczony na treningi
         </h3>
-        <div className="bg-dirty-blue h-[145px] w-full rounded-xl p-6">
-          {ready ? (
+        
+          {ready && weeklyHoursData.length > 0 ? (
+            <div className="bg-dirty-blue h-[145px] w-full rounded-xl p-6">
             <ResponsiveContainer
               width="100%"
               height="100%"
@@ -56,7 +64,7 @@ export default function TraineeStats() {
               >
                 <XAxis type="number" hide />
                 <YAxis
-                  dataKey={"period"}
+                  dataKey="period"
                   type="category"
                   dx={-14}
                   axisLine={false}
@@ -85,8 +93,11 @@ export default function TraineeStats() {
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-          ) : null}
-        </div>
+            </div>
+          ) : <Alert variant="default" className=" mx-auto bg-dirty-navy/80">
+          <AlertDescription>Brak danych do wyświetlenia.</AlertDescription>
+        </Alert>}
+        
       </div>
 
       <Separator />
@@ -96,8 +107,9 @@ export default function TraineeStats() {
         <h3 className="text-center text-sm text-zinc-300 uppercase">
           Zrealizowane treningi
         </h3>
-        <div className="bg-dirty-blue h-[145px] w-full rounded-xl p-6">
-          {ready ? (
+       
+          {ready && monthlyWorkoutsData.length > 0 ? ( 
+            <div className="bg-dirty-blue h-[145px] w-full rounded-xl p-6">
             <ResponsiveContainer
               width="100%"
               height="100%"
@@ -139,8 +151,11 @@ export default function TraineeStats() {
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-          ) : null}
-        </div>
+            </div>
+          ) : <Alert variant="default" className=" mx-auto bg-dirty-navy/80">
+              <AlertDescription>Brak danych do wyświetlenia.</AlertDescription>
+            </Alert>}
+        
       </div>
     </div>
   )
