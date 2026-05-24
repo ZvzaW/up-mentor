@@ -7,11 +7,7 @@ import { Loader2, Pencil, Plus, Star } from "lucide-react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 
-import {
-  deleteOpinion,
-  getMyOpinion,
-  upsertOpinion,
-} from "@/actions/opinion"
+import { deleteOpinion, getMyOpinion, upsertOpinion } from "@/actions/opinion"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -41,7 +37,10 @@ type OpinionDialogProps = {
   trainerName: string
 }
 
-export function ManageOpinionDialog({ trainerId, trainerName }: OpinionDialogProps) {
+export function ManageOpinionDialog({
+  trainerId,
+  trainerName,
+}: OpinionDialogProps) {
   const router = useRouter()
   const [open, setOpen] = React.useState(false)
   const [isSaving, startSavingTransition] = React.useTransition()

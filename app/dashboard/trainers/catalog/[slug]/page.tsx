@@ -146,7 +146,7 @@ export default async function TrainerCatalogDetailsPage({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-              <TrainerOpinionsFetch trainerId={trainer.id}/>
+                <TrainerOpinionsFetch trainerId={trainer.id} />
               </CardContent>
             </Card>
           </div>

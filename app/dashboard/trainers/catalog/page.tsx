@@ -64,13 +64,13 @@ export default async function TrainersCatalogPage({
                 name="name"
                 defaultValue={nameQuery}
                 placeholder="Szukaj po imieniu i nazwisku"
-                className=" rounded-xl placeholder:text-zinc-400"
+                className="rounded-xl placeholder:text-zinc-400"
               />
               <Input
                 name="city"
                 defaultValue={cityQuery}
                 placeholder="Szukaj po mieście"
-                className=" rounded-xl placeholder:text-zinc-400"
+                className="rounded-xl placeholder:text-zinc-400"
               />
               <div className="flex justify-center gap-2">
                 <Button type="submit">Szukaj</Button>
@@ -102,11 +102,11 @@ export default async function TrainersCatalogPage({
                   href={`/dashboard/trainers/catalog/${trainer.slug}`}
                   className="bg-dirty-blue hover:bg-hover group flex items-center justify-between rounded-xl p-5 transition-all"
                 >
-                  <div className="w-[95%] space-y-3 sm:space-y-0 sm:grid grid-cols-8 items-center">
-                    <p className="text-gold truncate text-md col-span-3  pr-3">
+                  <div className="w-[95%] grid-cols-8 items-center space-y-3 sm:grid sm:space-y-0">
+                    <p className="text-gold text-md col-span-3 truncate pr-3">
                       {trainer.name}
                     </p>
-                    <div className="flex items-center gap-2 text-sm text-gray-300  col-span-3 pr-8">
+                    <div className="col-span-3 flex items-center gap-2 pr-8 text-sm text-gray-300">
                       <MapPin className="text-baby-blue h-4 w-4 shrink-0" />
                       <span className="mt-0.5 truncate">
                         {trainer.workplaces.length > 0
@@ -114,7 +114,7 @@ export default async function TrainersCatalogPage({
                           : "Brak miejsc pracy"}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-300 col-span-2">
+                    <div className="col-span-2 flex items-center gap-2 text-sm text-gray-300">
                       <Star className="text-baby-blue h-4 w-4 shrink-0" />
                       <span className="">
                         {trainer.averageRate !== null

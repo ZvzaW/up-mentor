@@ -47,7 +47,10 @@ export function formatDayHeader(date: Date) {
   }
 }
 
-export function navigateWeek(anchor: Date, direction: "prev" | "next" | "today") {
+export function navigateWeek(
+  anchor: Date,
+  direction: "prev" | "next" | "today"
+) {
   if (direction === "today") return startOfDay(new Date())
   return direction === "prev" ? subWeeks(anchor, 1) : addWeeks(anchor, 1)
 }
@@ -81,10 +84,8 @@ export function formatTrainingTimeRange(
   durationHours: number,
   style: "compact" | "full" = "compact"
 ) {
-  const { endTime, dayOffset, endDate, startDate, startTime } = getTrainingEndInfo(
-    startsAt,
-    durationHours
-  )
+  const { endTime, dayOffset, endDate, startDate, startTime } =
+    getTrainingEndInfo(startsAt, durationHours)
 
   if (style === "compact") {
     if (dayOffset === 0) return `${startTime} - ${endTime}`
@@ -103,8 +104,7 @@ export function formatTrainingTimeRange(
 export function getTrainingPosition(startsAt: Date, durationHours: number) {
   const startMinutes = startsAt.getHours() * 60 + startsAt.getMinutes()
   const gridStartMinutes = CALENDAR_START_HOUR * 60
-  const topPx =
-    ((startMinutes - gridStartMinutes) / 60) * HOUR_SLOT_HEIGHT
+  const topPx = ((startMinutes - gridStartMinutes) / 60) * HOUR_SLOT_HEIGHT
   const heightPx = durationHours * HOUR_SLOT_HEIGHT
   const top = Math.max(0, topPx)
   const maxHeight = CALENDAR_GRID_HEIGHT - top
@@ -135,8 +135,7 @@ export function slotFromClick(
   const gridEnd = CALENDAR_END_HOUR * 60
   const gridSpan = gridEnd - gridStart
   const ratio = Math.min(1, Math.max(0, offsetY / containerHeight))
-  const minutes =
-    gridStart + Math.round((ratio * gridSpan) / 30) * 30
+  const minutes = gridStart + Math.round((ratio * gridSpan) / 30) * 30
   const clamped = Math.min(gridEnd - 30, Math.max(gridStart, minutes))
 
   return {

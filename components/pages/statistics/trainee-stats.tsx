@@ -11,26 +11,22 @@ import {
   Rectangle,
 } from "recharts"
 import { Separator } from "@/components/ui/separator"
+import type { TraineeStatistics } from "@/lib/types"
 
-// MOCK DATA
-const weeklyHoursData = [
-  { period: "Ten tydzień", h: 10 },
-  { period: "Zeszły tydz.", h: 20 },
-]
+interface TraineeStatsProps {
+  data?: TraineeStatistics
+}
 
-// MOCK DATA
-const monthlyWorkoutsData = [
-  { period: "Ten miesiąc", trainings: 12 },
-  { period: "Zeszły mies.", trainings: 10 },
-]
-
-export default function TraineeStats() {
+export default function TraineeStats({ data }: TraineeStatsProps) {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
     const raf = requestAnimationFrame(() => setReady(true))
     return () => cancelAnimationFrame(raf)
   }, [])
+
+  const weeklyHoursData = data?.weeklyHours ?? []
+  const monthlyWorkoutsData = data?.monthlyWorkouts ?? []
 
   return (
     <div className="space-y-12">
@@ -41,8 +37,10 @@ export default function TraineeStats() {
         <h3 className="text-center text-sm text-zinc-300 uppercase">
           Czas przeznaczony na treningi
         </h3>
+
         <div className="bg-dirty-blue h-[145px] w-full rounded-xl p-6">
-          {ready ? (
+          {ready && weeklyHoursData.length > 0 ? (
+            
             <ResponsiveContainer
               width="100%"
               height="100%"
@@ -56,7 +54,7 @@ export default function TraineeStats() {
               >
                 <XAxis type="number" hide />
                 <YAxis
-                  dataKey={"period"}
+                  dataKey="period"
                   type="category"
                   dx={-14}
                   axisLine={false}
@@ -85,6 +83,7 @@ export default function TraineeStats() {
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
+            
           ) : null}
         </div>
       </div>
@@ -96,8 +95,9 @@ export default function TraineeStats() {
         <h3 className="text-center text-sm text-zinc-300 uppercase">
           Zrealizowane treningi
         </h3>
-        <div className="bg-dirty-blue h-[145px] w-full rounded-xl p-6">
-          {ready ? (
+       <div className="bg-dirty-blue h-[145px] w-full rounded-xl p-6">
+          {ready && monthlyWorkoutsData.length > 0 ? ( 
+            
             <ResponsiveContainer
               width="100%"
               height="100%"
@@ -139,6 +139,7 @@ export default function TraineeStats() {
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
+            
           ) : null}
         </div>
       </div>

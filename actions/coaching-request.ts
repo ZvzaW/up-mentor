@@ -9,7 +9,7 @@ import {
 } from "@/lib/validations"
 import { redirect } from "next/navigation"
 import { formatWorkplaceAddress } from "@/lib/utils"
-import {  WorkplaceAddress } from "@/lib/types"
+import { WorkplaceAddress } from "@/lib/types"
 
 export async function sendCoachingRequest(data: CoachingRequestInput) {
   const session = await auth()

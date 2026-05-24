@@ -49,7 +49,9 @@ export async function getMyTrainers() {
     const mappedCooperations = cooperations.map((cooperation) => ({
       key: cooperation.trainer_id,
       name: `${cooperation.trainer.user.name} ${cooperation.trainer.user.surname}`,
-      workplace: formatWorkplaceAddress(cooperation.workplace as WorkplaceAddress),
+      workplace: formatWorkplaceAddress(
+        cooperation.workplace as WorkplaceAddress
+      ),
       slug: cooperation.trainer.slug,
     }))
 
@@ -126,7 +128,7 @@ export async function countCooperations() {
       },
     })
 
-    return { success: true, data: count}
+    return { success: true, data: count }
   } catch {
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }

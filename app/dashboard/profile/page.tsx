@@ -31,9 +31,15 @@ export default async function ProfilePage() {
   return (
     <div className="flex min-h-[calc(100vh-15rem)] w-full flex-col justify-center p-3">
       {user.role === "trainer" && user.trainer ? (
-        <TrainerProfile baseData={user as UserDTO} specificData={user.trainer as TrainerDTO} />
+        <TrainerProfile
+          baseData={user as UserDTO}
+          specificData={user.trainer as TrainerDTO}
+        />
       ) : user.role === "trainee" && user.trainee ? (
-        <TraineeProfile baseData={user as UserDTO} specificData={user.trainee} />
+        <TraineeProfile
+          baseData={user as UserDTO}
+          specificData={user.trainee}
+        />
       ) : (
         <p className="text-zinc-400">
           Brak szczegółowych danych profilu dla tej roli.

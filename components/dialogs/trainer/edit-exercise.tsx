@@ -32,9 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import {
-  EXERCISE_BODY_PARTS,
-} from "@/lib/exercise-body-parts"
+import { EXERCISE_BODY_PARTS } from "@/lib/exercise-body-parts"
 import {
   trainerExerciseFormSchema,
   type TrainerExerciseFormInput,
@@ -44,7 +42,6 @@ import { exercise } from "@prisma/client"
 type EditExerciseDialogProps = {
   exercise: exercise
 }
-
 
 export function EditExerciseDialog({ exercise }: EditExerciseDialogProps) {
   const [open, setOpen] = React.useState(false)
@@ -71,7 +68,10 @@ export function EditExerciseDialog({ exercise }: EditExerciseDialogProps) {
 
   const handleSave = (data: TrainerExerciseFormInput) => {
     startSavingTransition(async () => {
-      const result = await editTrainerExercise({ ...exercise, ...data } as exercise)
+      const result = await editTrainerExercise({
+        ...exercise,
+        ...data,
+      } as exercise)
 
       if (result.error) {
         toast.error(result.error)

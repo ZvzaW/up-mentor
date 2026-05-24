@@ -25,10 +25,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import {
-  TrainerCardInput,
-  trainerCardSchema,
-} from "@/lib/validations"
+import { TrainerCardInput, trainerCardSchema } from "@/lib/validations"
 import { Loader2 } from "lucide-react"
 
 interface EditTrainerCardDialogProps {

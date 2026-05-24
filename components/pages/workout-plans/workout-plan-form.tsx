@@ -211,7 +211,7 @@ function SortableExerciseSet({
           name={`${baseName}.exercise_id`}
           render={({ field }) => (
             <FormItem className="w-full">
-              <FormLabel className="text-xs uppercase mb-0.5">
+              <FormLabel className="mb-0.5 text-xs uppercase">
                 Ćwiczenie
               </FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
@@ -244,9 +244,7 @@ function SortableExerciseSet({
           name={`${baseName}.series_count`}
           render={({ field }) => (
             <FormItem className="sm:w-[20%]">
-              <FormLabel className=" text-xs uppercase mb-0.5">
-                Serie
-              </FormLabel>
+              <FormLabel className="mb-0.5 text-xs uppercase">Serie</FormLabel>
               <FormControl>
                 <Input
                   type="number"
@@ -255,7 +253,6 @@ function SortableExerciseSet({
                   onChange={(e) =>
                     field.onChange(parseInt(e.target.value, 10) || 1)
                   }
-
                 />
               </FormControl>
               <FormMessage />
@@ -268,7 +265,7 @@ function SortableExerciseSet({
           name={`${baseName}.reps_count`}
           render={({ field }) => (
             <FormItem className="sm:w-[20%]">
-              <FormLabel className="text-xs uppercase mb-0.5">
+              <FormLabel className="mb-0.5 text-xs uppercase">
                 Powtórzenia
               </FormLabel>
               <FormControl>
@@ -279,7 +276,6 @@ function SortableExerciseSet({
                   onChange={(e) =>
                     field.onChange(parseInt(e.target.value, 10) || 1)
                   }
-                  
                 />
               </FormControl>
               <FormMessage />
@@ -292,7 +288,7 @@ function SortableExerciseSet({
           name={`${baseName}.weight`}
           render={({ field }) => (
             <FormItem className="sm:w-[20%]">
-              <FormLabel className="text-xs uppercase mb-0.5">
+              <FormLabel className="mb-0.5 text-xs uppercase">
                 Ciężar (kg)
               </FormLabel>
               <FormControl>
@@ -416,7 +412,7 @@ function SortableSection({
       </Button>
 
       <CardHeader>
-        <div className="flex flex-col justify-center ">
+        <div className="flex flex-col justify-center">
           <p className="text-gold mx-auto mb-6 text-lg font-semibold">
             Sekcja {sectionOrder}
           </p>
@@ -425,9 +421,7 @@ function SortableSection({
             name={`sections.${sectionIndex}.body_part`}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>
-                  Partia ciała (opcjonalnie)
-                </FormLabel>
+                <FormLabel>Partia ciała (opcjonalnie)</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
@@ -599,9 +593,7 @@ export function WorkoutPlanForm({
                 name="name"
                 render={({ field }) => (
                   <FormItem className="w-full">
-                    <FormLabel>
-                      Nazwa planu*
-                    </FormLabel>
+                    <FormLabel>Nazwa planu*</FormLabel>
                     <FormControl>
                       <Input {...field} placeholder="np. Push/Pull/Legs" />
                     </FormControl>
@@ -615,9 +607,7 @@ export function WorkoutPlanForm({
                 name="difficulty"
                 render={({ field }) => (
                   <FormItem className="w-full">
-                    <FormLabel>
-                      Poziom zaawansowania (opcjonalnie)
-                    </FormLabel>
+                    <FormLabel>Poziom zaawansowania (opcjonalnie)</FormLabel>
                     <Select
                       onValueChange={(value) =>
                         field.onChange(value === "none" ? "" : value)
@@ -653,9 +643,7 @@ export function WorkoutPlanForm({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>
-                    Opis planu (opcjonalnie)
-                  </FormLabel>
+                  <FormLabel>Opis planu (opcjonalnie)</FormLabel>
                   <FormControl>
                     <textarea
                       {...field}
@@ -708,12 +696,12 @@ export function WorkoutPlanForm({
             </DndContext>
           )}
 
-{sectionsError && (
+          {sectionsError && (
             <Alert variant="destructive" className="mx-auto">
               <AlertDescription>{sectionsError}</AlertDescription>
-            </Alert>  
+            </Alert>
           )}
-          
+
           <div className="flex justify-center">
             <Button
               type="button"

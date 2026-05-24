@@ -22,15 +22,13 @@ export default async function TrainingsPage() {
 
   return (
     <div>
-
       <TrainingsView
-      role={role}
-      initialTrainings={trainings}
-      initialWeekAnchor={weekAnchor.toISOString()}
-      initialFetchError={initialFetchError}
-      trainees={trainees}
-    />
+        role={role}
+        initialTrainings={trainings}
+        initialWeekAnchor={weekAnchor.toISOString()}
+        initialFetchError={initialFetchError}
+        trainees={trainees}
+      />
     </div>
-    
   )
 }

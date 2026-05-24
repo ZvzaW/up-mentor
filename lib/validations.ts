@@ -245,14 +245,21 @@ const workoutPlanExerciseSetSchema = z.object({
 const workoutPlanSectionSchema = z.object({
   id: z.string().optional(),
   uid: z.string(),
-  body_part: z.string().max(100, "Partia ciała może mieć maksymalnie 100 znaków").optional().nullable(),
+  body_part: z
+    .string()
+    .max(100, "Partia ciała może mieć maksymalnie 100 znaków")
+    .optional()
+    .nullable(),
   order: z.number(),
-  exercise_sets: z
-    .array(workoutPlanExerciseSetSchema),
+  exercise_sets: z.array(workoutPlanExerciseSetSchema),
 })
 
 export const workoutPlanFormSchema = z.object({
-  name: z.string().trim().min(1, "Nazwa planu treningowego jest wymagana.").max(255, "Nazwa może mieć maksymalnie 255 znaków"),
+  name: z
+    .string()
+    .trim()
+    .min(1, "Nazwa planu treningowego jest wymagana.")
+    .max(255, "Nazwa może mieć maksymalnie 255 znaków"),
   difficulty: z.string().max(100, "Poziom może mieć maksymalnie 100 znaków"),
   description: z.string().max(1000, "Opis może mieć maksymalnie 1000 znaków"),
   sections: z
@@ -265,20 +272,18 @@ export type WorkoutPlanFormValues = z.infer<typeof workoutPlanFormSchema>
 
 const trainingDurationSchema = z
   .number()
-  .refine(
-    (v) => [0.5, 1, 1.5, 2, 2.5, 3].includes(v),
-    { message: "Wybierz czas trwania z listy" }
-  )
-
-export const trainingFormSchema = z
-  .object({
-    trainee_id: z.string().min(1, "Wybierz podopiecznego"),
-    date: z.string().min(1, "Data jest wymagana"),
-    start_time: z
-      .string()
-      .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Podaj poprawną godzinę (HH:MM)"),
-    duration: trainingDurationSchema,
+  .refine((v) => [0.5, 1, 1.5, 2, 2.5, 3].includes(v), {
+    message: "Wybierz czas trwania z listy",
   })
+
+export const trainingFormSchema = z.object({
+  trainee_id: z.string().min(1, "Wybierz podopiecznego"),
+  date: z.string().min(1, "Data jest wymagana"),
+  start_time: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Podaj poprawną godzinę (HH:MM)"),
+  duration: trainingDurationSchema,
+})
 
 export const trainingDialogSchema = trainingFormSchema.extend({
   id: z.string().optional(),

@@ -1,10 +1,7 @@
 import { Suspense } from "react"
 import { redirect } from "next/navigation"
 import Link from "next/link"
-import { 
-  getMyTrainerBySlug, 
-  countCooperations 
-} from "@/actions/my-trainers"
+import { getMyTrainerBySlug, countCooperations } from "@/actions/my-trainers"
 import { getTrainerOpinions } from "@/actions/opinion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -26,37 +23,39 @@ export default async function TrainerDetailsPage({
   params,
 }: TrainerDetailsPageProps) {
   const { slug } = await params
-  
+
   const [trainerResult, countResult] = await Promise.all([
     getMyTrainerBySlug(slug),
     countCooperations(),
   ])
 
   const cooperation = trainerResult.data
-  
+
   let opinionsResult = null
   if (cooperation) {
     opinionsResult = await getTrainerOpinions(cooperation.trainer_id)
   }
 
-  const pageError = trainerResult.error ?? countResult.error 
+  const pageError = trainerResult.error ?? countResult.error
   const cooperationsCount = countResult.data ?? 0
 
   if (!pageError && !cooperation) {
     redirect("/dashboard/trainers")
   }
 
-  const selectedTrainer = cooperation ? {
-    key: cooperation.trainer_id,
-    name: `${cooperation.trainer.user.name} ${cooperation.trainer.user.surname}`,
-    phone: cooperation.trainer.user.phone,
-    workplace: `${cooperation.workplace.name} - ul. ${cooperation.workplace.street} ${cooperation.workplace.building_number}${cooperation.workplace.flat_number ? `/${cooperation.workplace.flat_number}` : ""}, ${cooperation.workplace.city}`,
-    workDescription: cooperation.trainer.work_description,
-    price: cooperation.trainer.price_per_training
-      ? `${cooperation.trainer.price_per_training} PLN`
-      : "Nie podano ceny",
-    slug: cooperation.trainer.slug,
-  } : null
+  const selectedTrainer = cooperation
+    ? {
+        key: cooperation.trainer_id,
+        name: `${cooperation.trainer.user.name} ${cooperation.trainer.user.surname}`,
+        phone: cooperation.trainer.user.phone,
+        workplace: `${cooperation.workplace.name} - ul. ${cooperation.workplace.street} ${cooperation.workplace.building_number}${cooperation.workplace.flat_number ? `/${cooperation.workplace.flat_number}` : ""}, ${cooperation.workplace.city}`,
+        workDescription: cooperation.trainer.work_description,
+        price: cooperation.trainer.price_per_training
+          ? `${cooperation.trainer.price_per_training} PLN`
+          : "Nie podano ceny",
+        slug: cooperation.trainer.slug,
+      }
+    : null
 
   return (
     <div className="p-3">
@@ -72,18 +71,22 @@ export default async function TrainerDetailsPage({
 
       {!pageError && selectedTrainer && (
         <div className="space-y-4">
-
-          {cooperationsCount > 1 ? (<BackButton label="Wróć do listy trenerów"/>) : 
-          
-          (<div className="mb-8 flex flex-col items-center justify-between gap-6 sm:mb-5 sm:flex-row">
-            <h1 className="font-michroma text-2xl md:ml-1">Twój trener</h1>
-            <Button asChild variant="secondary" className="font-michroma flex w-[185px] gap-2 text-xs">
-              <Link href="/dashboard/trainers/catalog">
-                <BookOpen className="shrink-0" /> Katalog trenerów
-              </Link>
-            </Button>
-          </div>)}
-          
+          {cooperationsCount > 1 ? (
+            <BackButton label="Wróć do listy trenerów" />
+          ) : (
+            <div className="mb-8 flex flex-col items-center justify-between gap-6 sm:mb-5 sm:flex-row">
+              <h1 className="font-michroma text-2xl md:ml-1">Twój trener</h1>
+              <Button
+                asChild
+                variant="secondary"
+                className="font-michroma flex w-[185px] gap-2 text-xs"
+              >
+                <Link href="/dashboard/trainers/catalog">
+                  <BookOpen className="shrink-0" /> Katalog trenerów
+                </Link>
+              </Button>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
             {/*INFO*/}
@@ -92,10 +95,10 @@ export default async function TrainerDetailsPage({
                 <CardTitle className="text-gold font-michroma mb-6 text-center text-lg">
                   {selectedTrainer.name}
                 </CardTitle>
-                <TrainerQuickActions 
-                  trainerId={selectedTrainer.key} 
-                  slug={selectedTrainer.slug} 
-                  phone={selectedTrainer.phone} 
+                <TrainerQuickActions
+                  trainerId={selectedTrainer.key}
+                  slug={selectedTrainer.slug}
+                  phone={selectedTrainer.phone}
                 />
                 <div className="mt-3 flex items-center gap-3">
                   <Banknote className="text-baby-blue h-4 w-4" />
@@ -129,7 +132,7 @@ export default async function TrainerDetailsPage({
               </CardHeader>
               <CardContent>
                 <Suspense fallback={<SkeletonOpinions />}>
-                  <TrainerOpinionsUI 
+                  <TrainerOpinionsUI
                     reviews={opinionsResult?.data?.reviews || []}
                     averageRate={opinionsResult?.data?.averageRate || null}
                     error={opinionsResult?.error}

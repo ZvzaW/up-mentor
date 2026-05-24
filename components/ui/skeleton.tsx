@@ -23,7 +23,6 @@ export function SkeletonTable() {
   )
 }
 
-
 export function SkeletonOpinions() {
   return (
     <div className="space-y-2 text-sm">
@@ -49,11 +48,9 @@ export function SkeletonOpinions() {
                   ))}
                 </div>
               </div>
-              <Skeleton className="mt-1 h-2.5 w-28 rounded mb-3" />
+              <Skeleton className="mt-1 mb-3 h-2.5 w-28 rounded" />
 
-                <Skeleton className="h-4 w-full rounded" />
-
-
+              <Skeleton className="h-4 w-full rounded" />
             </div>
           ))}
         </div>
@@ -61,8 +58,6 @@ export function SkeletonOpinions() {
     </div>
   )
 }
-
-
 
 export function SkeletonList() {
   return (
@@ -78,3 +73,69 @@ export function SkeletonList() {
 }
 
 export { Skeleton }
+
+function NextTrainingSkeleton() {
+  return (
+    <div className="bg-dirty-blue flex items-center justify-between rounded-xl py-4">
+      <Skeleton className="ml-5 h-4 w-32 rounded" />
+      <Skeleton className="mr-4 h-11 w-40 rounded-lg" />
+    </div>
+  )
+}
+
+function TrainerChartsSkeleton() {
+  return (
+    <div className="space-y-8">
+      <Skeleton className="mt-10 h-1" />
+      <div className="space-y-4">
+        <Skeleton className="mx-auto h-4 w-44 rounded" />
+        <Skeleton className="h-[200px] w-full rounded-xl" />
+      </div>
+      <Skeleton className="h-1" />
+      <div className="grid grid-cols-[5fr_6fr] gap-3">
+        <div className="mt-1 space-y-3">
+          <Skeleton className="mx-auto h-8 w-28 rounded" />
+          <Skeleton className="h-[140px] w-full rounded-xl" />
+        </div>
+        <div className="space-y-3">
+          <Skeleton className="mx-auto mt-2 mb-6 h-4 w-20 rounded" />
+          <Skeleton className="h-[140px] w-full rounded-xl" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function TraineeChartsSkeleton() {
+  return (
+    <div className="space-y-12">
+      <Skeleton className="mt-10 h-1" />
+      <div className="space-y-3">
+        <Skeleton className="mx-auto h-4 w-56 rounded" />
+        <Skeleton className="h-[145px] w-full rounded-xl" />
+      </div>
+      <Skeleton className="h-1" />
+      <div className="space-y-3">
+        <Skeleton className="mx-auto h-4 w-40 rounded" />
+        <Skeleton className="h-[145px] w-full rounded-xl" />
+      </div>
+    </div>
+  )
+}
+
+export default function StatsPanelSkeleton({ role }: { role: string }) {
+  return (
+    <div
+      className="space-y-0"
+      aria-busy="true"
+      aria-label="Ładowanie statystyk"
+    >
+      <NextTrainingSkeleton />
+      {role === "trainer" ? (
+        <TrainerChartsSkeleton />
+      ) : (
+        <TraineeChartsSkeleton />
+      )}
+    </div>
+  )
+}

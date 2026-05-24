@@ -78,7 +78,7 @@ export function AddExerciseDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="mr-1 mt-4 w-fit mx-auto sm:mx-0 sm:mt-0">
+        <Button className="mx-auto mt-4 mr-1 w-fit sm:mx-0 sm:mt-0">
           <Plus /> Dodaj ćwiczenie
         </Button>
       </DialogTrigger>
@@ -142,7 +142,9 @@ export function AddExerciseDialog() {
                 name="video_url"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Link do materiału instruktażowego (opcjonalnie)</FormLabel>
+                    <FormLabel>
+                      Link do materiału instruktażowego (opcjonalnie)
+                    </FormLabel>
                     <FormControl>
                       <Input
                         {...field}

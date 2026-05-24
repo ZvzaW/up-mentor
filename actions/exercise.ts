@@ -10,8 +10,6 @@ import type { exercise, Prisma } from "@prisma/client"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
-
-
 async function exerciseVisibility(
   userId: string,
   role: string
@@ -43,8 +41,6 @@ async function exerciseVisibility(
   return { id: { in: [] } }
 }
 
-
-
 export async function getExercises() {
   const session = await auth()
   if (!session?.user?.id) {
@@ -69,13 +65,11 @@ export async function getExercises() {
       orderBy: { name: "asc" },
     })
 
-
     return { success: true as const, data }
   } catch {
     return { error: "Nie udało się pobrać ćwiczeń. Spróbuj odświeżyć stronę." }
   }
 }
-
 
 export async function createTrainerExercise(input: unknown) {
   const session = await auth()

@@ -2,7 +2,6 @@
 
 import { Separator } from "@/components/ui/separator"
 import { useEffect, useState } from "react"
-
 import {
   BarChart,
   Bar,
@@ -11,58 +10,23 @@ import {
   LabelList,
   Rectangle,
 } from "recharts"
+import type { TrainerStatistics } from "@/lib/types"
 
-// MOCK DATA
-const weeklyLoadData = [
-  { day: "Pon", h: 10 },
-  { day: "Wt", h: 9 },
-  { day: "Śr", h: 20 },
-  { day: "Czw", h: 8 },
-  { day: "Pt", h: 11 },
-  { day: "Sob", h: 3 },
-  { day: "Ndz", h: 5 },
-]
+interface TrainerStatsProps {
+  data?: TrainerStatistics
+}
 
-const monthShortNames = [
-  "Sty",
-  "Lut",
-  "Mar",
-  "Kwi",
-  "Maj",
-  "Cze",
-  "Lip",
-  "Sie",
-  "Wrz",
-  "Paź",
-  "Lis",
-  "Gru",
-]
-
-const now = new Date()
-const currentMonthIndex = now.getMonth()
-const previousMonthIndex = (currentMonthIndex + 11) % 12
-
-// MOCK DATA
-const monthlyComparisonData = [
-  {
-    month: monthShortNames[previousMonthIndex],
-    trainings: 10,
-    salary: 160000,
-  },
-  {
-    month: monthShortNames[currentMonthIndex],
-    trainings: 12,
-    salary: 100000,
-  },
-]
-
-export default function TrainerStats() {
+export default function TrainerStats({ data }: TrainerStatsProps) {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
     const raf = requestAnimationFrame(() => setReady(true))
     return () => cancelAnimationFrame(raf)
   }, [])
+
+  const weeklyLoadData = data?.weeklyLoad ?? []
+  const monthlyComparisonData = data?.monthlyComparison ?? []
+  const hasHourlyRate = data?.hasHourlyRate ?? false
 
   return (
     <div className="space-y-8">
@@ -74,7 +38,7 @@ export default function TrainerStats() {
           Obciążenie tygodniowe
         </h3>
         <div className="bg-dirty-blue h-[200px] w-full rounded-xl px-4 py-3">
-          {ready ? (
+          {ready && weeklyLoadData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={weeklyLoadData}
@@ -112,7 +76,7 @@ export default function TrainerStats() {
             Treningi <br /> zrealizowane
           </h3>
           <div className="bg-dirty-blue h-[140px] rounded-xl px-3 py-3">
-            {ready ? (
+            {ready && monthlyComparisonData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={monthlyComparisonData}
@@ -158,7 +122,11 @@ export default function TrainerStats() {
             Zarobek
           </h3>
           <div className="bg-dirty-blue h-[140px] rounded-xl px-3 py-3">
-            {ready ? (
+            {!hasHourlyRate ? (
+              <p className="flex h-full items-center justify-center px-2 text-center text-xs leading-relaxed text-zinc-400">
+                Wykres niedostępny — ustaw stawkę za godzinę treningu w profilu.
+              </p>
+            ) : ready && monthlyComparisonData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={monthlyComparisonData}

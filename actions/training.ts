@@ -19,35 +19,29 @@ import {
   formatWorkplaceAddress,
   toTimeInputValue,
 } from "@/lib/utils"
-import {
-  TrainingDTO,
-  TrainingListItem,
-  WorkplaceAddress,
-} from "@/lib/types"
+import { TrainingDTO, TrainingListItem, WorkplaceAddress } from "@/lib/types"
 
-
-
-function mapTraining(
-  t: {
-    id: string
-    trainer_id: string
-    trainee_id: string
-    scheduled_at: Date
-    duration: Prisma.Decimal
-    cooperation: {
-      trainee: { user: { name: string; surname: string } }
-      trainer: { user: { name: string; surname: string } }
-      workplace: WorkplaceAddress
-    }
+function mapTraining(t: {
+  id: string
+  trainer_id: string
+  trainee_id: string
+  scheduled_at: Date
+  duration: Prisma.Decimal
+  cooperation: {
+    trainee: { user: { name: string; surname: string } }
+    trainer: { user: { name: string; surname: string } }
+    workplace: WorkplaceAddress
   }
-): TrainingDTO {
+}): TrainingDTO {
   return {
     id: t.id,
     trainerId: t.trainer_id,
     traineeId: t.trainee_id,
     traineeName: `${t.cooperation.trainee.user.name} ${t.cooperation.trainee.user.surname}`,
     trainerName: `${t.cooperation.trainer.user.name} ${t.cooperation.trainer.user.surname}`,
-    workplaceAddress: formatWorkplaceAddress(t.cooperation.workplace as WorkplaceAddress),
+    workplaceAddress: formatWorkplaceAddress(
+      t.cooperation.workplace as WorkplaceAddress
+    ),
     scheduledAt: t.scheduled_at.toISOString(),
     duration: Number(t.duration),
   }
@@ -63,7 +57,7 @@ function isTrainingScheduledInPast(scheduledAt: Date) {
 async function validateTrainerTrainingInput(
   trainerId: string,
   data: CreateTrainingFormValues
-): Promise<{ error: string } | Record<string, never>> {
+) {
   const cooperation = await prisma.cooperation.findFirst({
     where: {
       trainer_id: trainerId,
@@ -78,7 +72,10 @@ async function validateTrainerTrainingInput(
 
   const scheduledAt = combineDateAndTime(data.date, data.start_time)
   if (isTrainingScheduledInPast(scheduledAt)) {
-    return { error: "Termin treningu nie może być w przeszłości. Popraw datę lub godzinę." }
+    return {
+      error:
+        "Termin treningu nie może być w przeszłości. Popraw datę lub godzinę.",
+    }
   }
 
   return {}
@@ -178,7 +175,9 @@ export async function getTrainingsForTrainee(traineeId: string) {
       date: formatDate(t.scheduled_at),
       startTime: toTimeInputValue(t.scheduled_at),
       durationLabel: `${Number(t.duration)} h`,
-      workplaceAddress: formatWorkplaceAddress(cooperation.workplace as WorkplaceAddress),
+      workplaceAddress: formatWorkplaceAddress(
+        cooperation.workplace as WorkplaceAddress
+      ),
     }))
 
     const scheduledDates = trainings.map((t) => t.scheduled_at)
@@ -188,7 +187,9 @@ export async function getTrainingsForTrainee(traineeId: string) {
       data: groupTrainingsByYearAndMonth(listItems, scheduledDates),
     }
   } catch {
-    return { error: "Nie udało się pobrać treningów. Spróbuj odświeżyć stronę." }
+    return {
+      error: "Nie udało się pobrać treningów. Spróbuj odświeżyć stronę.",
+    }
   }
 }
 
@@ -250,7 +251,9 @@ export async function getTrainingsForWeek(weekAnchorIso: string) {
       weekEnd: weekEnd.toISOString(),
     }
   } catch {
-    return { error: "Nie udało się pobrać treningów. Spróbuj odświeżyć stronę." }
+    return {
+      error: "Nie udało się pobrać treningów. Spróbuj odświeżyć stronę.",
+    }
   }
 }
 
@@ -288,7 +291,9 @@ export async function createTraining(raw: CreateTrainingFormValues) {
     revalidatePath("/dashboard/trainings")
     return { success: true }
   } catch {
-    return { error: "Wystąpił błąd podczas zapisywania treningu. Spróbuj ponownie." }
+    return {
+      error: "Wystąpił błąd podczas zapisywania treningu. Spróbuj ponownie.",
+    }
   }
 }
 
@@ -334,7 +339,9 @@ export async function updateTraining(raw: UpdateTrainingFormValues) {
     revalidatePath("/dashboard/trainings")
     return { success: true }
   } catch {
-    return { error: "Wystąpił błąd podczas aktualizacji treningu. Spróbuj ponownie." }
+    return {
+      error: "Wystąpił błąd podczas aktualizacji treningu. Spróbuj ponownie.",
+    }
   }
 }
 
@@ -361,6 +368,8 @@ export async function deleteTraining(id: string) {
     revalidatePath("/dashboard/trainings")
     return { success: true }
   } catch {
-    return { error: "Wystąpił błąd podczas usuwania treningu. Spróbuj ponownie." }
+    return {
+      error: "Wystąpił błąd podczas usuwania treningu. Spróbuj ponownie.",
+    }
   }
 }

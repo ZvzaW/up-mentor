@@ -41,8 +41,12 @@ type TrainerOpinionsUIProps = {
   error?: string | null
 }
 
-
-export function TrainerOpinionsUI({ reviews, averageRate, isLoading, error }: TrainerOpinionsUIProps) {
+export function TrainerOpinionsUI({
+  reviews,
+  averageRate,
+  isLoading,
+  error,
+}: TrainerOpinionsUIProps) {
   if (isLoading) return <SkeletonOpinions />
 
   if (error) {
@@ -78,7 +82,6 @@ export function TrainerOpinionsUI({ reviews, averageRate, isLoading, error }: Tr
                   <StarRating rate={review.rate} />
                 </div>
                 <span className="text-[10px] text-zinc-400 italic">
-             
                   {formatDate(new Date(review.createdAt))}
                 </span>
                 {review.comment ? (
@@ -94,7 +97,6 @@ export function TrainerOpinionsUI({ reviews, averageRate, isLoading, error }: Tr
     </div>
   )
 }
-
 
 export function TrainerOpinionsFetch({ trainerId }: { trainerId: string }) {
   const [reviews, setReviews] = useState<TrainerReview[]>([])
@@ -128,11 +130,11 @@ export function TrainerOpinionsFetch({ trainerId }: { trainerId: string }) {
   }, [trainerId])
 
   return (
-    <TrainerOpinionsUI 
-      reviews={reviews} 
-      averageRate={averageRate} 
-      error={error} 
-      isLoading={isLoading} 
+    <TrainerOpinionsUI
+      reviews={reviews}
+      averageRate={averageRate}
+      error={error}
+      isLoading={isLoading}
     />
   )
 }

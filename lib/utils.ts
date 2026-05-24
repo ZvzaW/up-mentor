@@ -33,6 +33,6 @@ export function combineDateAndTime(date: string, time: string) {
   return new Date(y, mo - 1, d, h, m, 0, 0)
 }
 
-export function formatWorkplaceAddress(workplace : WorkplaceAddress) {
+export function formatWorkplaceAddress(workplace: WorkplaceAddress) {
   return `${workplace.name} - ul. ${workplace.street} ${workplace.building_number}${workplace.flat_number ? `/${workplace.flat_number}` : ""}, ${workplace.city}`
 }

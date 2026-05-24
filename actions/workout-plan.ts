@@ -28,7 +28,6 @@ export type WorkoutPlanInput = {
   sections: SectionInput[]
 }
 
-
 export type WorkoutPlanListItem = {
   id: string
   name: string
@@ -124,8 +123,7 @@ const formatPlans = <T extends FormattedPlan>(
   }))
 }
 
-
-export async function getWorkoutPlans(){
+export async function getWorkoutPlans() {
   const session = await auth()
 
   if (!session?.user?.id) {
@@ -161,9 +159,7 @@ export async function getWorkoutPlans(){
       })
 
       return { data: formatPlans(plans) }
-
     } else if (role === "trainee") {
-
       const plans = await prisma.workout_plan.findMany({
         where: {
           plans_library: {
@@ -196,16 +192,14 @@ export async function getWorkoutPlans(){
   }
 }
 
-export async function getWorkoutPlanById(
-  planId: string
-){
+export async function getWorkoutPlanById(planId: string) {
   const session = await auth()
 
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer") 
+  if (session.user.role !== "trainer")
     return { error: "Brak uprawnień do tej operacji." }
 
   try {
@@ -264,7 +258,7 @@ export async function createWorkoutPlan(data: WorkoutPlanInput) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer") 
+  if (session.user.role !== "trainer")
     return { error: "Brak uprawnień do tej operacji." }
 
   try {
@@ -295,7 +289,9 @@ export async function createWorkoutPlan(data: WorkoutPlanInput) {
     revalidatePath("/dashboard/workout-plans")
     return { data: newPlan }
   } catch {
-    return { error: "Wystąpił błąd podczas zapisywania planu. Spróbuj ponownie." }
+    return {
+      error: "Wystąpił błąd podczas zapisywania planu. Spróbuj ponownie.",
+    }
   }
 }
 
@@ -309,7 +305,7 @@ export async function updateWorkoutPlan(
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer") 
+  if (session.user.role !== "trainer")
     return { error: "Brak uprawnień do tej operacji." }
 
   try {
@@ -429,7 +425,9 @@ export async function updateWorkoutPlan(
     revalidatePath(`/dashboard/workout-plans/edit/${planId}`)
     return { success: true }
   } catch {
-    return { error: "Wystąpił błąd podczas aktualizacji planu. Spróbuj ponownie." }
+    return {
+      error: "Wystąpił błąd podczas aktualizacji planu. Spróbuj ponownie.",
+    }
   }
 }
 
@@ -440,7 +438,7 @@ export async function cloneWorkoutPlan(planId: string) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer") 
+  if (session.user.role !== "trainer")
     return { error: "Brak uprawnień do tej operacji." }
 
   try {
@@ -484,7 +482,9 @@ export async function cloneWorkoutPlan(planId: string) {
     revalidatePath("/dashboard/workout-plans")
     return { success: true }
   } catch {
-    return { error: "Wystąpił błąd podczas klonowania planu. Spróbuj ponownie." }
+    return {
+      error: "Wystąpił błąd podczas klonowania planu. Spróbuj ponownie.",
+    }
   }
 }
 
@@ -495,7 +495,7 @@ export async function deleteWorkoutPlan(planId: string) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer") 
+  if (session.user.role !== "trainer")
     return { error: "Brak uprawnień do tej operacji." }
 
   try {
@@ -518,11 +518,11 @@ export async function deleteWorkoutPlan(planId: string) {
 
 export async function assignPlanToTrainee(planId: string, traineeId: string) {
   const session = await auth()
-    if (!session?.user?.id) {
-      redirect("/?unauthorized=true")
-    }
-  
-  if (session.user.role !== "trainer") 
+  if (!session?.user?.id) {
+    redirect("/?unauthorized=true")
+  }
+
+  if (session.user.role !== "trainer")
     return { error: "Brak uprawnień do tej operacji." }
 
   try {
@@ -536,9 +536,14 @@ export async function assignPlanToTrainee(planId: string, traineeId: string) {
     revalidatePath("/dashboard/workout-plans")
     return { success: true, data: assignment }
   } catch (error: any) {
-    if(error.code === "P2002") {
-      return { error: "Ten plan jest już przypisany do wybranego podopiecznego." }
+    if (error.code === "P2002") {
+      return {
+        error: "Ten plan jest już przypisany do wybranego podopiecznego.",
+      }
     }
-    return { error: "Wystąpił błąd podczas przypisywania planu do podopiecznego. Spróbuj ponownie." }
+    return {
+      error:
+        "Wystąpił błąd podczas przypisywania planu do podopiecznego. Spróbuj ponownie.",
+    }
   }
 }

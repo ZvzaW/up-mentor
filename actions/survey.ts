@@ -4,31 +4,33 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 
-export async function saveSurveyAnswersAction(answers: { question_id: string, answer: string }[]) {
-    const session = await auth()
-    if (!session?.user?.id) {
-      redirect("/?unauthorized=true")
-    }
-  
-    if (session.user.role !== "trainee") {
-      return { error: "Brak uprawnień do tej operacji." }
-    }
+export async function saveSurveyAnswersAction(
+  answers: { question_id: string; answer: string }[]
+) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    redirect("/?unauthorized=true")
+  }
+
+  if (session.user.role !== "trainee") {
+    return { error: "Brak uprawnień do tej operacji." }
+  }
 
   try {
     const traineeId = session.user.id
 
     await prisma.$transaction(async (tx) => {
       await tx.survey_answer.deleteMany({
-        where: { trainee_id: traineeId }
+        where: { trainee_id: traineeId },
       })
 
       if (answers.length > 0) {
         await tx.survey_answer.createMany({
-          data: answers.map(a => ({
+          data: answers.map((a) => ({
             trainee_id: traineeId,
             question_id: a.question_id,
-            answer: a.answer
-          }))
+            answer: a.answer,
+          })),
         })
       }
     })
@@ -39,8 +41,6 @@ export async function saveSurveyAnswersAction(answers: { question_id: string, an
     return { error: "Nie udało się zapisać ankiety. Spróbuj ponownie później." }
   }
 }
-
-
 
 export async function getSurveyDataAction(traineeId?: string) {
   const session = await auth()
@@ -54,13 +54,11 @@ export async function getSurveyDataAction(traineeId?: string) {
 
   const traineeIdToFetch = traineeId || userId
 
-  
   if (userRole === "trainee") {
     if (traineeIdToFetch !== userId) {
       return { error: "Brak uprawnień do tej ankiety." }
     }
-  } 
-  else if (userRole === "trainer") {
+  } else if (userRole === "trainer") {
     if (!traineeId) {
       return { error: "Nie podano podopiecznego." }
     }
@@ -74,14 +72,15 @@ export async function getSurveyDataAction(traineeId?: string) {
     })
 
     if (!activeCooperation) {
-      return { error: "Nie masz aktywnej współpracy z tym podopiecznym. Brak dostępu do ankiety." }
+      return {
+        error:
+          "Nie masz aktywnej współpracy z tym podopiecznym. Brak dostępu do ankiety.",
+      }
     }
-  } 
-  else {
+  } else {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
-  
   try {
     const questions = await prisma.survey_question.findMany({
       orderBy: {
@@ -90,22 +89,24 @@ export async function getSurveyDataAction(traineeId?: string) {
     })
 
     const answers = await prisma.survey_answer.findMany({
-      where: { trainee_id: traineeIdToFetch }
+      where: { trainee_id: traineeIdToFetch },
     })
 
-    const answerDictionary = answers.reduce((acc, curr) => {
-      acc[curr.question_id] = curr.answer
-      return acc
-    }, {} as Record<string, string>)
+    const answerDictionary = answers.reduce(
+      (acc, curr) => {
+        acc[curr.question_id] = curr.answer
+        return acc
+      },
+      {} as Record<string, string>
+    )
 
     const mappedData = questions.map((q) => ({
       id: q.id,
       question: q.question,
-      currentAnswer: answerDictionary[q.id] || undefined
+      currentAnswer: answerDictionary[q.id] || undefined,
     }))
 
     return { success: true, data: mappedData }
-
   } catch (error) {
     console.error("GET_SURVEY_DATA_ERROR:", error)
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę" }

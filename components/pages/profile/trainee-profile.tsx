@@ -16,11 +16,10 @@ export default function TraineeProfile({
   baseData,
   specificData,
 }: TraineeProfileProps) {
-  
   return (
     <section className="w-full">
       {/* PROFIL*/}
-      <div >
+      <div>
         <Card>
           <CardContent>
             <div className="flex flex-col items-center text-center">
