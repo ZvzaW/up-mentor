@@ -41,6 +41,7 @@ function formatNextTrainingLabel(scheduledAt: Date) {
   return `${formatDate(scheduledAt)}, ${toTimeInputValue(scheduledAt)}`
 }
 
+//------------------------------------------------------------------------------------------------
 async function getNextTraining(userId: string, role: string) {
   const where =
     role === "trainer"
@@ -57,27 +58,10 @@ async function getNextTraining(userId: string, role: string) {
   return formatNextTrainingLabel(next.scheduled_at)
 }
 
-export type TrainerStatistics = {
-  weeklyLoad: { day: string; h: number }[]
-  monthlyComparison: { month: string; trainings: number; salary: number }[]
-  hasHourlyRate: boolean
-}
 
-export type TraineeStatistics = {
-  weeklyHours: { period: string; h: number }[]
-  monthlyWorkouts: { period: string; trainings: number }[]
-}
+//------------------------------------------------------------------------------------------------
+export async function getStatistics() {
 
-export async function getStatistics(): Promise<
-  | { error: string }
-  | {
-      success: true
-      nextTraining: string | null
-      role: "trainer" | "trainee"
-      trainer?: TrainerStatistics
-      trainee?: TraineeStatistics
-    }
-> {
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
@@ -94,7 +78,6 @@ export async function getStatistics(): Promise<
       return {
         success: true,
         nextTraining,
-        role: "trainer",
         trainer: trainerStats,
       }
     }
@@ -104,18 +87,19 @@ export async function getStatistics(): Promise<
       return {
         success: true,
         nextTraining,
-        role: "trainee",
         trainee: traineeStats,
       }
     }
 
-    return { error: "Brak uprawnień do wyświetlenia statystyk." }
+    return { error: "Brak uprawnień do tej operacji." }
   } catch {
     return { error: "Nie udało się pobrać statystyk. Spróbuj odświeżyć stronę." }
   }
 }
 
-async function getTrainerStatistics(trainerId: string): Promise<TrainerStatistics> {
+
+//------------------------------------------------------------------------------------------------
+async function getTrainerStatistics(trainerId: string) {
   const now = new Date()
   const weekStart = startOfWeek(now, { weekStartsOn: 1 })
   const weekEnd = endOfWeek(now, { weekStartsOn: 1 })
@@ -199,7 +183,8 @@ async function getTrainerStatistics(trainerId: string): Promise<TrainerStatistic
   return { weeklyLoad, monthlyComparison, hasHourlyRate }
 }
 
-async function getTraineeStatistics(traineeId: string): Promise<TraineeStatistics> {
+//------------------------------------------------------------------------------------------------
+async function getTraineeStatistics(traineeId: string) {
   const now = new Date()
   const currentWeekStart = startOfWeek(now, { weekStartsOn: 1 })
   const currentWeekEnd = endOfWeek(now, { weekStartsOn: 1 })

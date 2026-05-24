@@ -41,7 +41,9 @@ export default function LoginPage() {
       if (result?.error) {
         setLoginError(result.error)
         setIsPending(false) 
-      } 
+      } else{
+        window.location.href = "/dashboard"
+      }
       
     } catch (error: any) {
       if (

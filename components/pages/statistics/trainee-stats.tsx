@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Loader2 } from "lucide-react"
 import {
   BarChart,
   Bar,
@@ -12,29 +11,20 @@ import {
   Rectangle,
 } from "recharts"
 import { Separator } from "@/components/ui/separator"
-import type { TraineeStatistics } from "@/actions/statistics"
+import type { TraineeStatistics } from "@/lib/types"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 interface TraineeStatsProps {
   data?: TraineeStatistics
-  isLoading?: boolean
 }
 
-export default function TraineeStats({ data, isLoading }: TraineeStatsProps) {
+export default function TraineeStats({ data }: TraineeStatsProps) {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
     const raf = requestAnimationFrame(() => setReady(true))
     return () => cancelAnimationFrame(raf)
   }, [])
-
-  if (isLoading) {
-    return (
-      <div className="flex h-[400px] items-center justify-center">
-        <Loader2 className="text-baby-blue h-8 w-8 animate-spin" />
-      </div>
-    )
-  }
 
   const weeklyHoursData = data?.weeklyHours ?? []
   const monthlyWorkoutsData = data?.monthlyWorkouts ?? []
@@ -48,9 +38,10 @@ export default function TraineeStats({ data, isLoading }: TraineeStatsProps) {
         <h3 className="text-center text-sm text-zinc-300 uppercase">
           Czas przeznaczony na treningi
         </h3>
-        
+
+        <div className="bg-dirty-blue h-[145px] w-full rounded-xl p-6">
           {ready && weeklyHoursData.length > 0 ? (
-            <div className="bg-dirty-blue h-[145px] w-full rounded-xl p-6">
+            
             <ResponsiveContainer
               width="100%"
               height="100%"
@@ -93,11 +84,9 @@ export default function TraineeStats({ data, isLoading }: TraineeStatsProps) {
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-            </div>
-          ) : <Alert variant="default" className=" mx-auto bg-dirty-navy/80">
-          <AlertDescription>Brak danych do wyświetlenia.</AlertDescription>
-        </Alert>}
-        
+            
+          ) : null}
+        </div>
       </div>
 
       <Separator />
@@ -107,9 +96,9 @@ export default function TraineeStats({ data, isLoading }: TraineeStatsProps) {
         <h3 className="text-center text-sm text-zinc-300 uppercase">
           Zrealizowane treningi
         </h3>
-       
+       <div className="bg-dirty-blue h-[145px] w-full rounded-xl p-6">
           {ready && monthlyWorkoutsData.length > 0 ? ( 
-            <div className="bg-dirty-blue h-[145px] w-full rounded-xl p-6">
+            
             <ResponsiveContainer
               width="100%"
               height="100%"
@@ -151,11 +140,9 @@ export default function TraineeStats({ data, isLoading }: TraineeStatsProps) {
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-            </div>
-          ) : <Alert variant="default" className=" mx-auto bg-dirty-navy/80">
-              <AlertDescription>Brak danych do wyświetlenia.</AlertDescription>
-            </Alert>}
-        
+            
+          ) : null}
+        </div>
       </div>
     </div>
   )

@@ -94,7 +94,7 @@ export async function login(data: { email: string, password: string }) {
     await signIn("credentials", {
       email,
       password,
-      redirectTo: "/dashboard",
+      redirect: false
     })
 
   } catch (error) {

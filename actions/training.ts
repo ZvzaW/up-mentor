@@ -63,7 +63,7 @@ function isTrainingScheduledInPast(scheduledAt: Date) {
 async function validateTrainerTrainingInput(
   trainerId: string,
   data: CreateTrainingFormValues
-): Promise<{ error: string } | Record<string, never>> {
+){
   const cooperation = await prisma.cooperation.findFirst({
     where: {
       trainer_id: trainerId,

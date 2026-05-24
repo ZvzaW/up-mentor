@@ -50,3 +50,15 @@ export type TrainingListItem = {
   durationLabel: string
   workplaceAddress: string
 }
+
+
+export type TrainerStatistics = {
+  weeklyLoad: { day: string; h: number }[]
+  monthlyComparison: { month: string; trainings: number; salary: number }[]
+  hasHourlyRate: boolean
+}
+  
+export type TraineeStatistics = {
+  weeklyHours: { period: string; h: number }[]
+  monthlyWorkouts: { period: string; trainings: number }[]
+}
