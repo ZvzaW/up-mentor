@@ -12,7 +12,6 @@ import {
 } from "recharts"
 import { Separator } from "@/components/ui/separator"
 import type { TraineeStatistics } from "@/lib/types"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 
 interface TraineeStatsProps {
   data?: TraineeStatistics

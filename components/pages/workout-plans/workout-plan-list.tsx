@@ -8,11 +8,7 @@ import {
   assignPlanToTrainee,
   deleteWorkoutPlan,
 } from "@/actions/workout-plan"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-} from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -51,8 +47,6 @@ const DIFFICULTY_LEVELS = [
 ] as const
 
 type DifficultyFilter = "all" | (typeof DIFFICULTY_LEVELS)[number] | "none"
-
-
 
 type WorkoutPlanListPlan = {
   id: string
@@ -168,7 +162,7 @@ export function WorkoutPlanList({
   }
 
   const handleAssign = async (planId: string) => {
-    if (!selectedTraineeId) return 
+    if (!selectedTraineeId) return
     setLoadingId(`assign-${planId}`)
     const result = await assignPlanToTrainee(planId, selectedTraineeId)
     setLoadingId(null)
@@ -185,67 +179,71 @@ export function WorkoutPlanList({
   return (
     <div className="space-y-4">
       {plans.length > 0 && (
-
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-end mb-6">
-              <div className="w-full sm:flex-1">
-              <Label htmlFor="plan-name-search " className="ml-1 text-muted-foreground">
-                Nazwa planu
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="plan-name-search"
-                    type="text"
-                    value={nameQuery}
-                    onChange={(e) => setNameQuery(e.target.value)}
-                    placeholder="Wyszukaj"
-                    className="rounded-full pr-10 pl-4 placeholder:text-xs placeholder:text-zinc-400"
-                  />
-                  <Search className="absolute top-1/2 right-4 h-4 w-4 -translate-y-1/2 text-zinc-500" />
-                </div>
-              </div>
-
-              <div className="w-full sm:max-w-xs">
-                <Label htmlFor="plan-difficulty-filter " className="ml-1 text-muted-foreground">
-                  Poziom zaawansowania
-                </Label>
-                <Select
-                  value={difficultyFilter}
-                  onValueChange={(value) =>
-                    setDifficultyFilter(value as DifficultyFilter)
-                  }
-                >
-                  <SelectTrigger
-                    id="plan-difficulty-filter"
-                    className="border-baby-blue h-10 w-full rounded-full"
-                  >
-                    <SelectValue placeholder="Wszystkie" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Wszystkie</SelectItem>
-                    {DIFFICULTY_LEVELS.map((level) => (
-                      <SelectItem key={level} value={level}>
-                        {level}
-                      </SelectItem>
-                    ))}
-                    <SelectItem value="none">Bez poziomu</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {hasActiveFilters && (
-                <Button
-                  type="button"
-                  className="bg-gold hover:bg-gold/60 w-fit mx-auto"
-                  onClick={() => {
-                    setNameQuery("")
-                    setDifficultyFilter("all")
-                  }}
-                >
-                  Wyczyść filtry
-                </Button>
-              )}
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end">
+          <div className="w-full sm:flex-1">
+            <Label
+              htmlFor="plan-name-search "
+              className="text-muted-foreground ml-1"
+            >
+              Nazwa planu
+            </Label>
+            <div className="relative">
+              <Input
+                id="plan-name-search"
+                type="text"
+                value={nameQuery}
+                onChange={(e) => setNameQuery(e.target.value)}
+                placeholder="Wyszukaj"
+                className="rounded-full pr-10 pl-4 placeholder:text-xs placeholder:text-zinc-400"
+              />
+              <Search className="absolute top-1/2 right-4 h-4 w-4 -translate-y-1/2 text-zinc-500" />
             </div>
+          </div>
 
+          <div className="w-full sm:max-w-xs">
+            <Label
+              htmlFor="plan-difficulty-filter "
+              className="text-muted-foreground ml-1"
+            >
+              Poziom zaawansowania
+            </Label>
+            <Select
+              value={difficultyFilter}
+              onValueChange={(value) =>
+                setDifficultyFilter(value as DifficultyFilter)
+              }
+            >
+              <SelectTrigger
+                id="plan-difficulty-filter"
+                className="border-baby-blue h-10 w-full rounded-full"
+              >
+                <SelectValue placeholder="Wszystkie" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Wszystkie</SelectItem>
+                {DIFFICULTY_LEVELS.map((level) => (
+                  <SelectItem key={level} value={level}>
+                    {level}
+                  </SelectItem>
+                ))}
+                <SelectItem value="none">Bez poziomu</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {hasActiveFilters && (
+            <Button
+              type="button"
+              className="bg-gold hover:bg-gold/60 mx-auto w-fit"
+              onClick={() => {
+                setNameQuery("")
+                setDifficultyFilter("all")
+              }}
+            >
+              Wyczyść filtry
+            </Button>
+          )}
+        </div>
       )}
 
       {plans.length === 0 && (
@@ -274,12 +272,12 @@ export function WorkoutPlanList({
         const assignedLibraries = plan.plans_library ?? []
 
         return (
-          <Card key={plan.id} className="overflow-hidden py-6 w-full">
+          <Card key={plan.id} className="w-full overflow-hidden py-6">
             <CardHeader>
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between ">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-2">
-                  <div className="mb-4 flex flex-col sm:flex-row items-center gap-2 sm:gap-4 ">
-                    <p className="text-gold text-lg font-semibold mx-auto sm:mx-0 ">
+                  <div className="mb-4 flex flex-col items-center gap-2 sm:flex-row sm:gap-4">
+                    <p className="text-gold mx-auto text-lg font-semibold sm:mx-0">
                       {plan.name}
                     </p>
                     {plan.difficulty && (
@@ -289,7 +287,7 @@ export function WorkoutPlanList({
                     )}
                   </div>
 
-                  <div className="text-muted-foreground pt-1 text-xs max-w-full break-words mx-auto sm:mx-0 text-center sm:text-left">
+                  <div className="text-muted-foreground mx-auto max-w-full pt-1 text-center text-xs break-words sm:mx-0 sm:text-left">
                     {role === "trainer" ? (
                       <div>
                         Udostępniono dla:{" "}
@@ -321,7 +319,7 @@ export function WorkoutPlanList({
                 </div>
 
                 {/*OPCJE*/}
-                <div className="flex items-center justify-center gap-2 mt-2 sm:mt-0 sm:self-start">
+                <div className="mt-2 flex items-center justify-center gap-2 sm:mt-0 sm:self-start">
                   {role === "trainer" && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -330,7 +328,7 @@ export function WorkoutPlanList({
                           size="sm"
                           disabled={loadingId !== null}
                         >
-                          <Settings  />
+                          <Settings />
                           Opcje
                         </Button>
                       </DropdownMenuTrigger>
@@ -448,9 +446,10 @@ export function WorkoutPlanList({
             {/* STRUKTURA PLANU */}
             {isExpanded && (
               <CardContent className="space-y-5 border-t pt-6">
-
                 {plan.description && (
-                    <p className="text-zinc-200 text-sm max-w-full break-words mx-auto sm:mx-0 text-center sm:text-left mb-8 mt-3">{plan.description}</p>
+                  <p className="mx-auto mt-3 mb-8 max-w-full text-center text-sm break-words text-zinc-200 sm:mx-0 sm:text-left">
+                    {plan.description}
+                  </p>
                 )}
 
                 {plan.section && plan.section.length > 0 ? (
@@ -462,8 +461,8 @@ export function WorkoutPlanList({
                         key={sec.id}
                         className="bg-dark-navy rounded-lg p-4 pb-0"
                       >
-                        <div className="border-baby-blue flex flex-col sm:flex-row items-center justify-between border-b pb-2">
-                          <h3 className="text-baby-blue flex items-center gap-2 font-semibold max-w-full truncate mb-2 sm:mb-0">
+                        <div className="border-baby-blue flex flex-col items-center justify-between border-b pb-2 sm:flex-row">
+                          <h3 className="text-baby-blue mb-2 flex max-w-full items-center gap-2 truncate font-semibold sm:mb-0">
                             Sekcja {sec.order}
                           </h3>
                           {sec.body_part && (

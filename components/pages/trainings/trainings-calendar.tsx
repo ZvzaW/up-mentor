@@ -100,10 +100,17 @@ export default function TrainingsCalendar({
       <div
         key={`header-${day.toISOString()}`}
         className={cn(
-          "flex min-w-0 flex-1 flex-col justify-center py-2 text-center "
+          "flex min-w-0 flex-1 flex-col justify-center py-2 text-center"
         )}
       >
-        <div className={cn("text-[10px] uppercase", today ? "text-baby-blue font-bold" : "text-zinc-400")}>{weekday}</div>
+        <div
+          className={cn(
+            "text-[10px] uppercase",
+            today ? "text-baby-blue font-bold" : "text-zinc-400"
+          )}
+        >
+          {weekday}
+        </div>
         <div
           className={cn(
             "text-sm",
@@ -122,14 +129,14 @@ export default function TrainingsCalendar({
     return (
       <div
         key={`grid-${day.toISOString()}`}
-        className="relative flex-1 cursor-pointer border-l border-baby-blue first:border-l-0"
+        className="border-baby-blue relative flex-1 cursor-pointer border-l first:border-l-0"
         style={{ height: CALENDAR_GRID_HEIGHT }}
         onClick={(mouseEvent) => handleGridClick(day, mouseEvent)}
       >
         {HOURS.map((hour, i) => (
           <div
             key={hour}
-            className="pointer-events-none absolute right-0 left-0 border-t border-baby-blue/20"
+            className="border-baby-blue/20 pointer-events-none absolute right-0 left-0 border-t"
             style={{ top: i * HOUR_SLOT_HEIGHT }}
           />
         ))}
@@ -147,16 +154,15 @@ export default function TrainingsCalendar({
         {dayTrainings.map((training) => {
           const startsAt = new Date(training.scheduledAt)
           const position = getTrainingPosition(startsAt, training.duration)
-          const timeRange = formatTrainingTimeRange(
-            startsAt,
-            training.duration
-          )
-          {/* TRENING / */}
+          const timeRange = formatTrainingTimeRange(startsAt, training.duration)
+          {
+            /* TRENING / */
+          }
           return (
             <button
               key={training.id}
               type="button"
-              className=" flex flex-col bg-baby-blue/85 hover:bg-baby-blue border border-dirty-navy overflow-hidden absolute right-0.5 left-0.5 z-10 rounded p-1 text-left   text-dark-navy  transition-colors "
+              className="bg-baby-blue/85 hover:bg-baby-blue border-dirty-navy text-dark-navy absolute right-0.5 left-0.5 z-10 flex flex-col overflow-hidden rounded border p-1 text-left transition-colors"
               style={{
                 top: position.top,
                 height: position.height,
@@ -166,12 +172,14 @@ export default function TrainingsCalendar({
                 onTrainingClick(training)
               }}
             >
-              <span className="text-[11px] break-words font-bold text-zinc-800">
+              <span className="text-[11px] font-bold break-words text-zinc-800">
                 {isTrainer ? training.traineeName : training.trainerName}
               </span>
 
-              <span className="text-[10px] break-words opacity-80">· {training.workplaceAddress.split("-")[0]}</span>
-              <span className=" truncate opacity-80 mt-auto text-[10px]">
+              <span className="text-[10px] break-words opacity-80">
+                · {training.workplaceAddress.split("-")[0]}
+              </span>
+              <span className="mt-auto truncate text-[10px] opacity-80">
                 {timeRange}
               </span>
             </button>
@@ -183,47 +191,47 @@ export default function TrainingsCalendar({
 
   return (
     <div className="flex flex-col gap-5 lg:flex-row">
-      <aside className="mx-auto flex w-fit  flex-col  mt-0 sm:mt-12">
+      <aside className="mx-auto mt-0 flex w-fit flex-col sm:mt-12">
         <Calendar
           mode="single"
           selected={weekAnchor}
           onSelect={(d) => d && onWeekChange(d)}
           locale={pl}
-          className="rounded-xl border border-gold bg-dirty-navy/40 "
+          className="border-gold bg-dirty-navy/40 rounded-xl border"
         />
-        <p className="text-center text-xs text-zinc-400 mt-2">
+        <p className="mt-2 text-center text-xs text-zinc-400">
           Kliknij dzień, aby przejść do danego tygodnia.
         </p>
       </aside>
 
-      <div className="min-w-0 flex-1 min-h-0">
-        <div className="mb-2 flex flex-col sm:flex-row items-center justify-between">
-          <div className="sm:flex flex-row items-center gap-1 hidden">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                onClick={() => onWeekChange(navigateWeek(weekAnchor, "prev"))}
-                aria-label="Poprzedni tydzień"
-              >
-                <ChevronLeft />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                onClick={() => onWeekChange(navigateWeek(weekAnchor, "next"))}
-                aria-label="Następny tydzień"
-              >
-                <ChevronRight />
-              </Button>
+      <div className="min-h-0 min-w-0 flex-1">
+        <div className="mb-2 flex flex-col items-center justify-between sm:flex-row">
+          <div className="hidden flex-row items-center gap-1 sm:flex">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => onWeekChange(navigateWeek(weekAnchor, "prev"))}
+              aria-label="Poprzedni tydzień"
+            >
+              <ChevronLeft />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => onWeekChange(navigateWeek(weekAnchor, "next"))}
+              aria-label="Następny tydzień"
+            >
+              <ChevronRight />
+            </Button>
 
             <span className="font-michroma text-sm text-zinc-200 sm:text-base">
               {formatWeekRangeLabel(weekAnchor)}
             </span>
           </div>
 
-          <div className="flex items-center gap-4 mt-2 mb-4 sm:my-0">
+          <div className="mt-2 mb-4 flex items-center gap-4 sm:my-0">
             <Button
               type="button"
               className="bg-gold hover:bg-gold/60"
@@ -231,12 +239,13 @@ export default function TrainingsCalendar({
             >
               Pokaż dzisiaj
             </Button>
-          {isTrainer && (
-            <Button type="button" className="" onClick={onNewClick}>
-              <Plus  />
-              Dodaj trening
-            </Button>
-          )}</div>
+            {isTrainer && (
+              <Button type="button" className="" onClick={onNewClick}>
+                <Plus />
+                Dodaj trening
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="mb-3 flex items-center justify-between gap-2 md:hidden">
@@ -264,15 +273,15 @@ export default function TrainingsCalendar({
         </div>
 
         {fetchError && (
-          <Alert variant="destructive" className="mb-4 mx-auto shrink-0">
+          <Alert variant="destructive" className="mx-auto mb-4 shrink-0">
             <AlertDescription>{fetchError}</AlertDescription>
           </Alert>
         )}
 
-        <div className="overflow-hidden rounded-md border border-baby-blue bg-dirty-navy/60 min-h-0">
+        <div className="border-baby-blue bg-dirty-navy/60 min-h-0 overflow-hidden rounded-md border">
           {/*NAGŁOWEK - DNI*/}
           <div
-            className="flex border-b border-baby-blue bg-dark-navy/95 pr-5 sm:pr-2"
+            className="border-baby-blue bg-dark-navy/95 flex border-b pr-5 sm:pr-2"
             style={{ height: "50px" }}
           >
             <div className="w-10 shrink-0" />
@@ -287,7 +296,7 @@ export default function TrainingsCalendar({
           {/*SIATKA GODZIN*/}
           <div
             ref={scrollRef}
-            className="sm:max-h-[60vh] min-h-0 max-h-[450px] overflow-x-hidden overflow-y-auto custom-scrollbar pt-4 pb-1"
+            className="custom-scrollbar max-h-[450px] min-h-0 overflow-x-hidden overflow-y-auto pt-4 pb-1 sm:max-h-[60vh]"
           >
             <div className="flex">
               <div
@@ -303,9 +312,7 @@ export default function TrainingsCalendar({
                       height: HOUR_SLOT_HEIGHT,
                     }}
                   >
-                    <span className="absolute -top-2 right-1">
-                      {hour}
-                    </span>
+                    <span className="absolute -top-2 right-1">{hour}</span>
                   </div>
                 ))}
               </div>

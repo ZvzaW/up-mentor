@@ -1,4 +1,4 @@
-import {  getExercises } from "@/actions/exercise"
+import { getExercises } from "@/actions/exercise"
 import { auth } from "@/auth"
 import { AddExerciseDialog } from "@/components/dialogs/trainer/add-exercise"
 import { ExerciseList } from "@/components/pages/exercises/exercise-list"
@@ -14,14 +14,12 @@ export default async function ExercisesPage() {
 
   return (
     <div className="space-y-6 p-3">
-      <div className=" flex flex-col sm:flex-row sm:justify-between ">
-
-        <h1 className="md:ml-1 font-michroma text-2xl text-center sm:text-left">
+      <div className="flex flex-col sm:flex-row sm:justify-between">
+        <h1 className="font-michroma text-center text-2xl sm:text-left md:ml-1">
           Katalog ćwiczeń
         </h1>
-      
 
-        {role==="trainer" && <AddExerciseDialog />}
+        {role === "trainer" && <AddExerciseDialog />}
       </div>
 
       {result.error && (
@@ -34,9 +32,7 @@ export default async function ExercisesPage() {
         </Card>
       )}
 
-      {!result.error && (
-        <ExerciseList exercises={exercises} role={role} />
-      )}
+      {!result.error && <ExerciseList exercises={exercises} role={role} />}
     </div>
   )
 }

@@ -12,7 +12,6 @@ import {
 } from "recharts"
 import type { TrainerStatistics } from "@/lib/types"
 
-
 interface TrainerStatsProps {
   data?: TrainerStatistics
 }
@@ -40,7 +39,6 @@ export default function TrainerStats({ data }: TrainerStatsProps) {
         </h3>
         <div className="bg-dirty-blue h-[200px] w-full rounded-xl px-4 py-3">
           {ready && weeklyLoadData.length > 0 ? (
-            
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={weeklyLoadData}
@@ -64,10 +62,7 @@ export default function TrainerStats({ data }: TrainerStatsProps) {
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-            
-          ) : (
-            null
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -82,7 +77,6 @@ export default function TrainerStats({ data }: TrainerStatsProps) {
           </h3>
           <div className="bg-dirty-blue h-[140px] rounded-xl px-3 py-3">
             {ready && monthlyComparisonData.length > 0 ? (
-              
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={monthlyComparisonData}
@@ -129,14 +123,10 @@ export default function TrainerStats({ data }: TrainerStatsProps) {
           </h3>
           <div className="bg-dirty-blue h-[140px] rounded-xl px-3 py-3">
             {!hasHourlyRate ? (
-
               <p className="flex h-full items-center justify-center px-2 text-center text-xs leading-relaxed text-zinc-400">
-                Wykres niedostępny — ustaw stawkę za godzinę treningu w
-                profilu.
+                Wykres niedostępny — ustaw stawkę za godzinę treningu w profilu.
               </p>
-
             ) : ready && monthlyComparisonData.length > 0 ? (
-            
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={monthlyComparisonData}
@@ -173,7 +163,6 @@ export default function TrainerStats({ data }: TrainerStatsProps) {
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
-              
             ) : null}
           </div>
         </div>

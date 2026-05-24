@@ -42,7 +42,9 @@ export default async function TraineeDetailsPage({
         id: cooperation.trainee.user.id,
         fullName: `${cooperation.trainee.user.name} ${cooperation.trainee.user.surname}`,
         phone: cooperation.trainee.user.phone,
-        workplace: formatWorkplaceAddress(cooperation.workplace as WorkplaceAddress),
+        workplace: formatWorkplaceAddress(
+          cooperation.workplace as WorkplaceAddress
+        ),
       }
     : null
 
@@ -86,10 +88,10 @@ export default async function TraineeDetailsPage({
                   <span className="truncate">{selectedTrainee.workplace}</span>
                 </div>
 
-                
-                  <ShowTraineeSurveyDialog traineeId={selectedTrainee.id} name={selectedTrainee.fullName}/>
-                  
-
+                <ShowTraineeSurveyDialog
+                  traineeId={selectedTrainee.id}
+                  name={selectedTrainee.fullName}
+                />
 
                 <div className="mt-2 w-[90%] md:w-full">
                   <p className="mb-2 flex items-center gap-2 text-sm text-zinc-300">

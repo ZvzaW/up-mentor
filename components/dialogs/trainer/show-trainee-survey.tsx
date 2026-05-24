@@ -10,10 +10,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { ClipboardList,  Info } from "lucide-react"
+import { ClipboardList, Info } from "lucide-react"
 import { getSurveyDataAction } from "@/actions/survey"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { SkeletonList  } from "@/components/ui/skeleton"
+import { SkeletonList } from "@/components/ui/skeleton"
 
 interface QuestionData {
   id: string
@@ -26,7 +26,10 @@ interface ShowTraineeSurveyDialogProps {
   name: string
 }
 
-export function ShowTraineeSurveyDialog({ traineeId, name }: ShowTraineeSurveyDialogProps) {
+export function ShowTraineeSurveyDialog({
+  traineeId,
+  name,
+}: ShowTraineeSurveyDialogProps) {
   const [questions, setQuestions] = useState<QuestionData[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -53,7 +56,9 @@ export function ShowTraineeSurveyDialog({ traineeId, name }: ShowTraineeSurveyDi
         }
       } catch {
         if (isMounted) {
-          setError("Wystąpił nieoczekiwany błąd serwera. Spróbuj ponownie później.")
+          setError(
+            "Wystąpił nieoczekiwany błąd serwera. Spróbuj ponownie później."
+          )
         }
       } finally {
         if (isMounted) {
@@ -72,11 +77,8 @@ export function ShowTraineeSurveyDialog({ traineeId, name }: ShowTraineeSurveyDi
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="secondary"
-          type="button"
-        >
-          <ClipboardList/>
+        <Button variant="secondary" type="button">
+          <ClipboardList />
           Ankieta startowa
         </Button>
       </DialogTrigger>
@@ -88,14 +90,15 @@ export function ShowTraineeSurveyDialog({ traineeId, name }: ShowTraineeSurveyDi
           </DialogTitle>
           <DialogDescription className="mt-2 flex items-start gap-2 text-zinc-400">
             <Info className="text-baby-blue size-4 shrink-0" />
-            Poniżej znajdują się informacje medyczno-treningowe wypełnione przez kursanta.
+            Poniżej znajdują się informacje medyczno-treningowe wypełnione przez
+            kursanta.
           </DialogDescription>
         </DialogHeader>
 
         {/*PYTANIA I ODPOWIEDZI*/}
         <div className="custom-scrollbar bg-dirty-blue space-y-12 overflow-y-auto rounded-lg p-6">
           {isLoading ? (
-            <SkeletonList/>
+            <SkeletonList />
           ) : error ? (
             <Alert variant="destructive" className="mx-auto">
               <AlertDescription>{error}</AlertDescription>
@@ -115,12 +118,12 @@ export function ShowTraineeSurveyDialog({ traineeId, name }: ShowTraineeSurveyDi
                     {q.question}
                   </label>
                 </div>
-                
+
                 <div className="bg-dirty-navy/50 w-full rounded-md border p-4 text-sm text-zinc-300">
                   {q.currentAnswer ? (
                     <p className="whitespace-pre-wrap">{q.currentAnswer}</p>
                   ) : (
-                    <p className="italic text-zinc-500">
+                    <p className="text-zinc-500 italic">
                       Podopieczny nie udzielił odpowiedzi na to pytanie.
                     </p>
                   )}

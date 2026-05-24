@@ -58,10 +58,8 @@ async function getNextTraining(userId: string, role: string) {
   return formatNextTrainingLabel(next.scheduled_at)
 }
 
-
 //------------------------------------------------------------------------------------------------
 export async function getStatistics() {
-
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
@@ -93,10 +91,11 @@ export async function getStatistics() {
 
     return { error: "Brak uprawnień do tej operacji." }
   } catch {
-    return { error: "Nie udało się pobrać statystyk. Spróbuj odświeżyć stronę." }
+    return {
+      error: "Nie udało się pobrać statystyk. Spróbuj odświeżyć stronę.",
+    }
   }
 }
-
 
 //------------------------------------------------------------------------------------------------
 async function getTrainerStatistics(trainerId: string) {
@@ -136,10 +135,7 @@ async function getTrainerStatistics(trainerId: string) {
     const dayStart = startOfDay(addDays(weekStart, index))
     const dayEnd = endOfDay(dayStart)
     const hours = weekTrainings
-      .filter(
-        (t) =>
-          t.scheduled_at >= dayStart && t.scheduled_at <= dayEnd
-      )
+      .filter((t) => t.scheduled_at >= dayStart && t.scheduled_at <= dayEnd)
       .reduce((sum, t) => sum + Number(t.duration), 0)
     return { day, h: Math.round(hours * 10) / 10 }
   })
@@ -213,8 +209,14 @@ async function getTraineeStatistics(traineeId: string) {
       )
       .reduce((sum, t) => sum + Number(t.duration), 0)
 
-  const currentWeekHours = completedHoursInRange(currentWeekStart, currentWeekEnd)
-  const previousWeekHours = completedHoursInRange(previousWeekStart, previousWeekEnd)
+  const currentWeekHours = completedHoursInRange(
+    currentWeekStart,
+    currentWeekEnd
+  )
+  const previousWeekHours = completedHoursInRange(
+    previousWeekStart,
+    previousWeekEnd
+  )
 
   const weeklyHours = [
     { period: "Ten tydzień", h: Math.round(currentWeekHours * 10) / 10 },
@@ -230,8 +232,14 @@ async function getTraineeStatistics(traineeId: string) {
     ).length
 
   const monthlyWorkouts = [
-    { period: "Ten miesiąc", trainings: countCompletedInMonth(currentMonthStart, now) },
-    { period: "Zeszły mies.", trainings: countCompletedInMonth(previousMonthStart, previousMonthEnd) },
+    {
+      period: "Ten miesiąc",
+      trainings: countCompletedInMonth(currentMonthStart, now),
+    },
+    {
+      period: "Zeszły mies.",
+      trainings: countCompletedInMonth(previousMonthStart, previousMonthEnd),
+    },
   ]
 
   return { weeklyHours, monthlyWorkouts }

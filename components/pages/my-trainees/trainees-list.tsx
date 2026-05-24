@@ -7,7 +7,6 @@ import Link from "next/link"
 import { TraineeDTO, WorkplaceAddress } from "@/lib/types"
 import { formatWorkplaceAddress } from "@/lib/utils"
 
-
 interface TraineesListProps {
   initialTrainees: TraineeDTO[]
 }
@@ -50,7 +49,9 @@ export default function TraineesList({ initialTrainees }: TraineesListProps) {
               <div className="flex gap-2 text-xs">
                 <MapPin className="text-baby-blue h-3.5 w-3.5" />
                 <span className="mt-0.5 truncate text-zinc-300">
-                  {formatWorkplaceAddress(trainee.workplace as WorkplaceAddress)}
+                  {formatWorkplaceAddress(
+                    trainee.workplace as WorkplaceAddress
+                  )}
                 </span>
               </div>
             </div>

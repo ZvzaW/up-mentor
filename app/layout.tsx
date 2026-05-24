@@ -22,18 +22,18 @@ export const metadata: Metadata = {
   description: "Aplikacja dla trenerów personalnych i podopiecznych",
 }
 
-
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-
   const session = await auth()
 
   return (
     <html lang="pl">
-      <body className={`${mina.className} ${michroma.variable} overflow-x-hidden antialiased`}>
+      <body
+        className={`${mina.className} ${michroma.variable} overflow-x-hidden antialiased`}
+      >
         <AuthProvider session={session}>
           {children}
           <Toaster richColors theme="dark" position="top-right" />

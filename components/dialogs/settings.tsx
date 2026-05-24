@@ -44,7 +44,7 @@ import {
   trainerPersonalDataSchema,
 } from "@/lib/validations"
 import { changePassword } from "@/actions/settings"
-import { logoutAllDevices} from "@/actions/authorization"
+import { logoutAllDevices } from "@/actions/authorization"
 import { updatePersonalData } from "@/actions/profile"
 import { z } from "zod"
 

@@ -3,7 +3,15 @@
 import { useState, useEffect, JSX } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
-import { Users, MessageSquare, ChevronRight, Bell, MessageCircle, Calendar, Loader2 } from "lucide-react"
+import {
+  Users,
+  MessageSquare,
+  ChevronRight,
+  Bell,
+  MessageCircle,
+  Calendar,
+  Loader2,
+} from "lucide-react"
 
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -12,8 +20,11 @@ import { Separator } from "@/components/ui/separator"
 import TrainerStats from "@/components/pages/statistics/trainer-stats"
 import TraineeStats from "@/components/pages/statistics/trainee-stats"
 
-
-import { getNotifications, getUnreadCount, markAsRead } from "@/actions/notifications"
+import {
+  getNotifications,
+  getUnreadCount,
+  markAsRead,
+} from "@/actions/notifications"
 import { getStatistics } from "@/actions/statistics"
 import StatsPanelSkeleton, { SkeletonList } from "@/components/ui/skeleton"
 import { notification } from "@prisma/client"
@@ -31,14 +42,15 @@ interface NotificationsPanelProps {
   unreadCount: number
   decrementCount: () => void
   groupedNotifications: Record<string, notification[]>
-  setGroupedNotifications: React.Dispatch<React.SetStateAction<Record<string, notification[]>>>
+  setGroupedNotifications: React.Dispatch<
+    React.SetStateAction<Record<string, notification[]>>
+  >
   isLoading: boolean
   hasMore: boolean
   isLoadingMore: boolean
   loadMore: () => Promise<void>
   error: string | null
 }
-
 
 //PANELI POWIADOMIEŃ
 function NotificationsPanel({
@@ -97,45 +109,58 @@ function NotificationsPanel({
               <SkeletonList />
             ) : (
               <>
-                {hasNotifications ? (
-                  Object.entries(groupedNotifications).map(([label, items]) => (
-                    <div key={label} className="space-y-6">
-                      <div className="flex items-center gap-4">
-                        <Separator className="flex-1" />
-                        <span className="text-gold text-xs font-medium uppercase">{label}</span>
-                        <Separator className="flex-1" />
-                      </div>
+                {hasNotifications
+                  ? Object.entries(groupedNotifications).map(
+                      ([label, items]) => (
+                        <div key={label} className="space-y-6">
+                          <div className="flex items-center gap-4">
+                            <Separator className="flex-1" />
+                            <span className="text-gold text-xs font-medium uppercase">
+                              {label}
+                            </span>
+                            <Separator className="flex-1" />
+                          </div>
 
-                      <div className="space-y-3">
-                        {items.map((notif) => (
-                          <button
-                            key={notif.id}
-                            onClick={() => handleNotificationClick(notif)}
-                            className={`bg-dirty-blue hover:bg-hover group flex w-full items-center justify-between rounded-xl p-4 text-left transition-all ${
-                              !notif.is_read ? "border-baby-blue border-2" : ""
-                            }`}
-                          >
-                            <div className="space-y-3 text-sm">
-                              <div
-                                className={`flex gap-2 font-semibold ${
-                                  !notif.is_read ? "text-baby-blue" : "text-zinc-300"
+                          <div className="space-y-3">
+                            {items.map((notif) => (
+                              <button
+                                key={notif.id}
+                                onClick={() => handleNotificationClick(notif)}
+                                className={`bg-dirty-blue hover:bg-hover group flex w-full items-center justify-between rounded-xl p-4 text-left transition-all ${
+                                  !notif.is_read
+                                    ? "border-baby-blue border-2"
+                                    : ""
                                 }`}
                               >
-                                {notif.title} {ICONS[notif.type] || ICONS.system}
-                              </div>
-                              <p className="leading-relaxed text-zinc-400">{notif.message}</p>
-                            </div>
-                            <ChevronRight
-                              className={`shrink-0 ${!notif.is_read ? "text-baby-blue" : "text-zinc-300"}`}
-                            />
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  !error && <p className="text-center text-zinc-400">Brak powiadomień.</p>
-                )}
+                                <div className="space-y-3 text-sm">
+                                  <div
+                                    className={`flex gap-2 font-semibold ${
+                                      !notif.is_read
+                                        ? "text-baby-blue"
+                                        : "text-zinc-300"
+                                    }`}
+                                  >
+                                    {notif.title}{" "}
+                                    {ICONS[notif.type] || ICONS.system}
+                                  </div>
+                                  <p className="leading-relaxed text-zinc-400">
+                                    {notif.message}
+                                  </p>
+                                </div>
+                                <ChevronRight
+                                  className={`shrink-0 ${!notif.is_read ? "text-baby-blue" : "text-zinc-300"}`}
+                                />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )
+                    )
+                  : !error && (
+                      <p className="text-center text-zinc-400">
+                        Brak powiadomień.
+                      </p>
+                    )}
 
                 {hasMore && !error && (
                   <div className="flex justify-center pb-4">
@@ -144,7 +169,11 @@ function NotificationsPanel({
                       disabled={isLoadingMore}
                       className="text-baby-blue hover:bg-dark-navy/70 bg-dirty-navy/70 flex min-w-[140px] items-center justify-center rounded-lg px-4 py-3 text-sm"
                     >
-                      {isLoadingMore ? <Loader2 className="animate-spin" /> : "Załaduj więcej"}
+                      {isLoadingMore ? (
+                        <Loader2 className="animate-spin" />
+                      ) : (
+                        "Załaduj więcej"
+                      )}
                     </button>
                   </div>
                 )}
@@ -156,7 +185,6 @@ function NotificationsPanel({
     </section>
   )
 }
-
 
 //PANEL STATYSTYK
 function StatsPanel({ role }: { role: string }) {
@@ -176,7 +204,7 @@ function StatsPanel({ role }: { role: string }) {
         setStatsError(res.error)
       } else if (res.success) {
         setResult(res)
-      } 
+      }
 
       setIsLoading(false)
     })
@@ -186,10 +214,7 @@ function StatsPanel({ role }: { role: string }) {
     }
   }, [role])
 
-  const isStatsReady =
-    !isLoading &&
-    result != null &&
-    result.success
+  const isStatsReady = !isLoading && result != null && result.success
 
   return (
     <section>
@@ -233,22 +258,24 @@ function StatsPanel({ role }: { role: string }) {
   )
 }
 
-
 //DASHBOARD
 export default function DashboardPage() {
   const { data: session } = useSession()
   const userRole = session?.user?.role ?? ""
 
-  const [mobileTab, setMobileTab] = useState<"notifications" | "stats">("notifications")
+  const [mobileTab, setMobileTab] = useState<"notifications" | "stats">(
+    "notifications"
+  )
   const [unreadCount, setUnreadCount] = useState(0)
 
-  const [groupedNotifications, setGroupedNotifications] = useState<Record<string, notification[]>>({})
+  const [groupedNotifications, setGroupedNotifications] = useState<
+    Record<string, notification[]>
+  >({})
   const [page, setPage] = useState(0)
   const [hasMore, setHasMore] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
 
   useEffect(() => {
     let cancelled = false
@@ -264,7 +291,9 @@ export default function DashboardPage() {
       if (res.error) {
         setError(res.error)
       } else {
-        setGroupedNotifications((res.grouped as Record<string, notification[]>) || {})
+        setGroupedNotifications(
+          (res.grouped as Record<string, notification[]>) || {}
+        )
         setHasMore(res.hasMore ?? false)
         setPage(0)
       }
@@ -296,7 +325,9 @@ export default function DashboardPage() {
 
         Object.entries(newGrouped).forEach(([label, items]) => {
           const merged = [...(updated[label] || []), ...items]
-          updated[label] = Array.from(new Map(merged.map((n) => [n.id, n])).values())
+          updated[label] = Array.from(
+            new Map(merged.map((n) => [n.id, n])).values()
+          )
         })
 
         return updated
@@ -324,10 +355,17 @@ export default function DashboardPage() {
     <div className="flex min-h-[calc(100vh-20rem)] w-full flex-col justify-center p-3">
       {/* Widok Mobilny (Zakładki) */}
       <div className="block lg:hidden">
-        <Tabs value={mobileTab} onValueChange={(v) => setMobileTab(v as any)} className="w-full">
+        <Tabs
+          value={mobileTab}
+          onValueChange={(v) => setMobileTab(v as any)}
+          className="w-full"
+        >
           <TabsList className="bg-dark-navy font-michroma border-baby-blue/40 z-1 mb-8 grid w-full grid-cols-2 border">
             <TabsTrigger value="notifications" className="text-xs">
-              Powiadomienia <span className="ml-1">{unreadCount > 99 ? "99+" : unreadCount}</span>
+              Powiadomienia{" "}
+              <span className="ml-1">
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </span>
             </TabsTrigger>
             <TabsTrigger value="stats" className="text-xs">
               Statystyki

@@ -88,7 +88,7 @@ export default function Navbar({ role }: NavbarProps) {
                 onMouseLeave={() => setIsResourcesOpen(false)}
               >
                 <button
-                  suppressHydrationWarning 
+                  suppressHydrationWarning
                   className={`hover:text-baby-blue flex items-center py-7 transition-colors ${
                     isActive("/dashboard/exercises") ||
                     isActive("/dashboard/workout-plans")

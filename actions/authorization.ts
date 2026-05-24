@@ -5,7 +5,12 @@ import {
   generateUniqueTraineeSlug,
   generateUniqueTrainerSlug,
 } from "@/lib/slug"
-import { RegisterTraineeFormValues, registerTraineeSchema, RegisterTrainerFormValues, registerTrainerSchema } from "@/lib/validations"
+import {
+  RegisterTraineeFormValues,
+  registerTraineeSchema,
+  RegisterTrainerFormValues,
+  registerTrainerSchema,
+} from "@/lib/validations"
 import { Prisma } from "@prisma/client"
 import * as argon2 from "argon2"
 import { redirect } from "next/navigation"
@@ -82,7 +87,7 @@ export async function register(
   redirect("/?registered=true")
 }
 
-export async function login(data: { email: string, password: string }) {
+export async function login(data: { email: string; password: string }) {
   const email = data.email
   const password = data.password
 
@@ -94,9 +99,8 @@ export async function login(data: { email: string, password: string }) {
     await signIn("credentials", {
       email,
       password,
-      redirect: false
+      redirect: false,
     })
-
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
@@ -106,7 +110,7 @@ export async function login(data: { email: string, password: string }) {
           return { error: "Wystąpił błąd podczas logowania. Spróbuj ponownie." }
       }
     }
-    throw error 
+    throw error
   }
 }
 
@@ -120,7 +124,7 @@ export async function logout() {
         where: { token: tokenToDelete },
       })
     }
-  } catch{
+  } catch {
     return { error: "Wystąpił błąd podczas wylogowywania. Spróbuj ponownie." }
   }
 
@@ -139,7 +143,7 @@ export async function logoutAllDevices() {
         user_id: session.user.id,
       },
     })
-  } catch{
+  } catch {
     return {
       error:
         "Wystąpił błąd podczas wylogowywania ze wszystkich urządzeń. Spróbuj ponownie.",

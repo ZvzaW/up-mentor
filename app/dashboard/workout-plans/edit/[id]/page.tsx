@@ -14,7 +14,6 @@ type EditWorkoutPlanPageProps = {
 export default async function EditWorkoutPlanPage({
   params,
 }: EditWorkoutPlanPageProps) {
-
   const { id } = await params
   const [planResult, exercisesResult] = await Promise.all([
     getWorkoutPlanById(id),
@@ -37,12 +36,12 @@ export default async function EditWorkoutPlanPage({
 
       {(planResult.error || exercisesResult.error) && (
         <Card>
-           <Alert variant="destructive" className="mx-auto my-6">
-          <AlertDescription >
-            {planResult.error ?? exercisesResult.error}
-          </AlertDescription>
-        </Alert> </Card>
-        
+          <Alert variant="destructive" className="mx-auto my-6">
+            <AlertDescription>
+              {planResult.error ?? exercisesResult.error}
+            </AlertDescription>
+          </Alert>{" "}
+        </Card>
       )}
 
       {planResult.data && !exercisesResult.error && (

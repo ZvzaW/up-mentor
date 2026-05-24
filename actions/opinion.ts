@@ -2,7 +2,10 @@
 
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
-import { TrainerOpinionFormValues, trainerOpinionSchema } from "@/lib/validations"
+import {
+  TrainerOpinionFormValues,
+  trainerOpinionSchema,
+} from "@/lib/validations"
 import { redirect } from "next/navigation"
 
 export async function getMyOpinion(trainerId: string) {
@@ -40,8 +43,6 @@ export async function getMyOpinion(trainerId: string) {
         comment: opinion.comment,
       },
     }
-
-
   } catch {
     return { error: "Nie udało się pobrać opinii. Spróbuj ponownie" }
   }
@@ -96,7 +97,6 @@ export async function getTrainerOpinions(trainerId: string) {
         reviews,
       },
     }
-
   } catch {
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę" }
   }

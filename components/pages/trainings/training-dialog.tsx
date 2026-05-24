@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Loader2, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
-
 import {
   createTraining,
   deleteTraining,
@@ -127,9 +126,8 @@ export default function TrainingDialog({
     name: "trainee_id",
   })
 
-  const selectedWorkplace = trainees?.find(
-    (t) => t.id === watchTraineeId
-  )?.workplace as WorkplaceAddress | undefined
+  const selectedWorkplace = trainees?.find((t) => t.id === watchTraineeId)
+    ?.workplace as WorkplaceAddress | undefined
 
   const selectedWorkplaceLabel = selectedWorkplace
     ? formatWorkplaceAddress(selectedWorkplace)
@@ -190,25 +188,23 @@ export default function TrainingDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className=" flex  flex-col ">
-        <DialogHeader >
-          <DialogTitle>
-            {title}
-          </DialogTitle>
-          <DialogDescription >
+      <DialogContent className="flex flex-col">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>
             {readOnly
               ? "Podgląd zaplanowanego treningu."
               : "Uzupełnij dane treningu - będzie widoczny u Ciebie i u podopiecznego."}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex   flex-col ">
+        <div className="flex flex-col">
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleSubmit)}
               className="flex flex-col"
             >
-              <div className="space-y-5 ">
+              <div className="space-y-5">
                 {readOnly && training ? (
                   <div className="space-y-3 text-sm text-zinc-200">
                     <p>
@@ -240,7 +236,7 @@ export default function TrainingDialog({
                             value={field.value}
                           >
                             <FormControl>
-                              <SelectTrigger className="w-full border-baby-blue">
+                              <SelectTrigger className="border-baby-blue w-full">
                                 <SelectValue placeholder="Wybierz podopiecznego" />
                               </SelectTrigger>
                             </FormControl>
@@ -258,8 +254,10 @@ export default function TrainingDialog({
                     />
 
                     {watchTraineeId && selectedWorkplaceLabel && (
-                      <p className="mb-6 break-words rounded-lg bg-dirty-navy/50 px-3 py-2 text-sm text-zinc-300">
-                        <span className="text-zinc-400">Miejsce treningu: </span>
+                      <p className="bg-dirty-navy/50 mb-6 rounded-lg px-3 py-2 text-sm break-words text-zinc-300">
+                        <span className="text-zinc-400">
+                          Miejsce treningu:{" "}
+                        </span>
                         {selectedWorkplaceLabel}
                       </p>
                     )}
@@ -272,7 +270,11 @@ export default function TrainingDialog({
                           <FormItem>
                             <FormLabel>Data</FormLabel>
                             <FormControl>
-                              <Input type="date" {...field} className="appearance-none" />
+                              <Input
+                                type="date"
+                                {...field}
+                                className="appearance-none"
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -285,7 +287,11 @@ export default function TrainingDialog({
                           <FormItem>
                             <FormLabel>Godzina</FormLabel>
                             <FormControl>
-                              <Input type="time" {...field} className="appearance-none"/>
+                              <Input
+                                type="time"
+                                {...field}
+                                className="appearance-none"
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -304,7 +310,7 @@ export default function TrainingDialog({
                               value={String(field.value)}
                             >
                               <FormControl>
-                                <SelectTrigger className="w-full border-baby-blue">
+                                <SelectTrigger className="border-baby-blue w-full">
                                   <SelectValue />
                                 </SelectTrigger>
                               </FormControl>
@@ -333,7 +339,7 @@ export default function TrainingDialog({
                   {mode === "edit" && (
                     <Button
                       type="button"
-                      className="mr-auto bg-gold hover:bg-gold/60"
+                      className="bg-gold hover:bg-gold/60 mr-auto"
                       disabled={isPending}
                       onClick={handleDeleteClick}
                     >
