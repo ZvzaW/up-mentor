@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { EXERCISE_BODY_PARTS } from "@/lib/exercise-body-parts"
+import { EXERCISE_BODY_PARTS } from "@/lib/types"
 import { exercise } from "@prisma/client"
 
 type OriginFilter = "all" | "predefined" | "author"
