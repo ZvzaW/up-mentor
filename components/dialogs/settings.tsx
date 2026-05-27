@@ -292,7 +292,6 @@ export default function SettingsDialog({
               >
                 <div className="flex flex-col gap-5">
                   <p className="text-xs text-zinc-400">
-                    {" "}
                     Hasło ma się składać z minimum 8 znaków: małe i wielkie
                     litery, cyfry
                   </p>
@@ -309,7 +308,6 @@ export default function SettingsDialog({
                             {...field}
                             onChange={(e) => {
                               field.onChange(e)
-                              passwordForm.trigger("newPassword")
                             }}
                           />
                         </FormControl>
@@ -330,8 +328,12 @@ export default function SettingsDialog({
                             {...field}
                             onChange={(e) => {
                               field.onChange(e)
-                              passwordForm.trigger("confirmNewPassword")
-                              passwordForm.trigger("currentPassword")
+                              if("confirmNewPassword" in passwordForm.formState.errors) {
+                                passwordForm.trigger("confirmNewPassword")
+                              }
+                              if("currentPassword" in passwordForm.formState.errors) {
+                                passwordForm.trigger("currentPassword")
+                              }
                             }}
                           />
                         </FormControl>
@@ -391,7 +393,7 @@ export default function SettingsDialog({
                   <Button
                     type="submit"
                     disabled={
-                      isPasswordPending || !passwordForm.formState.isValid
+                      isPasswordPending
                     }
                   >
                     {isPasswordPending ? (

@@ -29,27 +29,37 @@ const baseName = z
   .trim()
   .min(1, "Imię jest wymagane")
   .regex(/^[\p{L} \-]+$/u, "Imię może zawierać tylko litery")
+
 const baseSurname = z
   .string()
   .trim()
   .min(1, "Nazwisko jest wymagane")
   .regex(/^[\p{L} \-]+$/u, "Nazwisko może zawierać tylko litery")
-const baseEmail = z
+
+export const baseEmail = z
   .string()
   .trim()
   .min(1, "Adres e-mail jest wymagany")
   .pipe(z.email("Podaj poprawny adres e-mail"))
+
+export const emailSchema = z.object({
+  email: baseEmail,
+})
+export type EmailValues = z.infer<typeof emailSchema>
+
 const basePhone = z
   .string()
   .trim()
   .min(1, "Numer telefonu jest wymagany")
   .regex(/^[0-9\s+()-]{9,30}$/, "Podaj poprawny numer telefonu")
+
 const baseBirthdate = z
   .string()
   .min(1, "Data urodzenia jest wymagana")
   .refine((val) => isAtLeast15(val), {
     message: "Musisz mieć co najmniej 15 lat",
   })
+
 const baseTerms = z
   .boolean()
   .refine((val) => val === true, { message: "Musisz wyrazić zgodę" })
@@ -58,17 +68,21 @@ const baseWorkplaceName = z
   .string()
   .trim()
   .min(1, "Nazwa miejsca jest wymagana")
+
 const baseStreet = z.string().trim().min(1, "Ulica jest wymagana")
+
 const baseBuildingNumber = z
   .string()
   .trim()
   .min(1, "Numer budynku jest wymagany")
+
 const baseFlatNumber = z
   .string()
   .trim()
   .max(10, "Numer mieszkania jest zbyt długi")
   .optional()
   .or(z.literal(""))
+
 const baseCity = z.string().trim().min(1, "Miasto jest wymagane")
 
 // --- MAIN SCHEMAS ---
@@ -317,6 +331,21 @@ export const changePasswordSchema = z
   })
 export type ChangePasswordValues = z.input<typeof changePasswordSchema>
 
+export const resetPasswordFormSchema = z
+  .object({
+    password: passwordSchema,
+    confirmPassword: z.string().min(1, "Potwierdź nowe hasło"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Hasła nie są identyczne",
+    path: ["confirmPassword"],
+  })
+
+export type ResetPasswordValues = z.infer<typeof resetPasswordFormSchema>
+
+export const resetPasswordActionSchema = resetPasswordFormSchema.extend({
+  token: z.string().trim().min(1, "Nieprawidłowy token resetowania."),
+})
 
 export const sendChatMessageSchema = z.object({
   trainerId: z.string(),
