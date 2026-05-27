@@ -17,8 +17,7 @@ export default function TraineeProfile({
   specificData,
 }: TraineeProfileProps) {
   return (
-    <section className="w-full">
-      {/* PROFIL*/}
+    <section className="w-full md:w-[70%] mx-auto">
       <div>
         <Card>
           <CardContent>
@@ -28,7 +27,7 @@ export default function TraineeProfile({
                 <p className="truncate">{baseData.surname}</p>
               </div>
 
-              <div className="mt-6 flex w-full max-w-[250px] flex-col gap-4">
+              <div className="mt-10 flex w-full max-w-[250px] flex-col gap-4">
                 <FillSurveyDialog />
                 <SettingsDialog
                   baseData={baseData}
