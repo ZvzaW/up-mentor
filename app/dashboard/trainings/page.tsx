@@ -21,7 +21,7 @@ export default async function TrainingsPage() {
   const initialFetchError = trainingsResult?.error ?? null
 
   return (
-    <div>
+    <div className="md:h-[calc(100dvh-100px)]">
       <TrainingsView
         role={role}
         initialTrainings={trainings}

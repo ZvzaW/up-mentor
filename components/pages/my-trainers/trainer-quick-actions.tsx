@@ -35,7 +35,7 @@ export function TrainerQuickActions({
   }
 
   const handleChatRedirect = () => {
-    window.location.href = `/dashboard/chat?trainerId=${trainerId}`
+    window.location.href = `/dashboard/chat?trainer=${trainerId}`
   }
 
   const handleSettingsClick = () => {

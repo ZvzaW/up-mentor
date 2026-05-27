@@ -61,3 +61,32 @@ export type TraineeStatistics = {
   weeklyHours: { period: string; h: number }[]
   monthlyWorkouts: { period: string; trainings: number }[]
 }
+
+export type ChatMessageDTO = {
+  id: string
+  senderId: string
+  content: string
+  createdAt: string
+  isOwn: boolean
+}
+
+export type ChatConversationDTO = {
+  trainerId: string
+  traineeId: string
+  partnerName: string
+}
+
+
+export const EXERCISE_BODY_PARTS = [
+  "Klatka piersiowa",
+  "Plecy",
+  "Barki",
+  "Biceps",
+  "Triceps",
+  "Przedramiona",
+  "Brzuch / Core",
+  "Pośladki / Tylna część ud",
+  "Uda (przód)",
+  "Łydki",
+  "Full body",
+] as const

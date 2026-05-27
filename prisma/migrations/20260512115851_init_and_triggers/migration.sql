@@ -37,7 +37,7 @@ CREATE TABLE "coaching_request" (
     "trainee_id" UUID NOT NULL,
     "workplace_id" UUID NOT NULL,
     "message" TEXT,
-    "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "status" VARCHAR(10) NOT NULL DEFAULT 'pending',
 
     CONSTRAINT "coaching_request_pk" PRIMARY KEY ("trainer_id","trainee_id")
@@ -48,7 +48,7 @@ CREATE TABLE "cooperation" (
     "trainer_id" UUID NOT NULL,
     "trainee_id" UUID NOT NULL,
     "workplace_id" UUID NOT NULL,
-    "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "trainer_note" TEXT,
     "status" VARCHAR(10) NOT NULL DEFAULT 'active',
 
@@ -137,7 +137,7 @@ CREATE TABLE "opinion" (
     "trainer_id" UUID NOT NULL,
     "rate" INTEGER NOT NULL,
     "comment" TEXT,
-    "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "opinion_pk" PRIMARY KEY ("trainee_id","trainer_id")
 );
@@ -184,6 +184,17 @@ CREATE TABLE "refresh_token" (
     CONSTRAINT "refresh_token_pk" PRIMARY KEY ("id")
 );
 
+CREATE TABLE "chat_message" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "trainer_id" UUID NOT NULL,
+    "trainee_id" UUID NOT NULL,
+    "sender_id" UUID NOT NULL,
+    "content" VARCHAR(2000) NOT NULL,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "chat_message_pk" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
 
@@ -195,6 +206,10 @@ CREATE UNIQUE INDEX "trainee_slug_key" ON "trainee"("slug");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "refresh_token_token_key" ON "refresh_token"("token");
+
+-- CreateIndex
+CREATE INDEX "message_cooperation_date_key" ON "chat_message"("trainer_id", "trainee_id", "created_at");
+
 
 -- AddForeignKey
 ALTER TABLE "trainer" ADD CONSTRAINT "trainer_user" FOREIGN KEY ("id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
@@ -265,10 +280,13 @@ ALTER TABLE "notification" ADD CONSTRAINT "notification_user" FOREIGN KEY ("user
 -- AddForeignKey
 ALTER TABLE "refresh_token" ADD CONSTRAINT "refresh_token_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
+-- AddForeignKey
+ALTER TABLE "chat_message" ADD CONSTRAINT "chat_message_cooperation" FOREIGN KEY ("trainer_id", "trainee_id") REFERENCES "cooperation"("trainer_id", "trainee_id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
+
 
 
 --TRIGGERY - POWIADOMIENIA
-
 -- 1. NOWY TRENER
 CREATE OR REPLACE FUNCTION notify_on_new_trainer()
 RETURNS TRIGGER AS $$
@@ -361,3 +379,68 @@ CREATE TRIGGER trigger_notify_trainee_cooperation
 AFTER INSERT ON cooperation
 FOR EACH ROW
 EXECUTE FUNCTION notify_trainee_on_cooperation();
+
+
+
+
+-- 5. NOWA WIADOMOSC NA CZACIE
+CREATE OR REPLACE FUNCTION notify_on_new_chat_message()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_receiver_id UUID;
+    v_existing_notif_id UUID;
+    v_sender_name VARCHAR(100);
+    v_sender_surname VARCHAR(100);
+    v_redirect_url TEXT;
+    v_message VARCHAR(255);
+BEGIN
+
+    SELECT name, surname INTO v_sender_name, v_sender_surname
+    FROM "user"
+    WHERE id = NEW.sender_id;
+
+    IF NEW.sender_id = NEW.trainer_id THEN
+        v_receiver_id := NEW.trainee_id;
+        v_redirect_url := '/dashboard/chat?trainer=' || NEW.sender_id::text;
+    ELSE
+        v_receiver_id := NEW.trainer_id;
+        v_redirect_url := '/dashboard/chat?trainee=' || NEW.sender_id::text;
+    END IF;
+
+    v_message := v_sender_name || ' ' || v_sender_surname || ' wysłał(a) Ci wiadomość.';
+
+    SELECT id INTO v_existing_notif_id
+    FROM notification
+    WHERE user_id = v_receiver_id
+      AND type = 'message'
+      AND is_read = false
+      AND redirect_url = v_redirect_url
+    LIMIT 1;
+
+    IF v_existing_notif_id IS NOT NULL THEN
+        UPDATE notification
+        SET created_at = NOW()
+        WHERE id = v_existing_notif_id;
+    ELSE
+        INSERT INTO notification (user_id, title, message, redirect_url, type, is_read, created_at)
+        VALUES (
+            v_receiver_id,
+            'Nowa wiadomość',
+            v_message,
+            v_redirect_url,
+            'message',
+            false,
+            NOW()
+        );
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trigger_notify_on_new_chat_message ON chat_message;
+
+CREATE TRIGGER trigger_notify_on_new_chat_message
+AFTER INSERT ON chat_message
+FOR EACH ROW
+EXECUTE FUNCTION notify_on_new_chat_message();
