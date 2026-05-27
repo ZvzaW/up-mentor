@@ -6,8 +6,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 
 type ChatPageProps = {
   searchParams: Promise<{
-    trainerId?: string
-    traineeId?: string
+    trainer?: string
+    trainee?: string
   }>
 }
 
@@ -32,16 +32,16 @@ export default async function ChatPage({ searchParams }: ChatPageProps) {
   const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY ?? ""
   const pusherCluster = process.env.NEXT_PUBLIC_PUSHER_CLUSTER ?? "eu"
 
-  let initialTrainerId = params.trainerId
-  let initialTraineeId = params.traineeId
+  let initialTrainerId = params.trainer
+  let initialTraineeId = params.trainee
 
-  if (session.user.role === "trainer" && params.traineeId) {
+  if (session.user.role === "trainer" && params.trainee) {
     initialTrainerId = session.user.id
-    initialTraineeId = params.traineeId
+    initialTraineeId = params.trainee
   }
 
-  if (session.user.role === "trainee" && params.trainerId) {
-    initialTrainerId = params.trainerId
+  if (session.user.role === "trainee" && params.trainer) {
+    initialTrainerId = params.trainer
     initialTraineeId = session.user.id
   }
 
