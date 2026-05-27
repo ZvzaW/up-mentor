@@ -316,3 +316,15 @@ export const changePasswordSchema = z
     path: ["newPassword"],
   })
 export type ChangePasswordValues = z.input<typeof changePasswordSchema>
+
+
+export const sendChatMessageSchema = z.object({
+  trainerId: z.string(),
+  traineeId: z.string(),
+  content: z
+    .string()
+    .trim()
+    .min(1, "Wiadomość nie może być pusta")
+    .max(2000, "Wiadomość może mieć maksymalnie 2000 znaków"),
+})
+export type SendChatMessageValues = z.infer<typeof sendChatMessageSchema>

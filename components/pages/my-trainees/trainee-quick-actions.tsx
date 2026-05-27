@@ -23,7 +23,7 @@ export function TraineeQuickActions({
   }
 
   const handleChatRedirect = () => {
-    window.location.href = `/dashboard/chat?traineeId=${traineeId}`
+    window.location.href = `/dashboard/chat?trainee=${traineeId}`
   }
 
   return (
