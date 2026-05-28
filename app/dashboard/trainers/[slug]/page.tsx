@@ -12,6 +12,8 @@ import { ManageOpinionDialog } from "@/components/dialogs/trainee/manage-opinion
 import { TrainerOpinionsUI } from "@/components/common/trainer-opinions-list"
 import { SkeletonOpinions } from "@/components/ui/skeleton"
 import { BackButton } from "@/components/common/back-button"
+import { formatWorkplaceAddress } from "@/lib/utils"
+import { WorkplaceAddress } from "@/lib/types"
 
 type TrainerDetailsPageProps = {
   params: Promise<{
@@ -48,7 +50,7 @@ export default async function TrainerDetailsPage({
         key: cooperation.trainer_id,
         name: `${cooperation.trainer.user.name} ${cooperation.trainer.user.surname}`,
         phone: cooperation.trainer.user.phone,
-        workplace: `${cooperation.workplace.name} - ul. ${cooperation.workplace.street} ${cooperation.workplace.building_number}${cooperation.workplace.flat_number ? `/${cooperation.workplace.flat_number}` : ""}, ${cooperation.workplace.city}`,
+        workplace: cooperation.workplace ? formatWorkplaceAddress(cooperation.workplace as WorkplaceAddress) : "Dane niedostępne",
         workDescription: cooperation.trainer.work_description,
         price: cooperation.trainer.price_per_training
           ? `${cooperation.trainer.price_per_training} PLN`

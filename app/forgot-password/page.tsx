@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { requestPasswordReset } from "@/actions/authorization"
+import { requestPasswordReset } from "@/actions/password"
 import {
   Form,
   FormControl,

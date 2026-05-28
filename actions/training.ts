@@ -11,7 +11,8 @@ import {
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { Prisma } from "@prisma/client"
-import { endOfWeek, startOfDay, isBefore, startOfWeek, format } from "date-fns"
+import { endOfWeek, startOfDay, startOfWeek, format } from "date-fns"
+import { isTrainingScheduledInPast } from "@/lib/training-calendar-functions"
 import { pl } from "date-fns/locale"
 import {
   combineDateAndTime,
@@ -55,13 +56,6 @@ function mapTraining(t: {
   }
 }
 
-function isTrainingScheduledInPast(scheduledAt: Date) {
-  const todayStart = startOfDay(new Date())
-  const scheduledDay = startOfDay(scheduledAt)
-  if (isBefore(scheduledDay, todayStart)) return true
-  return scheduledAt.getTime() < Date.now()
-}
-
 async function validateTrainerTrainingInput(
   trainerId: string,
   data: CreateTrainingFormValues
@@ -88,6 +82,134 @@ async function validateTrainerTrainingInput(
 
   return {}
 }
+
+
+export async function createTraining(raw: CreateTrainingFormValues) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    redirect("/?unauthorized=true")
+  }
+
+  if (session.user.role !== "trainer") {
+    return { error: "Brak uprawnień do tej operacji." }
+  }
+
+  const parsed = createTrainingSchema.safeParse(raw)
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Nieprawidłowe dane." }
+  }
+
+  const data = parsed.data
+  const validation = await validateTrainerTrainingInput(session.user.id, data)
+  if ("error" in validation) {
+    return { error: validation.error }
+  }
+
+  try {
+    await prisma.training.create({
+      data: {
+        trainer_id: session.user.id,
+        trainee_id: data.trainee_id,
+        scheduled_at: combineDateAndTime(data.date, data.start_time),
+        duration: new Prisma.Decimal(data.duration),
+      },
+    })
+
+    revalidatePath("/dashboard/trainings")
+    return { success: true }
+  } catch {
+    return {
+      error: "Wystąpił błąd podczas zapisywania treningu. Spróbuj ponownie.",
+    }
+  }
+}
+
+export async function updateTraining(raw: UpdateTrainingFormValues) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    redirect("/?unauthorized=true")
+  }
+
+  if (session.user.role !== "trainer") {
+    return { error: "Brak uprawnień do tej operacji." }
+  }
+
+  const parsed = updateTrainingSchema.safeParse(raw)
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Nieprawidłowe dane." }
+  }
+
+  const data = parsed.data
+  const validation = await validateTrainerTrainingInput(session.user.id, data)
+  if ("error" in validation) {
+    return { error: validation.error }
+  }
+
+  try {
+    const existing = await prisma.training.findFirst({
+      where: { id: data.id, trainer_id: session.user.id },
+    })
+
+    if (!existing) {
+      return { error: "Nie znaleziono treningu." }
+    }
+
+    if (isTrainingScheduledInPast(existing.scheduled_at)) {
+      return { error: "Nie można edytować treningu z przeszłości." }
+    }
+
+    await prisma.training.update({
+      where: { id: data.id },
+      data: {
+        trainee_id: data.trainee_id,
+        scheduled_at: combineDateAndTime(data.date, data.start_time),
+        duration: new Prisma.Decimal(data.duration),
+      },
+    })
+
+    revalidatePath("/dashboard/trainings")
+    return { success: true }
+  } catch {
+    return {
+      error: "Wystąpił błąd podczas aktualizacji treningu. Spróbuj ponownie.",
+    }
+  }
+}
+
+export async function deleteTraining(id: string) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    redirect("/?unauthorized=true")
+  }
+
+  if (session.user.role !== "trainer") {
+    return { error: "Brak uprawnień do tej operacji." }
+  }
+
+  try {
+    const existing = await prisma.training.findFirst({
+      where: { id, trainer_id: session.user.id },
+    })
+
+    if (!existing) {
+      return { error: "Nie znaleziono treningu." }
+    }
+
+    if (isTrainingScheduledInPast(existing.scheduled_at)) {
+      return { error: "Nie można usunąć treningu z przeszłości." }
+    }
+
+    await prisma.training.delete({ where: { id } })
+    revalidatePath("/dashboard/trainings")
+    return { success: true }
+  } catch {
+    return {
+      error: "Wystąpił błąd podczas usuwania treningu. Spróbuj ponownie.",
+    }
+  }
+}
+
+
 
 function capitalizeMonthLabel(label: string) {
   if (!label) return label
@@ -265,119 +387,3 @@ export async function getTrainingsForWeek(weekAnchorIso: string) {
   }
 }
 
-export async function createTraining(raw: CreateTrainingFormValues) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    redirect("/?unauthorized=true")
-  }
-
-  if (session.user.role !== "trainer") {
-    return { error: "Brak uprawnień do tej operacji." }
-  }
-
-  const parsed = createTrainingSchema.safeParse(raw)
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Nieprawidłowe dane." }
-  }
-
-  const data = parsed.data
-  const validation = await validateTrainerTrainingInput(session.user.id, data)
-  if ("error" in validation) {
-    return { error: validation.error }
-  }
-
-  try {
-    await prisma.training.create({
-      data: {
-        trainer_id: session.user.id,
-        trainee_id: data.trainee_id,
-        scheduled_at: combineDateAndTime(data.date, data.start_time),
-        duration: new Prisma.Decimal(data.duration),
-      },
-    })
-
-    revalidatePath("/dashboard/trainings")
-    return { success: true }
-  } catch {
-    return {
-      error: "Wystąpił błąd podczas zapisywania treningu. Spróbuj ponownie.",
-    }
-  }
-}
-
-export async function updateTraining(raw: UpdateTrainingFormValues) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    redirect("/?unauthorized=true")
-  }
-
-  if (session.user.role !== "trainer") {
-    return { error: "Brak uprawnień do tej operacji." }
-  }
-
-  const parsed = updateTrainingSchema.safeParse(raw)
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Nieprawidłowe dane." }
-  }
-
-  const data = parsed.data
-  const validation = await validateTrainerTrainingInput(session.user.id, data)
-  if ("error" in validation) {
-    return { error: validation.error }
-  }
-
-  try {
-    const existing = await prisma.training.findFirst({
-      where: { id: data.id, trainer_id: session.user.id },
-    })
-
-    if (!existing) {
-      return { error: "Nie znaleziono treningu." }
-    }
-
-    await prisma.training.update({
-      where: { id: data.id },
-      data: {
-        trainee_id: data.trainee_id,
-        scheduled_at: combineDateAndTime(data.date, data.start_time),
-        duration: new Prisma.Decimal(data.duration),
-      },
-    })
-
-    revalidatePath("/dashboard/trainings")
-    return { success: true }
-  } catch {
-    return {
-      error: "Wystąpił błąd podczas aktualizacji treningu. Spróbuj ponownie.",
-    }
-  }
-}
-
-export async function deleteTraining(id: string) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    redirect("/?unauthorized=true")
-  }
-
-  if (session.user.role !== "trainer") {
-    return { error: "Brak uprawnień do tej operacji." }
-  }
-
-  try {
-    const existing = await prisma.training.findFirst({
-      where: { id, trainer_id: session.user.id },
-    })
-
-    if (!existing) {
-      return { error: "Nie znaleziono treningu." }
-    }
-
-    await prisma.training.delete({ where: { id } })
-    revalidatePath("/dashboard/trainings")
-    return { success: true }
-  } catch {
-    return {
-      error: "Wystąpił błąd podczas usuwania treningu. Spróbuj ponownie.",
-    }
-  }
-}
