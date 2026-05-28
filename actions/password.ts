@@ -124,6 +124,7 @@ const transporter = nodemailer.createTransport({
           <p>Kliknij poniższy link, aby ustawić nowe hasło (ważny 15 minut):</p>
           <p><a href="${resetLink}">${resetLink}</a></p>
           <p>Jeśli to nie Ty wysłałeś/aś te prośbę, zignoruj tę wiadomość.</p>
+          <p>Pozdrawiamy,<br/>Zespół Up-mentor</p>
         `,
       })
     } catch (error) {

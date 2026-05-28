@@ -9,11 +9,8 @@ import {
   type UseFormReturn,
 } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import {
-  createWorkoutPlan,
-  updateWorkoutPlan,
-  WorkoutPlanInput,
-} from "@/actions/workout-plan"
+import { createWorkoutPlan, updateWorkoutPlan } from "@/actions/workout-plan"
+import type { WorkoutPlanInput } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"

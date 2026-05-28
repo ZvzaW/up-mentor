@@ -2,101 +2,17 @@
 
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { toDownloadFile } from "@/lib/workout-plan-pdf"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
+import type {
+  WorkoutPlanFromDb,
+  WorkoutPlanInput,
+  WorkoutPlanItem,
+} from "@/lib/types"
 
-export type ExerciseSetInput = {
-  id?: string
-  exercise_id: string
-  series_count: number
-  reps_count: number
-  weight?: number | null
-  order: number
-}
 
-export type SectionInput = {
-  id?: string
-  body_part?: string | null
-  order: number
-  exercise_sets: ExerciseSetInput[]
-}
-
-export type WorkoutPlanInput = {
-  name: string
-  difficulty?: string | null
-  description?: string | null
-  sections: SectionInput[]
-}
-
-export type WorkoutPlanListItem = {
-  id: string
-  name: string
-  difficulty: string | null
-  description: string | null
-  plans_library?: {
-    trainee: {
-      user: {
-        name: string | null
-        surname: string | null
-      } | null
-    } | null
-  }[]
-  trainer?: {
-    user: {
-      name: string | null
-      surname: string | null
-    } | null
-  } | null
-  section: {
-    id: string
-    body_part: string | null
-    order: number
-    exercise_set: {
-      id: string
-      order: number
-      series_count: number
-      reps_count: number
-      weight: number | null
-      exercise: {
-        name: string
-        video_url: string | null
-      }
-    }[]
-  }[]
-}
-
-type FormattedExerciseSet = {
-  id: string
-  order: number
-  series_count: number
-  reps_count: number
-  weight: unknown
-  exercise: {
-    name: string
-    video_url: string | null
-  }
-}
-
-type FormattedSection = {
-  id: string
-  body_part: string | null
-  order: number
-  exercise_set: FormattedExerciseSet[]
-}
-
-type FormattedPlan = {
-  id: string
-  name: string
-  difficulty: string | null
-  description: string | null
-  plans_library?: WorkoutPlanListItem["plans_library"]
-  trainer?: WorkoutPlanListItem["trainer"]
-  section: FormattedSection[]
-}
-
-const formatPlans = <T extends FormattedPlan>(
-  plans: T[]
-): WorkoutPlanListItem[] => {
+const formatPlans = (plans: WorkoutPlanFromDb[]): WorkoutPlanItem[] => {
   return plans.map((plan) => ({
     id: plan.id,
     name: plan.name,
@@ -116,7 +32,7 @@ const formatPlans = <T extends FormattedPlan>(
         weight: set.weight == null ? null : Number(set.weight),
         exercise: {
           name: set.exercise.name,
-          video_url: set.exercise.video_url,
+          video_url: set.exercise.video_url ?? null,
         },
       })),
     })),
@@ -513,6 +429,70 @@ export async function deleteWorkoutPlan(planId: string) {
     return { success: true }
   } catch {
     return { error: "Wystąpił błąd podczas usuwania planu. Spróbuj ponownie." }
+  }
+}
+
+export async function getWorkoutPlanPdfForDownload(planId: string) {
+  const session = await auth()
+
+  if (!session?.user?.id) {
+    redirect("/?unauthorized=true")
+  }
+
+  if (session.user.role !== "trainer" && session.user.role !== "trainee") {
+    return { error: "Brak uprawnień do tej operacji." }
+  }
+
+  try {
+    const plan = await prisma.workout_plan.findFirst({
+      where: {
+        id: planId,
+        ...(session.user.role === "trainer"
+          ? { trainer_id: session.user.id }
+          : {
+              plans_library: {
+                some: { trainee_id: session.user.id },
+              },
+            }),
+      },
+      include: {
+        section: {
+          orderBy: { order: "asc" },
+          include: {
+            exercise_set: {
+              orderBy: { order: "asc" },
+              include: {
+                exercise: {
+                  select: { name: true },
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+
+    if (!plan) {
+      return { error: "Nie znaleziono planu lub brak dostępu." }
+    }
+
+    if (session.user.role === "trainer") {
+      const assignmentCount = await prisma.plans_library.count({
+        where: { workout_plan_id: planId },
+      })
+
+      if (assignmentCount === 0) {
+        return { error: "Plan nie został jeszcze udostępniony podopiecznemu." }
+      }
+    }
+
+    const file = await toDownloadFile(plan)
+
+    return { success: true as const, data: file }
+  } catch {
+    return {
+      error: "Nie udało się wygenerować pliku PDF. Spróbuj ponownie.",
+    }
   }
 }
 

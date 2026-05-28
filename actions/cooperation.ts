@@ -2,10 +2,11 @@
 
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { toDownloadFiles, toEmailAttachments } from "@/lib/workout-plan-pdf"
+import type { WorkoutPlanFromDb } from "@/lib/types"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import nodemailer from "nodemailer"
-import { renderWorkoutPlanPdfBuffer } from "@/lib/workout-plan-pdf"
 
 const transporter = nodemailer.createTransport({
   host: process.env.MAILTRAP_HOST,
@@ -16,49 +17,13 @@ const transporter = nodemailer.createTransport({
   },
 })
 
-function sanitizePdfFilename(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-}
-
 async function sendAssignedPlansEmail(params: {
   traineeEmail: string
   traineeName: string
   trainerFullName: string
-  plans: Array<{
-    name: string
-    difficulty: string | null
-    description: string | null
-    section: Array<{
-      body_part: string | null
-      order: number
-      exercise_set: Array<{
-        order: number
-        series_count: number
-        reps_count: number
-        weight: number | null
-        exercise: {
-          name: string
-        }
-      }>
-    }>
-  }>
+  plans: WorkoutPlanFromDb[]
 }) {
-  const attachments = await Promise.all(
-    params.plans.map(async (plan, index) => {
-      const buffer = await renderWorkoutPlanPdfBuffer(plan)
-      const baseName = sanitizePdfFilename(plan.name) || `plan-treningowy-${index + 1}`
-
-      return {
-        filename: `${baseName}.pdf`,
-        content: buffer,
-        contentType: "application/pdf",
-      }
-    })
-  )
+  const attachments = await toEmailAttachments(params.plans)
 
   await transporter.sendMail({
     from: '"Upmentor" <no-reply@upmentor.pl>',
@@ -78,7 +43,7 @@ async function sendAssignedPlansEmail(params: {
   })
 }
 
-async function getAssignedPlansForCooperation(trainerId: string, traineeId: string) {
+async function getAssignedPlansToTrainee(trainerId: string, traineeId: string) {
   return prisma.workout_plan.findMany({
     where: {
       trainer_id: trainerId,
@@ -115,84 +80,11 @@ async function getAssignedPlansForCooperation(trainerId: string, traineeId: stri
   })
 }
 
-function mapPlanToPdfData(plan: Awaited<ReturnType<typeof getAssignedPlansForCooperation>>[number]) {
-  return {
-    name: plan.name,
-    difficulty: plan.difficulty,
-    description: plan.description,
-    section: plan.section.map((section) => ({
-      body_part: section.body_part,
-      order: section.order,
-      exercise_set: section.exercise_set.map((set) => ({
-        order: set.order,
-        series_count: set.series_count,
-        reps_count: set.reps_count,
-        weight: set.weight == null ? null : Number(set.weight),
-        exercise: {
-          name: set.exercise.name,
-        },
-      })),
-    })),
-  }
-}
-
-export async function getAssignedPlansPdfForDownload(partnerId: string) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    redirect("/?unauthorized=true")
-  }
-
-  if (session.user.role !== "trainer" && session.user.role !== "trainee") {
-    return { error: "Brak uprawnień do tej operacji." }
-  }
-
-  const trainerId =
-    session.user.role === "trainer" ? session.user.id : partnerId
-  const traineeId =
-    session.user.role === "trainee" ? session.user.id : partnerId
-
-  const cooperation = await prisma.cooperation.findUnique({
-    where: {
-      trainer_id_trainee_id: {
-        trainer_id: trainerId,
-        trainee_id: traineeId,
-      },
-    },
-    select: {
-      trainer_id: true,
-    },
-  })
-
-  if (!cooperation) {
-    return { error: "Nie znaleziono współpracy." }
-  }
-
-  const assignedPlans = await getAssignedPlansForCooperation(trainerId, traineeId)
-
-  const files = await Promise.all(
-    assignedPlans.map(async (plan, index) => {
-      const pdfData = mapPlanToPdfData(plan)
-      const buffer = await renderWorkoutPlanPdfBuffer(pdfData)
-      const baseName = sanitizePdfFilename(plan.name) || `plan-treningowy-${index + 1}`
-
-      return {
-        filename: `${baseName}.pdf`,
-        base64: buffer.toString("base64"),
-      }
-    })
-  )
-
-  return { success: true as const, data: files }
-}
 
 export async function finishCooperation(partnerId: string) {
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
-  }
-
-  if (session.user.role !== "trainer" && session.user.role !== "trainee") {
-    return { error: "Brak uprawnień do tej operacji." }
   }
 
   const trainerId =
@@ -237,7 +129,7 @@ export async function finishCooperation(partnerId: string) {
       return { error: "Nie znaleziono aktywnej współpracy do zakończenia." }
     }
 
-    const assignedPlans = await getAssignedPlansForCooperation(trainerId, traineeId)
+    const assignedPlans = await getAssignedPlansToTrainee(trainerId, traineeId)
     const now = new Date()
 
     await prisma.$transaction([
@@ -284,10 +176,10 @@ export async function finishCooperation(partnerId: string) {
           traineeEmail: cooperation.trainee.user.email,
           traineeName: cooperation.trainee.user.name,
           trainerFullName: `${cooperation.trainer.user.name} ${cooperation.trainer.user.surname}`,
-          plans: assignedPlans.map(mapPlanToPdfData),
+          plans: assignedPlans,
         })
       } catch (emailError) {
-        console.error("[FINISH_COOPERATION_SEND_PLANS_EMAIL_ERROR]:", emailError)
+        console.error("[SEND_PLANS_ERROR]:", emailError)
       }
     }
 
@@ -295,7 +187,8 @@ export async function finishCooperation(partnerId: string) {
     revalidatePath("/dashboard/trainees")
 
     return { success: true as const }
-  } catch {
+  } catch (error) {
+    console.error("[FINISH_COOPERATION_ERROR]:", error)
     return {
       error: "Wystąpił błąd podczas rozwiązywania współpracy. Spróbuj ponownie.",
     }
