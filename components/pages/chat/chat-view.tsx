@@ -185,7 +185,7 @@ export function ChatView({
 
   if (conversations.length === 0) {
     return (
-      <p className="text-muted-foreground rounded-xl border border-white/10 bg-zinc-900/40 p-6 text-center">
+      <p className="text-muted-foreground rounded-xl border border-white/10 bg-zinc-900/40 p-6 text-center mt-10">
         Nie masz aktywnych współprac — czat będzie dostępny po nawiązaniu
         współpracy z trenerem lub podopiecznym.
       </p>

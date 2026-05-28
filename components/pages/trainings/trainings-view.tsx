@@ -3,10 +3,11 @@
 import * as React from "react"
 import { startOfDay, getDay } from "date-fns"
 import { getTrainingsForWeek } from "@/actions/training"
-import TrainingDialog from "@/components/pages/trainings/training-dialog"
+import TrainingDialog from "@/components/dialogs/training-dialog"
 import TrainingsCalendar from "@/components/pages/trainings/trainings-calendar"
 import {
   getDefaultCreateSlot,
+  isTrainingScheduledInPast,
   type TrainingSlot,
 } from "@/lib/training-calendar-functions"
 import { TrainingDTO } from "@/lib/types"
@@ -87,9 +88,10 @@ export default function TrainingsView({
   }
 
   const openTraining = (training: TrainingDTO) => {
+    const isPast = isTrainingScheduledInPast(new Date(training.scheduledAt))
     setDialog({
       open: true,
-      mode: isTrainer ? "edit" : "view",
+      mode: isTrainer && !isPast ? "edit" : "view",
       training,
       initialSlot: null,
     })

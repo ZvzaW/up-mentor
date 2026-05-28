@@ -7,7 +7,6 @@ import { toast } from "sonner"
 
 import {
   finishCooperation,
-  getAssignedPlansPdfForDownload,
 } from "@/actions/cooperation"
 import { Button } from "@/components/ui/button"
 import {
@@ -48,43 +47,7 @@ export function FinishCooperationDialog({
     })
   }
 
-  const handleDownloadTestPdfs = () => {
-    startDownloadTransition(async () => {
-      const result = await getAssignedPlansPdfForDownload(partnerId)
-
-      if (result?.error) {
-        toast.error(result.error)
-        return
-      }
-
-      const files = result.data
-      if (!files || files.length === 0) {
-        toast.info("Brak przypisanych planów do pobrania.")
-        return
-      }
-
-      for (const file of files) {
-        const binary = atob(file.base64)
-        const bytes = new Uint8Array(binary.length)
-        for (let i = 0; i < binary.length; i += 1) {
-          bytes[i] = binary.charCodeAt(i)
-        }
-
-        const blob = new Blob([bytes], { type: "application/pdf" })
-        const url = URL.createObjectURL(blob)
-        const anchor = document.createElement("a")
-        anchor.href = url
-        anchor.download = file.filename
-        document.body.appendChild(anchor)
-        anchor.click()
-        anchor.remove()
-        URL.revokeObjectURL(url)
-      }
-
-      toast.success("Pobrano testowe pliki PDF.")
-    })
-  }
-
+  
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
@@ -102,18 +65,6 @@ export function FinishCooperationDialog({
         </DialogHeader>
 
         <DialogFooter className="mt-0">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={handleDownloadTestPdfs}
-            disabled={isPending || isDownloading}
-          >
-            {isDownloading ? (
-              <Loader2 className="animate-spin" />
-            ) : (
-              "Pobierz testowe PDF-y"
-            )}
-          </Button>
           <Button
             type="button"
             variant="destructive"

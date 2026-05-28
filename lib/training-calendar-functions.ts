@@ -3,6 +3,7 @@ import {
   addWeeks,
   endOfWeek,
   format,
+  isBefore,
   isToday,
   startOfDay,
   startOfWeek,
@@ -18,6 +19,13 @@ export const CALENDAR_GRID_HEIGHT =
   (CALENDAR_END_HOUR - CALENDAR_START_HOUR) * HOUR_SLOT_HEIGHT
 
 export type TrainingSlot = { date: string; start_time: string }
+
+export function isTrainingScheduledInPast(scheduledAt: Date) {
+  const todayStart = startOfDay(new Date())
+  const scheduledDay = startOfDay(scheduledAt)
+  if (isBefore(scheduledDay, todayStart)) return true
+  return scheduledAt.getTime() < Date.now()
+}
 
 export function getWeekRange(anchor: Date) {
   const start = startOfWeek(anchor, { weekStartsOn: 1 })

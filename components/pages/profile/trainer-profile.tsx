@@ -1,10 +1,9 @@
 "use client"
 
 import * as React from "react"
-import { changeProfileVisibility } from "@/actions/profile"
+import { changeProfileVisibility, deleteWorkplace } from "@/actions/profile"
 import EditTrainerCardDialog from "@/components/dialogs/trainer/edit-trainer-card"
 import EditWorkplaceDialog from "@/components/dialogs/trainer/edit-workplace"
-import DeleteWorkplaceDialog from "@/components/dialogs/trainer/delete-workplace"
 import AddWorkplaceDialog from "@/components/dialogs/trainer/add-workplace"
 import SettingsDialog from "@/components/dialogs/settings"
 import { Card, CardContent } from "@/components/ui/card"
@@ -15,8 +14,9 @@ import {
   PopoverDescription,
 } from "@/components/ui/popover"
 import { Switch } from "@/components/ui/switch"
-import { InfoIcon } from "lucide-react"
+import { InfoIcon, Loader2, Trash2 } from "lucide-react"
 import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
 import { ShowOpinionsDialog } from "@/components/dialogs/trainer/show-opinions"
 import { TrainerDTO, UserDTO } from "@/lib/types"
 
@@ -30,7 +30,36 @@ export default function TrainerProfile({
   specificData,
 }: TrainerProfileProps) {
   const [isPublic, setIsPublic] = React.useState(specificData.is_public)
+  const [deletingWorkplaceId, setDeletingWorkplaceId] = React.useState<
+    string | null
+  >(null)
   const [isSaving, startSavingTransition] = React.useTransition()
+  const [isDeletingWorkplace, startDeletingWorkplaceTransition] =
+    React.useTransition()
+
+  const handleDeleteWorkplace = (workplaceId: string, workplaceName: string) => {
+    if (
+      !confirm(
+        `Czy na pewno chcesz usunąć miejsce „${workplaceName}"? Tej operacji nie można cofnąć.`
+      )
+    ) {
+      return
+    }
+
+    setDeletingWorkplaceId(workplaceId)
+    startDeletingWorkplaceTransition(async () => {
+      const result = await deleteWorkplace(workplaceId)
+
+      setDeletingWorkplaceId(null)
+
+      if (result?.error) {
+        toast.error(result.error)
+        return
+      }
+
+      toast.success("Miejsce pracy zostało usunięte.")
+    })
+  }
 
   const handleProfileVisibilityChange = (checked: boolean) => {
     const previousValue = isPublic
@@ -168,10 +197,27 @@ export default function TrainerProfile({
 
                     <div className="my-auto flex shrink-0 flex-col gap-1">
                       <EditWorkplaceDialog workplace={place} />
-                      <DeleteWorkplaceDialog
-                        workplaceId={place.id}
-                        workplaceName={place.name}
-                      />
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() =>
+                          handleDeleteWorkplace(place.id, place.name)
+                        }
+                        disabled={
+                          isDeletingWorkplace &&
+                          deletingWorkplaceId === place.id
+                        }
+                        title="Usuń miejsce pracy"
+                        aria-label="Usuń miejsce pracy"
+                      >
+                        {isDeletingWorkplace &&
+                        deletingWorkplaceId === place.id ? (
+                          <Loader2 className="size-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="size-4" />
+                        )}
+                      </Button>
                     </div>
                   </div>
                 ))

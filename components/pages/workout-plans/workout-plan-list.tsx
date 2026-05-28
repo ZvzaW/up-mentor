@@ -7,7 +7,10 @@ import {
   cloneWorkoutPlan,
   assignPlanToTrainee,
   deleteWorkoutPlan,
+  getWorkoutPlanPdfForDownload,
 } from "@/actions/workout-plan"
+import { downloadPdfFiles } from "@/lib/workout-plan-pdf"
+import type { WorkoutPlanItem } from "@/lib/types"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -30,12 +33,14 @@ import {
   ChevronDown,
   ChevronUp,
   Copy,
+  Download,
   ExternalLink,
   UserPlus,
   Pencil,
   Trash2,
   Settings,
   Search,
+  Loader2,
 } from "lucide-react"
 import { toast } from "sonner"
 import { TraineeDTO } from "@/lib/types"
@@ -48,45 +53,8 @@ const DIFFICULTY_LEVELS = [
 
 type DifficultyFilter = "all" | (typeof DIFFICULTY_LEVELS)[number] | "none"
 
-type WorkoutPlanListPlan = {
-  id: string
-  name: string
-  difficulty: string | null
-  description: string | null
-  plans_library?: {
-    trainee?: {
-      user?: {
-        name: string | null
-        surname: string | null
-      } | null
-    } | null
-  }[]
-  trainer?: {
-    user?: {
-      name: string | null
-      surname: string | null
-    } | null
-  } | null
-  section: {
-    id: string
-    body_part: string | null
-    order: number
-    exercise_set: {
-      id: string
-      order: number
-      series_count: number
-      reps_count: number
-      weight: number | null
-      exercise: {
-        name: string
-        video_url: string | null
-      }
-    }[]
-  }[]
-}
-
 interface WorkoutPlanListProps {
-  plans: WorkoutPlanListPlan[]
+  plans: WorkoutPlanItem[]
   role: string
   trainees?: TraineeDTO[]
 }
@@ -175,6 +143,26 @@ export function WorkoutPlanList({
       setSelectedTraineeId("")
     }
   }
+
+  const handleDownloadPdf = async (planId: string) => {
+    setLoadingId(`pdf-${planId}`)
+    const result = await getWorkoutPlanPdfForDownload(planId)
+    setLoadingId(null)
+
+    if (result.error) {
+      toast.error(result.error)
+      return
+    }
+
+    if (!result.data) {
+      toast.error("Nie udało się pobrać pliku PDF.")
+      return
+    }
+
+    downloadPdfFiles([result.data])
+    toast.success("Pobrano plan w formacie PDF.")
+  }
+
 
   return (
     <div className="space-y-4">
@@ -320,6 +308,7 @@ export function WorkoutPlanList({
 
                 {/*OPCJE*/}
                 <div className="mt-2 flex items-center justify-center gap-2 sm:mt-0 sm:self-start">
+                    
                   {role === "trainer" && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -378,6 +367,23 @@ export function WorkoutPlanList({
                       </DropdownMenuContent>
                     </DropdownMenu>
                   )}
+                  
+                  <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={loadingId !== null}
+                      onClick={() => handleDownloadPdf(plan.id)}
+                    >
+                      {loadingId === `pdf-${plan.id}` ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Download className="h-4 w-4" />
+                          PDF
+                        </>
+                      )}
+                    </Button>
+
                   <Button
                     variant="secondary"
                     size="sm"

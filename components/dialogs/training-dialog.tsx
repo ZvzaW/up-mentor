@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/select"
 import {
   formatTrainingDateTime,
+  isTrainingScheduledInPast,
   type TrainingSlot,
 } from "@/lib/training-calendar-functions"
 import {
@@ -83,7 +84,10 @@ export default function TrainingDialog({
 }: TrainingDialogProps) {
   const [isPending, startTransition] = React.useTransition()
   const wasOpenRef = React.useRef(false)
-  const readOnly = mode === "view" || !isTrainer
+  const isPastTraining = Boolean(
+    training && isTrainingScheduledInPast(new Date(training.scheduledAt))
+  )
+  const readOnly = mode === "view" || !isTrainer || isPastTraining
 
   const defaultValues: TrainingDialogFormValues = React.useMemo(() => {
     if (training) {
@@ -134,6 +138,7 @@ export default function TrainingDialog({
     : null
 
   const handleSubmit = (data: TrainingDialogFormValues) => {
+    if (isPastTraining) return
     onOpenChange(false)
     startTransition(async () => {
       const result =
@@ -165,7 +170,7 @@ export default function TrainingDialog({
   }
 
   const handleDeleteClick = () => {
-    if (!training?.id) return
+    if (!training?.id || isPastTraining) return
     if (!confirm("Czy na pewno chcesz usunąć ten trening?")) return
     onOpenChange(false)
     startTransition(async () => {
@@ -182,9 +187,11 @@ export default function TrainingDialog({
   const title =
     mode === "create"
       ? "Nowy trening"
-      : mode === "edit"
-        ? "Edycja treningu"
-        : "Szczegóły treningu"
+      : mode === "edit" && isPastTraining
+        ? "Podgląd treningu"
+        : mode === "edit"
+          ? "Edycja treningu"
+          : mode === "view" && "Podgląd treningu"
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -192,9 +199,7 @@ export default function TrainingDialog({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
-            {readOnly
-              ? "Podgląd zaplanowanego treningu."
-              : "Uzupełnij dane treningu - będzie widoczny u Ciebie i u podopiecznego."}
+            {!readOnly && "Uzupełnij dane treningu - będzie widoczny u Ciebie i u podopiecznego."}
           </DialogDescription>
         </DialogHeader>
 
