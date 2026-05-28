@@ -43,7 +43,8 @@ import {
   traineePersonalDataSchema,
   trainerPersonalDataSchema,
 } from "@/lib/validations"
-import { changePassword } from "@/actions/settings"
+import { deleteAccount } from "@/actions/account"
+import { changePassword } from "@/actions/password"
 import { logoutAllDevices } from "@/actions/authorization"
 import { updatePersonalData } from "@/actions/profile"
 import { z } from "zod"
@@ -77,6 +78,7 @@ export default function SettingsDialog({
   const [isPending, startTransition] = React.useTransition()
   const [isPasswordPending, startPasswordTransition] = React.useTransition()
   const [isEditPending, startEditTransition] = React.useTransition()
+  const [isDeletePending, startDeleteTransition] = React.useTransition()
   const isTrainer = baseData.role === "trainer"
   const formSchema = isTrainer
     ? trainerPersonalDataSchema
@@ -408,7 +410,6 @@ export default function SettingsDialog({
           </div>
         )}
 
-        {/*TO-DO: dodac logike usuwania konta */}
         {/* --------------- USUŃ KONTO --------------- */}
         {view === "delete" && (
           <div className="animate-in slide-in-from-right-12 fade-in duration-300">
@@ -420,7 +421,9 @@ export default function SettingsDialog({
                 Usuwanie konta
               </DialogTitle>
             </DialogHeader>
-            <div className="space-y-5">
+            <div className="space-y-4">
+           
+
               <div className="bg-destructive/10 border-destructive/30 rounded-md border p-3">
                 <p className="text-destructive text-sm font-bold">
                   TEJ AKCJI NIE MOŻNA COFNĄĆ!
@@ -430,7 +433,19 @@ export default function SettingsDialog({
                   Ciebie rzeczy zostaną bezpowrotnie usunięte z naszej bazy
                   danych!
                 </p>
-              </div>
+              </div> 
+              
+                {baseData.role === "trainer" && (
+                <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3">
+                  <p className="text-sm font-bold text-amber-300">
+                    Zalecenie dla trenera
+                  </p>
+                  <p className="mt-1 text-sm text-zinc-300">
+                    Przed usunięciem konta zaleca się najpierw zakończyć
+                    współprace z podopiecznymi.
+                  </p>
+                </div>
+              )}
 
               <div>
                 <label className="text-sm text-zinc-300">
@@ -446,14 +461,26 @@ export default function SettingsDialog({
               </div>
             </div>
             <DialogFooter>
-              <Button variant="destructive" onClick={() => setView("main")}>
+              <Button
+                variant="destructive"
+                onClick={() => setView("main")}
+                disabled={isDeletePending}
+              >
                 Anuluj
               </Button>
               <Button
                 className="bg-gold hover:bg-gold/60"
-                disabled={deleteInput !== "delete"}
+                disabled={deleteInput !== "delete" || isDeletePending}
+                onClick={() => {
+                  startDeleteTransition(async () => {
+                    const res = await deleteAccount()
+                    if (res?.error) {
+                      toast.error(res.error)
+                    }
+                  })
+                }}
               >
-                Usuń konto
+                {isDeletePending ? <Loader2 className="animate-spin" /> : "Usuń konto"}
               </Button>
             </DialogFooter>
           </div>
