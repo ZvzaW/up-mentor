@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { MessageCircle, Phone, Settings } from "lucide-react"
 import { toast } from "sonner"
+import { FinishCooperationDialog } from "@/components/dialogs/finish-cooperation"
 
 type TraineeQuickActionsProps = {
   traineeId: string
@@ -52,16 +53,18 @@ export function TraineeQuickActions({
         <Phone />
       </Button>
 
-      <Button
-        type="button"
-        size="icon"
-        variant="ghost"
-        className="border-baby-blue text-baby-blue rounded-full border"
-        title="Zarządzaj współpracą"
-        aria-label="Zarządzaj współpracą"
-      >
-        <Settings />
-      </Button>
+      <FinishCooperationDialog partnerId={traineeId}>
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          className="border-baby-blue text-baby-blue rounded-full border"
+          title="Zarządzaj współpracą"
+          aria-label="Zarządzaj współpracą"
+        >
+          <Settings />
+        </Button>
+      </FinishCooperationDialog>
     </div>
   )
 }

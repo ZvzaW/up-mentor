@@ -44,6 +44,7 @@ export async function sendCoachingRequest(data: CoachingRequestInput) {
     const existingCooperation = await prisma.cooperation.findUnique({
       where: {
         trainer_id_trainee_id: { trainer_id, trainee_id: traineeId },
+        status: "active",
       },
     })
 
@@ -117,6 +118,7 @@ export async function getCooperationStatus(trainerId: string) {
     prisma.cooperation.findUnique({
       where: {
         trainer_id_trainee_id: { trainer_id: trainerId, trainee_id: traineeId },
+        status: "active",
       },
     }),
   ])
@@ -196,28 +198,64 @@ export async function acceptRequest(traineeId: string, workplaceId: string) {
   const trainerId = session.user.id
 
   try {
-    await prisma.$transaction([
-      prisma.cooperation.create({
-        data: {
-          trainer_id: trainerId,
-          trainee_id: traineeId,
-          workplace_id: workplaceId,
-          status: "active",
-        },
-      }),
-      prisma.coaching_request.delete({
+    await prisma.$transaction(async (tx) => {
+      const existingCooperation = await tx.cooperation.findUnique({
         where: {
           trainer_id_trainee_id: {
             trainer_id: trainerId,
             trainee_id: traineeId,
           },
         },
-      }),
-    ])
+        select: {
+          status: true,
+        },
+      })
+
+      if (existingCooperation) {
+        if (existingCooperation.status === "finished") {
+          await tx.cooperation.update({
+            where: {
+              trainer_id_trainee_id: {
+                trainer_id: trainerId,
+                trainee_id: traineeId,
+              },
+            },
+            data: {
+              status: "active",
+              workplace_id: workplaceId,
+            },
+          })
+        } else {
+          throw new Error("ACTIVE_COOPERATION_EXISTS")
+        }
+      } else {
+        await tx.cooperation.create({
+          data: {
+            trainer_id: trainerId,
+            trainee_id: traineeId,
+            workplace_id: workplaceId,
+            status: "active",
+          },
+        })
+      }
+
+      await tx.coaching_request.delete({
+        where: {
+          trainer_id_trainee_id: {
+            trainer_id: trainerId,
+            trainee_id: traineeId,
+          },
+        },
+      })
+    })
 
     revalidatePath("/dashboard/trainees")
     return { success: true }
-  } catch {
+  } catch (error) {
+    if (error instanceof Error && error.message === "ACTIVE_COOPERATION_EXISTS") {
+      return { error: "Posiadasz już aktywną współpracę z tym podopiecznym." }
+    }
+
     return {
       error: "Wystąpił błąd podczas akceptacji prośby. Spróbuj ponownie.",
     }
