@@ -215,7 +215,17 @@ export async function deleteWorkplace(workplaceId: string) {
 
     revalidatePath("/dashboard/profile")
     return { success: true }
-  } catch {
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2003"
+    ) {
+      return {
+        error:
+          "Nie możesz usunąć tego miejsca pracy, ponieważ jest powiązane z aktywnymi współpracami. Najpierw rozwiąż wszystkie współprace przypisane do tego miejsca.",
+      }
+    }
+
     return { error: "Wystąpił błąd podczas usuwania danych. Spróbuj ponownie." }
   }
 }

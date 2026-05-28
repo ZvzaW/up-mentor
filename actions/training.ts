@@ -30,18 +30,26 @@ function mapTraining(t: {
   cooperation: {
     trainee: { user: { name: string; surname: string } }
     trainer: { user: { name: string; surname: string } }
-    workplace: WorkplaceAddress
+    workplace: WorkplaceAddress | null
+    status: string
   }
 }): TrainingDTO {
+  const isFinished = t.cooperation.status === "finished"
+  const workplaceAddress = t.cooperation.workplace
+    ? formatWorkplaceAddress(t.cooperation.workplace)
+    : "Dane niedostępne"
+
   return {
     id: t.id,
     trainerId: t.trainer_id,
     traineeId: t.trainee_id,
-    traineeName: `${t.cooperation.trainee.user.name} ${t.cooperation.trainee.user.surname}`,
-    trainerName: `${t.cooperation.trainer.user.name} ${t.cooperation.trainer.user.surname}`,
-    workplaceAddress: formatWorkplaceAddress(
-      t.cooperation.workplace as WorkplaceAddress
-    ),
+    traineeName: isFinished
+      ? "Dane niedostępne"
+      : `${t.cooperation.trainee.user.name} ${t.cooperation.trainee.user.surname}`,
+    trainerName: isFinished
+      ? "Dane niedostępne"
+      : `${t.cooperation.trainer.user.name} ${t.cooperation.trainer.user.surname}`,
+    workplaceAddress: workplaceAddress,
     scheduledAt: t.scheduled_at.toISOString(),
     duration: Number(t.duration),
   }

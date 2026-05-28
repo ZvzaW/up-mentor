@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { MessageCircle, Phone, Settings, Share2 } from "lucide-react"
 import { toast } from "sonner"
+import { FinishCooperationDialog } from "@/components/dialogs/finish-cooperation"
 
 type TrainerQuickActionsProps = {
   trainerId: string
@@ -36,10 +37,6 @@ export function TrainerQuickActions({
 
   const handleChatRedirect = () => {
     window.location.href = `/dashboard/chat?trainer=${trainerId}`
-  }
-
-  const handleSettingsClick = () => {
-    toast.info("Ustawienia współpracy będą dostępne wkrótce.")
   }
 
   return (
@@ -80,17 +77,18 @@ export function TrainerQuickActions({
         <Share2 />
       </Button>
 
-      <Button
-        type="button"
-        size="icon"
-        variant="ghost"
-        className="border-baby-blue text-baby-blue rounded-full border"
-        onClick={handleSettingsClick}
-        title="Zarządzaj współpracą"
-        aria-label="Zarządzaj współpracą"
-      >
-        <Settings />
-      </Button>
+      <FinishCooperationDialog partnerId={trainerId}>
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          className="border-baby-blue text-baby-blue rounded-full border"
+          title="Zarządzaj współpracą"
+          aria-label="Zarządzaj współpracą"
+        >
+          <Settings />
+        </Button>
+      </FinishCooperationDialog>
     </div>
   )
 }

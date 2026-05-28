@@ -47,7 +47,7 @@ CREATE TABLE "coaching_request" (
 CREATE TABLE "cooperation" (
     "trainer_id" UUID NOT NULL,
     "trainee_id" UUID NOT NULL,
-    "workplace_id" UUID NOT NULL,
+    "workplace_id" UUID,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "trainer_note" TEXT,
     "status" VARCHAR(10) NOT NULL DEFAULT 'active',
