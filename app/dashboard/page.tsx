@@ -11,12 +11,25 @@ import {
   MessageCircle,
   Calendar,
   Loader2,
+  ClipboardList,
+  Dumbbell,
+  BicepsFlexed,
+  MoreVertical,
+  Trash2,
+  MailOpen,
+  Mail,
 } from "lucide-react"
 
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import TrainerStats from "@/components/pages/statistics/trainer-stats"
 import TraineeStats from "@/components/pages/statistics/trainee-stats"
 
@@ -24,10 +37,13 @@ import {
   getNotifications,
   getUnreadCount,
   markAsRead,
+  markAsUnread,
+  deleteNotification,
 } from "@/actions/notifications"
 import { getStatistics } from "@/actions/statistics"
 import StatsPanelSkeleton, { SkeletonList } from "@/components/ui/skeleton"
 import { notification } from "@prisma/client"
+import { toast } from "sonner"
 
 type StatisticsResult = Awaited<ReturnType<typeof getStatistics>>
 
@@ -36,11 +52,15 @@ const ICONS: Record<string, JSX.Element> = {
   comment: <MessageSquare size={16} />,
   message: <MessageCircle size={16} />,
   system: <Bell size={16} />,
+  survey: <ClipboardList size={16} />,
+  training: <Dumbbell size={16} />,
+  workout_plan: <BicepsFlexed size={16} />,
 }
 
 interface NotificationsPanelProps {
   unreadCount: number
   decrementCount: () => void
+  incrementCount: () => void
   groupedNotifications: Record<string, notification[]>
   setGroupedNotifications: React.Dispatch<
     React.SetStateAction<Record<string, notification[]>>
@@ -52,10 +72,11 @@ interface NotificationsPanelProps {
   error: string | null
 }
 
-//PANELI POWIADOMIEŃ
+//PANEL POWIADOMIEŃ
 function NotificationsPanel({
   unreadCount,
   decrementCount,
+  incrementCount,
   groupedNotifications,
   setGroupedNotifications,
   isLoading,
@@ -83,6 +104,48 @@ function NotificationsPanel({
       decrementCount()
       await markAsRead(notif.id)
     }
+  }
+
+  const handleMarkAsUnread = async (notif: notification) => {
+      const result = await markAsUnread(notif.id)
+      if (result.error) {
+       toast.error(result.error)
+       return
+      }
+
+      incrementCount()  
+      
+        if (notif.is_read) {
+      setGroupedNotifications((prev) => {
+        const newGrouped = { ...prev }
+        for (const label in newGrouped) {
+          newGrouped[label] = newGrouped[label].map((n) =>
+            n.id === notif.id ? { ...n, is_read: false } : n
+          )
+        }
+        return newGrouped
+      })
+    }
+  }
+
+  const handleDeleteNotification = async (notif: notification) => {
+
+    const result = await deleteNotification(notif.id)
+    if (result.error) {
+      toast.error(result.error)
+      return
+    }
+
+    setGroupedNotifications((prev) => {
+      const newGrouped: Record<string, notification[]> = {}
+      for (const label in prev) {
+        const filtered = prev[label].filter((n) => n.id !== notif.id)
+        if (filtered.length > 0) newGrouped[label] = filtered
+      }
+      return newGrouped
+    })
+
+    if (!notif.is_read) decrementCount()
   }
 
   const hasNotifications = Object.keys(groupedNotifications).length > 0
@@ -121,36 +184,77 @@ function NotificationsPanel({
                             <Separator className="flex-1" />
                           </div>
 
+                       {/* KAFELKI POWIADOMIEŃ */}
                           <div className="space-y-3">
                             {items.map((notif) => (
-                              <button
+                              <div
                                 key={notif.id}
-                                onClick={() => handleNotificationClick(notif)}
-                                className={`bg-dirty-blue hover:bg-hover group flex w-full items-center justify-between rounded-xl p-4 text-left transition-all ${
+                                className={`bg-dirty-blue hover:bg-hover group flex w-full items-center gap-2 rounded-xl p-4 text-left transition-all ${
                                   !notif.is_read
                                     ? "border-baby-blue border-2"
                                     : ""
                                 }`}
                               >
-                                <div className="space-y-3 text-sm">
-                                  <div
-                                    className={`flex gap-2 font-semibold ${
-                                      !notif.is_read
-                                        ? "text-baby-blue"
-                                        : "text-zinc-300"
-                                    }`}
-                                  >
-                                    {notif.title}{" "}
-                                    {ICONS[notif.type] || ICONS.system}
+                                
+                                <button
+                                  onClick={() => handleNotificationClick(notif)}
+                                  className="flex min-w-0 flex-1 items-center justify-between gap-2 text-left"
+                                >
+                                  <div className="min-w-0 space-y-3 text-sm">
+                                    <div
+                                      className={`flex gap-2 font-semibold ${
+                                        !notif.is_read
+                                          ? "text-baby-blue"
+                                          : "text-zinc-300"
+                                      }`}
+                                    >
+                                      {notif.title}{" "}
+                                      {ICONS[notif.type] || ICONS.system}
+                                    </div>
+                                    <p className="text-zinc-400">
+                                      {notif.message}
+                                    </p>
                                   </div>
-                                  <p className="leading-relaxed text-zinc-400">
-                                    {notif.message}
-                                  </p>
-                                </div>
-                                <ChevronRight
-                                  className={`shrink-0 ${!notif.is_read ? "text-baby-blue" : "text-zinc-300"}`}
-                                />
-                              </button>
+                                  
+                                </button>
+
+                                
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger
+                                    onClick={(e) => e.stopPropagation()}
+                                    aria-label="Opcje"
+                                  >
+                                    <MoreVertical size={16} className="text-zinc-400"/>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent
+                                    align="end"
+                                    className="bg-dark-navy"
+                                  >
+                                    {notif.is_read && (
+                                      <DropdownMenuItem
+                                        onClick={() =>
+                                          handleMarkAsUnread(notif)
+                                        }
+                                        className="cursor-pointer gap-2 text-zinc-300"
+                                      >
+                                        <Mail size={14} />
+                                        Oznacz jako nieodczytane
+                                      </DropdownMenuItem>
+                                    )}
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        handleDeleteNotification(notif)
+                                      }
+                                      className="cursor-pointer gap-2 text-red-400 "
+                                    >
+                                      <Trash2 size={14} />
+                                      Usuń powiadomienie
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                             
+                                  
+                              </div>
                             ))}
                           </div>
                         </div>
@@ -309,6 +413,10 @@ export default function DashboardPage() {
     setUnreadCount((prev) => Math.max(0, prev - 1))
   }
 
+  const incrementCount = () => {
+    setUnreadCount((prev) => prev + 1)
+  }
+
   const loadMore = async () => {
     if (isLoadingMore || !hasMore) return
     setIsLoadingMore(true)
@@ -342,6 +450,7 @@ export default function DashboardPage() {
   const notificationProps = {
     unreadCount,
     decrementCount,
+    incrementCount,
     groupedNotifications,
     setGroupedNotifications,
     isLoading,
