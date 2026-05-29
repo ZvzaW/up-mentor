@@ -81,6 +81,7 @@ export async function register(
       }
     })
   } catch (error: any) {
+    console.error("[REGISTER_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     if (error.code === "P2002") return { error: "Ten e-mail jest już zajęty!" }
     return { error: "Wystąpił błąd podczas rejestracji, spróbuj ponownie." }
   }
@@ -103,6 +104,7 @@ export async function login(data: { email: string; password: string }) {
       redirect: false,
     })
   } catch (error) {
+    console.error("[LOGIN_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     if (error instanceof AuthError) {
       switch (error.type) {
         case "CredentialsSignin":
@@ -125,7 +127,8 @@ export async function logout() {
         where: { token: tokenToDelete },
       })
     }
-  } catch {
+  } catch (error) {
+    console.error("[LOGOUT_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return { error: "Wystąpił błąd podczas wylogowywania. Spróbuj ponownie." }
   }
 
@@ -144,7 +147,8 @@ export async function logoutAllDevices() {
         user_id: session.user.id,
       },
     })
-  } catch {
+  } catch (error) {
+    console.error("[LOGOUT_ALL_DEVICES_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return {
       error:
         "Wystąpił błąd podczas wylogowywania ze wszystkich urządzeń. Spróbuj ponownie.",

@@ -7,7 +7,7 @@ import {
   cloneWorkoutPlan,
   assignPlanToTrainee,
   deleteWorkoutPlan,
-  getWorkoutPlanPdfForDownload,
+  generateWorkoutPlanPdf,
 } from "@/actions/workout-plan"
 import { downloadPdfFiles } from "@/lib/workout-plan-pdf"
 import type { WorkoutPlanItem } from "@/lib/types"
@@ -146,7 +146,7 @@ export function WorkoutPlanList({
 
   const handleDownloadPdf = async (planId: string) => {
     setLoadingId(`pdf-${planId}`)
-    const result = await getWorkoutPlanPdfForDownload(planId)
+    const result = await generateWorkoutPlanPdf(planId)
     setLoadingId(null)
 
     if (result.error) {

@@ -107,7 +107,7 @@ export async function getChatConversations() {
 
     return { error: "Brak uprawnień do czatu." }
   } catch (error) {
-    console.error("[GET_CHAT_CONVERSATIONS_ERROR]:", error)
+    console.error("[GET_CHAT_CONVERSATIONS_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return { error: "Nie udało się pobrać rozmów. Spróbuj odświeżyć stronę." }
   }
 }
@@ -144,7 +144,7 @@ export async function getChatMessages(trainerId: string, traineeId: string) {
 
     return { success: true, data }
   } catch (error) {
-    console.error("[GET_CHAT_MESSAGES_ERROR]:", error)
+    console.error("[GET_CHAT_MESSAGES_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return { error: "Nie udało się pobrać wiadomości. Spróbuj odświeżyć stronę." }
   }
 }
@@ -166,7 +166,6 @@ export async function sendChatMessage(
     content,
   })
   if (!validated.success) {
-    console.error("[SEND_CHAT_MESSAGE_VALIDATION_ERROR]:", validated.error)
     return { error: "Nieprawidłowa wiadomość." }
   }
 
@@ -212,7 +211,7 @@ export async function sendChatMessage(
 
     return { success: true, data: payload }
   } catch (error) {
-    console.error("[SEND_CHAT_MESSAGE_ERROR]:", error)
+    console.error("[SEND_CHAT_MESSAGE_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return { error: "Wystąpił błąd podczas wysyłania wiadomości. Spróbuj ponownie."}
   }
 }

@@ -103,7 +103,8 @@ export async function getWorkoutPlans() {
     }
 
     return { error: "Nieprawidłowa rola" }
-  } catch {
+  } catch (error) {
+    console.error("[GET_WORKOUT_PLANS_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return { error: "Nie udało się pobrać planów. Spróbuj odświeżyć stronę." }
   }
 }
@@ -162,7 +163,8 @@ export async function getWorkoutPlanById(planId: string) {
         })),
       },
     }
-  } catch {
+  } catch (error) {
+    console.error("[GET_WORKOUT_PLAN_BY_ID_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return { error: "Nie udało się pobrać planu. Spróbuj odświeżyć stronę." }
   }
 }
@@ -204,7 +206,8 @@ export async function createWorkoutPlan(data: WorkoutPlanInput) {
 
     revalidatePath("/dashboard/workout-plans")
     return { data: newPlan }
-  } catch {
+  } catch (error) {
+    console.error("[CREATE_WORKOUT_PLAN_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return {
       error: "Wystąpił błąd podczas zapisywania planu. Spróbuj ponownie.",
     }
@@ -340,7 +343,8 @@ export async function updateWorkoutPlan(
     revalidatePath("/dashboard/workout-plans")
     revalidatePath(`/dashboard/workout-plans/edit/${planId}`)
     return { success: true }
-  } catch {
+  } catch (error) {
+    console.error("[UPDATE_WORKOUT_PLAN_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return {
       error: "Wystąpił błąd podczas aktualizacji planu. Spróbuj ponownie.",
     }
@@ -397,7 +401,8 @@ export async function cloneWorkoutPlan(planId: string) {
 
     revalidatePath("/dashboard/workout-plans")
     return { success: true }
-  } catch {
+  } catch (error) {
+    console.error("[CLONE_WORKOUT_PLAN_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return {
       error: "Wystąpił błąd podczas klonowania planu. Spróbuj ponownie.",
     }
@@ -427,12 +432,13 @@ export async function deleteWorkoutPlan(planId: string) {
 
     revalidatePath("/dashboard/workout-plans")
     return { success: true }
-  } catch {
+  } catch (error) {
+    console.error("[DELETE_WORKOUT_PLAN_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return { error: "Wystąpił błąd podczas usuwania planu. Spróbuj ponownie." }
   }
 }
 
-export async function getWorkoutPlanPdfForDownload(planId: string) {
+export async function generateWorkoutPlanPdf(planId: string) {
   const session = await auth()
 
   if (!session?.user?.id) {
@@ -489,7 +495,8 @@ export async function getWorkoutPlanPdfForDownload(planId: string) {
     const file = await toDownloadFile(plan)
 
     return { success: true as const, data: file }
-  } catch {
+  } catch (error) {
+    console.error("[GENERATE_WORKOUT_PLAN_PDF_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return {
       error: "Nie udało się wygenerować pliku PDF. Spróbuj ponownie.",
     }
@@ -516,6 +523,7 @@ export async function assignPlanToTrainee(planId: string, traineeId: string) {
     revalidatePath("/dashboard/workout-plans")
     return { success: true, data: assignment }
   } catch (error: any) {
+    console.error("[ASSIGN_PLAN_TO_TRAINEE_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     if (error.code === "P2002") {
       return {
         error: "Ten plan jest już przypisany do wybranego podopiecznego.",

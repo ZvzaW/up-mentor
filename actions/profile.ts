@@ -49,7 +49,8 @@ export async function updatePersonalData(input: unknown) {
         })
       }
     })
-  } catch {
+  } catch (error) {
+    console.error("[UPDATE_PERSONAL_DATA_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return {
       error: "Wystąpił błąd podczas aktualizacji danych. Spróbuj ponownie.",
     }
@@ -85,14 +86,17 @@ export async function updateTrainerCard(input: unknown) {
         work_description: data.work_description,
       },
     })
-  } catch {
+    
+    revalidatePath("/dashboard/profile")
+    return { success: true }
+  } catch (error) {
+    console.error("[UPDATE_TRAINER_CARD_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return {
       error: "Wystąpił błąd podczas aktualizacji danych. Spróbuj ponownie.",
     }
   }
 
-  revalidatePath("/dashboard/profile")
-  return { success: true }
+  
 }
 
 export async function editWorkplace(workplace: workplace) {
@@ -134,7 +138,8 @@ export async function editWorkplace(workplace: workplace) {
 
     revalidatePath("/dashboard/profile")
     return { success: true }
-  } catch {
+  } catch (error) {
+    console.error("[EDIT_WORKPLACE_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return {
       error: "Wystąpił błąd podczas aktualizacji danych. Spróbuj ponownie.",
     }
@@ -172,7 +177,8 @@ export async function addWorkplace(input: unknown) {
 
     revalidatePath("/dashboard/profile")
     return { success: true }
-  } catch {
+  } catch (error) {
+    console.error("[ADD_WORKPLACE_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return {
       error: "Wystąpił błąd podczas zapisywania danych. Spróbuj ponownie.",
     }
@@ -216,6 +222,7 @@ export async function deleteWorkplace(workplaceId: string) {
     revalidatePath("/dashboard/profile")
     return { success: true }
   } catch (error) {
+    console.error("[DELETE_WORKPLACE_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2003"
@@ -249,7 +256,8 @@ export async function changeProfileVisibility(isPublic: boolean) {
 
     revalidatePath("/dashboard/profile")
     return { success: true }
-  } catch {
+  } catch (error) {
+    console.error("[CHANGE_PROFILE_VISIBILITY_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return {
       error: "Wystąpił błąd podczas zapisywania zmian. Spróbuj ponownie.",
     }

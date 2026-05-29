@@ -117,7 +117,8 @@ export async function createTraining(raw: CreateTrainingFormValues) {
 
     revalidatePath("/dashboard/trainings")
     return { success: true }
-  } catch {
+  } catch (error) {
+    console.error("[CREATE_TRAINING_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return {
       error: "Wystąpił błąd podczas zapisywania treningu. Spróbuj ponownie.",
     }
@@ -169,7 +170,8 @@ export async function updateTraining(raw: UpdateTrainingFormValues) {
 
     revalidatePath("/dashboard/trainings")
     return { success: true }
-  } catch {
+  } catch (error) {
+    console.error("[UPDATE_TRAINING_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return {
       error: "Wystąpił błąd podczas aktualizacji treningu. Spróbuj ponownie.",
     }
@@ -202,7 +204,8 @@ export async function deleteTraining(id: string) {
     await prisma.training.delete({ where: { id } })
     revalidatePath("/dashboard/trainings")
     return { success: true }
-  } catch {
+  } catch (error) {
+    console.error("[DELETE_TRAINING_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return {
       error: "Wystąpił błąd podczas usuwania treningu. Spróbuj ponownie.",
     }
@@ -316,7 +319,8 @@ export async function getTrainingsForTrainee(traineeId: string) {
       success: true,
       data: groupTrainingsByYearAndMonth(listItems, scheduledDates),
     }
-  } catch {
+  } catch (error) {
+    console.error("[GET_TRAININGS_FOR_TRAINEE_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return {
       error: "Nie udało się pobrać treningów. Spróbuj odświeżyć stronę.",
     }
@@ -380,7 +384,8 @@ export async function getTrainingsForWeek(weekAnchorIso: string) {
       weekStart: weekStart.toISOString(),
       weekEnd: weekEnd.toISOString(),
     }
-  } catch {
+  } catch (error) {
+    console.error("[GET_TRAININGS_FOR_WEEK_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return {
       error: "Nie udało się pobrać treningów. Spróbuj odświeżyć stronę.",
     }

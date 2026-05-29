@@ -188,7 +188,7 @@ export async function finishCooperation(partnerId: string) {
 
     return { success: true as const }
   } catch (error) {
-    console.error("[FINISH_COOPERATION_ERROR]:", error)
+    console.error("[FINISH_COOPERATION_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return {
       error: "Wystąpił błąd podczas rozwiązywania współpracy. Spróbuj ponownie.",
     }
