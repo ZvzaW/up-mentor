@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Menu, X, ChevronDown, User, LogOut } from "lucide-react"
 import {
@@ -50,16 +51,18 @@ export default function Navbar({ role }: NavbarProps) {
 
   return (
     <nav className="border-baby-blue font-michroma sticky top-0 z-50 w-full border-b bg-[#1a1e2a]/40 backdrop-blur-xl">
-      <div className="mx-auto px-4 sm:px-6 lg:px-8">
+      <div className=" px-4 sm:px-6 lg:px-8">
         <div className="flex h-20 items-center justify-between">
           {/*LOGO*/}
-          <Link href="/dashboard" className="group flex items-center">
-            <div
-              className="group-hover:border-baby-blue relative flex h-12 w-32 items-center justify-center border transition-colors"
-              title="Strona główna"
-            >
-              <span>LOGO</span>
-            </div>
+          <Link href="/dashboard" className="group flex items-center" title="Strona główna">
+            <Image
+              src="/logo.svg"
+              alt="UP-Mentor"
+              width={240}  
+              height={60}
+              priority
+              className="h-16 md:h-9 lg:h-16 w-auto object-contain"
+            />
           </Link>
 
           {/*DESKTOP MENU*/}

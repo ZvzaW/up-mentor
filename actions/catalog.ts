@@ -112,7 +112,8 @@ export async function getCatalogTrainers(
     })
 
     return { success: true as const, data }
-  } catch {
+  } catch (error) {
+    console.error("[GET_CATALOG_TRAINERS_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }
@@ -170,7 +171,8 @@ export async function getCatalogTrainerBySlug(slug: string) {
         workplaces: trainer.workplace,
       },
     }
-  } catch {
+  } catch (error) {
+    console.error("[GET_CATALOG_TRAINER_BY_SLUG_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }

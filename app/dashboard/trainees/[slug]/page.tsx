@@ -42,6 +42,7 @@ export default async function TraineeDetailsPage({
         id: cooperation.trainee.user.id,
         fullName: `${cooperation.trainee.user.name} ${cooperation.trainee.user.surname}`,
         phone: cooperation.trainee.user.phone,
+        birthdate: cooperation.trainee.birthdate,
         workplace: formatWorkplaceAddress(
           cooperation.workplace as WorkplaceAddress
         ),
@@ -83,17 +84,20 @@ export default async function TraineeDetailsPage({
                   phone={selectedTrainee.phone}
                 />
 
-                <div className="flex max-w-full items-center gap-2 text-sm text-zinc-300">
-                  <MapPin className="text-baby-blue h-4 w-4 shrink-0" />
-                  <span className="truncate">{selectedTrainee.workplace}</span>
-                </div>
+                
 
                 <ShowTraineeSurveyDialog
                   traineeId={selectedTrainee.id}
                   name={selectedTrainee.fullName}
+                  birthdate={selectedTrainee.birthdate}
                 />
 
-                <div className="mt-2 w-[90%] md:w-full">
+<div className="flex max-w-full items-center gap-2 text-sm text-zinc-300">
+                  <MapPin className="text-baby-blue h-4 w-4 shrink-0" />
+                  <span className="truncate">{selectedTrainee.workplace}</span>
+                </div>
+
+                <div className=" w-[90%] md:w-full">
                   <p className="mb-2 flex items-center gap-2 text-sm text-zinc-300">
                     <NotebookPen className="text-baby-blue h-4 w-4" />
                     Prywatna notatka

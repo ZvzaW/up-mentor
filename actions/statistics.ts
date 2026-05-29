@@ -90,7 +90,8 @@ export async function getStatistics() {
     }
 
     return { error: "Brak uprawnień do tej operacji." }
-  } catch {
+  } catch (error) {
+    console.error("[GET_STATISTICS_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return {
       error: "Nie udało się pobrać statystyk. Spróbuj odświeżyć stronę.",
     }

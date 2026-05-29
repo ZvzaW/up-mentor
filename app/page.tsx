@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { login } from "@/actions/authorization"
+import Image from "next/image"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -80,10 +81,18 @@ export default function LoginPage() {
   }, [isUnauthorized, isCallBack, searchParams, router])
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
+    <div className="flex  flex-col min-h-screen h-[100vh] items-center justify-center p-4">
+      <Image
+              src="/logo.svg"
+              alt="UP-Mentor"
+              width={240}  
+              height={60}
+              priority
+              className="h-20  lg:h-23 w-auto object-contain mx-auto"
+            />
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="font-michroma text-2xl">Logowanie</CardTitle>
+          <CardTitle className="font-michroma text-md ">Logowanie</CardTitle>
         </CardHeader>
         <CardContent>
           <form

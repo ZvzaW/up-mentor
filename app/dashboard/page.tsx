@@ -6,7 +6,6 @@ import { useSession } from "next-auth/react"
 import {
   Users,
   MessageSquare,
-  ChevronRight,
   Bell,
   MessageCircle,
   Calendar,

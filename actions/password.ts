@@ -54,7 +54,8 @@ export async function changePassword(input: unknown) {
           },
         })
       }
-    } catch {
+    } catch (error) {
+      console.error("[CHANGE_PASSWORD_ERROR]:", new Date().toLocaleString("pl-PL"), error)
       return { error: "Wystąpił błąd podczas zmiany hasła. Spróbuj ponownie." }
     }
   
@@ -115,7 +116,7 @@ const transporter = nodemailer.createTransport({
     const resetLink = `${getBaseUrl()}/reset-password?token=${rawToken}`
   
       await transporter.sendMail({
-        from: '"Upmentor" <no-reply@upmentor.pl>',
+        from: '"Up-Mentor" <no-reply@upmentor.pl>',
         to: user.email,
         subject: "Reset hasła",
         html: `
@@ -128,7 +129,7 @@ const transporter = nodemailer.createTransport({
         `,
       })
     } catch (error) {
-      console.error("[REQUEST_PASSWORD_RESET_ERROR]:", error)
+      console.error("[REQUEST_PASSWORD_RESET_ERROR]:", new Date().toLocaleString("pl-PL"), error)
       await prisma.refresh_token.deleteMany({
         where: { token: storedToken },
       })
@@ -184,7 +185,7 @@ const transporter = nodemailer.createTransport({
   
       return { success: true }
     } catch (error) {
-      console.error("[RESET_PASSWORD_ERROR]:", error)
+      console.error("[RESET_PASSWORD_ERROR]:", new Date().toLocaleString("pl-PL"), error)
       return { error: "Wystąpił błąd podczas resetowania hasła. Spróbuj ponownie." }
     }
   }

@@ -56,7 +56,8 @@ export async function getMyTrainers() {
     }))
 
     return { success: true, data: mappedCooperations }
-  } catch {
+  } catch (error) {
+    console.error("[GET_MY_TRAINERS_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }
@@ -105,7 +106,8 @@ export async function getMyTrainerBySlug(slug: string) {
     })
 
     return { success: true, data: cooperation }
-  } catch {
+  } catch (error) {
+    console.error("[GET_MY_TRAINER_BY_SLUG_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }
@@ -129,7 +131,8 @@ export async function countCooperations() {
     })
 
     return { success: true, data: count }
-  } catch {
+  } catch (error) {
+    console.error("[COUNT_COOPERATIONS_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }

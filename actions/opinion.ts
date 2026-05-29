@@ -43,7 +43,8 @@ export async function getMyOpinion(trainerId: string) {
         comment: opinion.comment,
       },
     }
-  } catch {
+  } catch (error) {
+    console.error("[GET_MY_OPINION_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return { error: "Nie udało się pobrać opinii. Spróbuj ponownie" }
   }
 }
@@ -97,7 +98,8 @@ export async function getTrainerOpinions(trainerId: string) {
         reviews,
       },
     }
-  } catch {
+  } catch (error) {
+    console.error("[GET_TRAINER_OPINIONS_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę" }
   }
 }
@@ -154,7 +156,8 @@ export async function upsertOpinion(opinion: TrainerOpinionFormValues) {
         comment: data.comment,
       },
     })
-  } catch {
+  } catch (error) {
+    console.error("[UPSERT_OPINION_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return {
       error: "Wystąpił błąd podczas zapisywania danych. Spróbuj ponownie.",
     }
@@ -180,7 +183,8 @@ export async function deleteOpinion(trainerId: string) {
         trainer_id: trainerId,
       },
     })
-  } catch {
+  } catch (error) {
+    console.error("[DELETE_OPINION_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return { error: "Wystąpił błąd podczas usuwania danych. Spróbuj ponownie." }
   }
 

@@ -63,7 +63,7 @@ export async function saveSurveyAnswersAction(
 
     return { success: true }
   } catch (error) {
-    console.error("SURVEY_SAVE_ERROR:", error)
+    console.error("[SAVE_SURVEY_ANSWERS_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return { error: "Nie udało się zapisać ankiety. Spróbuj ponownie później." }
   }
 }
@@ -134,7 +134,7 @@ export async function getSurveyDataAction(traineeId?: string) {
 
     return { success: true, data: mappedData }
   } catch (error) {
-    console.error("GET_SURVEY_DATA_ERROR:", error)
+    console.error("[GET_SURVEY_DATA_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę" }
   }
 }

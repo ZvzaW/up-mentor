@@ -33,6 +33,17 @@ export function combineDateAndTime(date: string, time: string) {
   return new Date(y, mo - 1, d, h, m, 0, 0)
 }
 
+export function calculateAge(birthdate: Date) {
+  const birth = new Date(birthdate)
+  const today = new Date()
+  let age = today.getFullYear() - birth.getFullYear()
+  const monthDiff = today.getMonth() - birth.getMonth()
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--
+  }
+  return age
+}
+
 export function formatWorkplaceAddress(workplace: WorkplaceAddress) {
   return `${workplace.name} - ul. ${workplace.street} ${workplace.building_number}${workplace.flat_number ? `/${workplace.flat_number}` : ""}, ${workplace.city}`
 }

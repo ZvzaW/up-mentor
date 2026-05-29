@@ -143,7 +143,8 @@ export async function deleteAccount() {
         },
       })
     })
-  } catch {
+  } catch (error) {
+    console.error("[DELETE_ACCOUNT_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return {
       error: "Wystąpił błąd podczas usuwania konta. Spróbuj ponownie.",
     }

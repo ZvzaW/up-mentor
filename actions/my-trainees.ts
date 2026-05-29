@@ -56,7 +56,8 @@ export async function getMyTrainees() {
     })) as TraineeDTO[]
 
     return { success: true, data: mappedCooperations }
-  } catch {
+  } catch (error) {
+    console.error("[GET_MY_TRAINEES_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }
@@ -106,7 +107,8 @@ export async function getMyTraineeBySlug(slug: string) {
     })
 
     return { success: true, data: cooperation }
-  } catch {
+  } catch (error) {
+    console.error("[GET_MY_TRAINEE_BY_SLUG_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }
@@ -135,7 +137,8 @@ export async function updateMyTraineeNote(traineeId: string, note: string) {
     })
 
     return { success: true }
-  } catch {
+  } catch (error) {
+    console.error("[UPDATE_MY_TRAINEE_NOTE_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return {
       error: "Wystąpił błąd podczas zapisywania danych. Spróbuj ponownie.",
     }

@@ -294,7 +294,7 @@ BEGIN
     INSERT INTO notification (user_id, title, message, redirect_url, type)
     VALUES (
         NEW.id, 
-        'Witaj w systemie UpMentor!',
+        'Witaj w systemie Up-Mentor!',
         'Przejdź do swojego profilu i uzupełnij wizytówkę, aby przyszli podopieczni mogli poznać Twoją ofertę.',
         'dashboard/profile',
         'system'
@@ -316,7 +316,7 @@ BEGIN
     INSERT INTO notification (user_id, title, message, redirect_url, type)
     VALUES (
         NEW.id,
-        'Witaj w systemie UpMentor!',
+        'Witaj w systemie Up-Mentor!',
         'Przejdź do swojego profilu i uzupełnij ankietę startową niezbędną do współpracy z Twoim przyszłym trenerem.',
         'dashboard/profile',
         'system'
