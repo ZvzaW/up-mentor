@@ -10,10 +10,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { ClipboardList, Info } from "lucide-react"
+import { ClipboardList, Info, Cake } from "lucide-react"
 import { getSurveyDataAction } from "@/actions/survey"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { SkeletonList } from "@/components/ui/skeleton"
+import { calculateAge } from "@/lib/utils"
 
 interface QuestionData {
   id: string
@@ -24,12 +25,15 @@ interface QuestionData {
 interface ShowTraineeSurveyDialogProps {
   traineeId: string
   name: string
+  birthdate: Date
 }
 
 export function ShowTraineeSurveyDialog({
   traineeId,
   name,
+  birthdate,
 }: ShowTraineeSurveyDialogProps) {
+  const age = calculateAge(birthdate)
   const [questions, setQuestions] = useState<QuestionData[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -94,6 +98,12 @@ export function ShowTraineeSurveyDialog({
             kursanta.
           </DialogDescription>
         </DialogHeader>
+
+        <div className="flex justify-center md:justify-start mb-1 gap-2 text-sm text-gold">
+          <span>
+            Wiek: <span className="text-zinc-100">{age} lat</span>
+          </span>
+        </div>
 
         {/*PYTANIA I ODPOWIEDZI*/}
         <div className="custom-scrollbar bg-dirty-blue space-y-12 overflow-y-auto rounded-lg p-6">
