@@ -87,24 +87,7 @@ export default async function TrainerCatalogDetailsPage({
                   )}
                 </div>
 
-                <div className="w-full">
-                  <p className="text-baby-blue font-michroma mb-1.5 text-center">
-                    Opis
-                  </p>
-                  <div className="bg-dirty-blue/40 w-full rounded-md p-2">
-                    {trainer.workDescription ? (
-                      <div className="custom-scrollbar max-h-40 overflow-y-auto p-2 break-words whitespace-pre-wrap text-zinc-300 italic [tab-size:4]">
-                        {trainer.workDescription}
-                      </div>
-                    ) : (
-                      <p className="text-center text-sm text-zinc-400">
-                        Brak opisu
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="w-full">
+               <div className="w-full">
                   <p className="text-baby-blue font-michroma mb-1.5 text-center">
                     Miejsca pracy
                   </p>
@@ -136,6 +119,25 @@ export default async function TrainerCatalogDetailsPage({
                     )}
                   </div>
                 </div>
+
+                <div className="w-full">
+                  <p className="text-baby-blue font-michroma mb-1.5 text-center">
+                    Opis
+                  </p>
+                  <div className="bg-dirty-blue/40 w-full rounded-md p-2">
+                    {trainer.workDescription ? (
+                      <div className="custom-scrollbar max-h-40 overflow-y-auto p-2 break-words whitespace-pre-wrap text-zinc-300 italic [tab-size:4]">
+                        {trainer.workDescription}
+                      </div>
+                    ) : (
+                      <p className="text-center text-sm text-zinc-400">
+                        Brak opisu
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                
               </CardContent>
             </Card>
 

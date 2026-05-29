@@ -444,3 +444,58 @@ CREATE TRIGGER trigger_notify_on_new_chat_message
 AFTER INSERT ON chat_message
 FOR EACH ROW
 EXECUTE FUNCTION notify_on_new_chat_message();
+
+
+-- 6. NOWY TRENING
+CREATE OR REPLACE FUNCTION notify_on_new_training()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO notification (user_id, title, message, redirect_url, type)
+    VALUES (
+        NEW.trainee_id, 
+        'Nowy trening',
+        'Twój trener zaplanował dla Ciebie nowy trening. Sprawdź swój kalendarz.',
+        '/dashboard/trainings',
+        'training'
+    );
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trigger_notify_new_training ON training;
+
+CREATE TRIGGER trigger_notify_new_training
+AFTER INSERT ON training
+FOR EACH ROW
+EXECUTE FUNCTION notify_on_new_training();
+
+
+-- 7. UDOSTEPNIONY NOWY PLAN TRENINGOWY 
+CREATE OR REPLACE FUNCTION notify_on_plan_shared()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_plan_name VARCHAR(255);
+BEGIN
+
+    SELECT name INTO v_plan_name
+    FROM workout_plan
+    WHERE id = NEW.workout_plan_id;
+
+    INSERT INTO notification (user_id, title, message, redirect_url, type)
+    VALUES (
+        NEW.trainee_id,
+        'Nowy plan treningowy',
+        'Twój trener udostępnił Ci nowy plan treningowy: ' || v_plan_name || '. Sprawdź go!',
+        '/dashboard/workout-plans',
+        'workout_plan'
+    );
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trigger_notify_plan_shared ON plans_library;
+
+CREATE TRIGGER trigger_notify_plan_shared
+AFTER INSERT ON plans_library
+FOR EACH ROW
+EXECUTE FUNCTION notify_on_plan_shared();

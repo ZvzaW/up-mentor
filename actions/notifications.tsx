@@ -5,6 +5,8 @@ import { auth } from "@/auth"
 import { formatDate } from "@/lib/utils"
 import { redirect } from "next/navigation"
 import { notification } from "@prisma/client"
+
+
 export async function getNotifications(page: number = 0) {
   const session = await auth()
   if (!session?.user?.id) {
@@ -27,7 +29,8 @@ export async function getNotifications(page: number = 0) {
     const grouped = groupNotificationsByDate(notificationsToDisplay)
 
     return { grouped, hasMore }
-  } catch {
+  } catch (error) {
+    console.error("[GET_NOTIFICATIONS_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return {
       grouped: {},
       hasMore: false,
@@ -83,7 +86,8 @@ export async function getUnreadCount() {
     })
 
     return { count, error: null }
-  } catch {
+  } catch (error) {
+    console.error("[GET_UNREAD_COUNT_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return {
       count: 0,
       error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę",
@@ -107,9 +111,55 @@ export async function markAsRead(id: string) {
     })
 
     return { error: null }
-  } catch {
+  } catch (error) {
+    console.error("[MARK_AS_READ_ERROR]:", new Date().toLocaleString("pl-PL"), error)
     return {
       error: "Coś poszło nie tak przy odczytywaniu powiadomienia.",
     }
+  }
+}
+
+export async function markAsUnread(id: string) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    redirect("/?unauthorized=true")
+  }
+
+  try {
+    await prisma.notification.update({
+      where: {
+        id: id,
+        user_id: session.user.id,
+      },
+      data: { is_read: false },
+    })
+
+    return { error: null }
+  } catch (error) {
+    console.error("[MARK_AS_UNREAD_ERROR]:", new Date().toLocaleString("pl-PL"), error)
+    return {
+      error: "Wystąpił błąd podczas aktualizacji powiadomienia. Spróbuj ponownie.",
+    }
+  }
+}
+
+export async function deleteNotification(id: string) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    redirect("/?unauthorized=true")
+  }
+
+  try {
+    await prisma.notification.delete({
+      where: {
+        id: id,
+        user_id: session.user.id,
+      },
+    })
+
+    return { success: true }
+  } catch (error) {
+    console.error("[DELETE_NOTIFICATION_ERROR]: ", new Date().toLocaleString("pl-PL") , error)
+    return { error: "Wystąpił błąd podczas usuwania powiadomienia. Spróbuj ponownie." }
   }
 }
