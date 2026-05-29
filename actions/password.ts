@@ -115,7 +115,7 @@ const transporter = nodemailer.createTransport({
     const resetLink = `${getBaseUrl()}/reset-password?token=${rawToken}`
   
       await transporter.sendMail({
-        from: '"Upmentor" <no-reply@upmentor.pl>',
+        from: '"Up-Mentor" <no-reply@upmentor.pl>',
         to: user.email,
         subject: "Reset hasła",
         html: `

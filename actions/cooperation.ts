@@ -26,7 +26,7 @@ async function sendAssignedPlansEmail(params: {
   const attachments = await toEmailAttachments(params.plans)
 
   await transporter.sendMail({
-    from: '"Upmentor" <no-reply@upmentor.pl>',
+    from: '"Up-Mentor" <no-reply@upmentor.pl>',
     to: params.traineeEmail,
     subject: "Twoje plany treningowe po zakończeniu współpracy",
     html: `

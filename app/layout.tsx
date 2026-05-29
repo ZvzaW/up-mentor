@@ -18,7 +18,7 @@ const michroma = Michroma({
 })
 
 export const metadata: Metadata = {
-  title: "UpMentor",
+  title: "Up-Mentor",
   description: "Aplikacja dla trenerów personalnych i podopiecznych",
 }
 
