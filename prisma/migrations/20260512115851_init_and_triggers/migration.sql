@@ -184,6 +184,7 @@ CREATE TABLE "refresh_token" (
     CONSTRAINT "refresh_token_pk" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE "chat_message" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "trainer_id" UUID NOT NULL,
@@ -195,6 +196,17 @@ CREATE TABLE "chat_message" (
     CONSTRAINT "chat_message_pk" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "password_reset_token" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "user_id" UUID NOT NULL,
+    "token" TEXT NOT NULL,
+    "expires_at" TIMESTAMPTZ NOT NULL,
+
+    CONSTRAINT "password_reset_token_pk" PRIMARY KEY ("id")
+);
+
+
 -- CreateIndex
 CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
 
@@ -205,7 +217,10 @@ CREATE UNIQUE INDEX "trainer_slug_key" ON "trainer"("slug");
 CREATE UNIQUE INDEX "trainee_slug_key" ON "trainee"("slug");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "refresh_token_token_key" ON "refresh_token"("token");
+CREATE UNIQUE INDEX "refresh_token_key" ON "refresh_token"("token");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "password_reset_token_key" ON "password_reset_token"("token");
 
 -- CreateIndex
 CREATE INDEX "message_cooperation_date_key" ON "chat_message"("trainer_id", "trainee_id", "created_at");
@@ -279,6 +294,9 @@ ALTER TABLE "notification" ADD CONSTRAINT "notification_user" FOREIGN KEY ("user
 
 -- AddForeignKey
 ALTER TABLE "refresh_token" ADD CONSTRAINT "refresh_token_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "password_reset_token" ADD CONSTRAINT "password_reset_token_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "chat_message" ADD CONSTRAINT "chat_message_cooperation" FOREIGN KEY ("trainer_id", "trainee_id") REFERENCES "cooperation"("trainer_id", "trainee_id") ON DELETE CASCADE ON UPDATE NO ACTION;

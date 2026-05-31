@@ -79,6 +79,10 @@ const transporter = nodemailer.createTransport({
     if (process.env.AUTH_URL) return process.env.AUTH_URL
     return "https://localhost:3000"
   }
+
+  function hashResetToken(token: string) {
+    return crypto.createHash("sha256").update(token).digest("hex")
+  }
   
   export async function requestPasswordReset(emailInput: string) {
     const validated = emailSchema.safeParse({
@@ -100,20 +104,24 @@ const transporter = nodemailer.createTransport({
       return { success: true }
     }
   
-    const rawToken = crypto.randomBytes(32).toString("hex")
-    const storedToken = `reset_password_${rawToken}`
+    const token = crypto.randomBytes(32).toString("hex")
+    const tokenHash = hashResetToken(token)
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000)
-  
+
     try {
-      await prisma.refresh_token.create({
+      await prisma.password_reset_token.deleteMany({
+        where: { user_id: user.id },
+      })
+
+      await prisma.password_reset_token.create({
       data: {
         user_id: user.id,
-        token: storedToken,
+        token: tokenHash,
         expires_at: expiresAt,
       },
     })
   
-    const resetLink = `${getBaseUrl()}/reset-password?token=${rawToken}`
+    const resetLink = `${getBaseUrl()}/reset-password?token=${token}`
   
       await transporter.sendMail({
         from: '"Up-Mentor" <no-reply@upmentor.pl>',
@@ -128,12 +136,14 @@ const transporter = nodemailer.createTransport({
           <p>Pozdrawiamy,<br/>Zespół Up-mentor</p>
         `,
       })
+
+      return { success: true }
     } catch (error) {
       console.error("[REQUEST_PASSWORD_RESET_ERROR]:", new Date().toLocaleString("pl-PL"), error)
-      await prisma.refresh_token.deleteMany({
-        where: { token: storedToken },
+      await prisma.password_reset_token.deleteMany({
+        where: { token: tokenHash },
       })
-  
+
       return { error: "Wystąpił błąd podczas wysyłania linka. Spróbuj ponownie." }
     }
   }
@@ -151,35 +161,37 @@ const transporter = nodemailer.createTransport({
     }
   
     const { token, password } = validated.data
-    const storedToken = `reset_password_${token}`
-  
+    const tokenHash = hashResetToken(token)
+
     try { 
-    const tokenRecord = await prisma.refresh_token.findUnique({
-      where: { token: storedToken },
+    const tokenRecord = await prisma.password_reset_token.findUnique({
+      where: { token: tokenHash },
       select: { token: true, user_id: true, expires_at: true },
     })
-  
+
     if (!tokenRecord || tokenRecord.expires_at < new Date()) {
       if (tokenRecord) {
-        await prisma.refresh_token.deleteMany({
-          where: { token: storedToken },
+        await prisma.password_reset_token.deleteMany({
+          where: { token: tokenHash },
         })
       }
       return { error: "Link jest nieprawidłowy lub wygasł." }
     }
-  
+
     const hashedPassword = await argon2.hash(password)
-  
+
     await prisma.$transaction(async (tx) => {
       await tx.user.update({
         where: { id: tokenRecord.user_id },
         data: { password: hashedPassword },
       })
-  
+
+      await tx.password_reset_token.deleteMany({
+        where: { user_id: tokenRecord.user_id },
+      })
+
       await tx.refresh_token.deleteMany({
-        where: {
-          OR: [{ user_id: tokenRecord.user_id }, { token: storedToken }],
-        },
+        where: { user_id: tokenRecord.user_id },
       })
       })
   
