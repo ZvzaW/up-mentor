@@ -87,7 +87,7 @@ export default async function TrainerCatalogDetailsPage({
                   )}
                 </div>
 
-               <div className="w-full">
+                <div className="w-full">
                   <p className="text-baby-blue font-michroma mb-1.5 text-center">
                     Miejsca pracy
                   </p>
@@ -136,8 +136,6 @@ export default async function TrainerCatalogDetailsPage({
                     )}
                   </div>
                 </div>
-
-                
               </CardContent>
             </Card>
 

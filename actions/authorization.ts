@@ -18,7 +18,6 @@ import { signOut, auth } from "@/auth"
 import { signIn } from "@/auth"
 import { AuthError } from "next-auth"
 
-
 export async function register(
   formData: RegisterTraineeFormValues | RegisterTrainerFormValues,
   role: "trainee" | "trainer"
@@ -81,7 +80,11 @@ export async function register(
       }
     })
   } catch (error: any) {
-    console.error("[REGISTER_ERROR]:", new Date().toLocaleString("pl-PL"), error)
+    console.error(
+      "[REGISTER_ERROR]:",
+      new Date().toLocaleString("pl-PL"),
+      error
+    )
     if (error.code === "P2002") return { error: "Ten e-mail jest już zajęty!" }
     return { error: "Wystąpił błąd podczas rejestracji, spróbuj ponownie." }
   }
@@ -148,7 +151,11 @@ export async function logoutAllDevices() {
       },
     })
   } catch (error) {
-    console.error("[LOGOUT_ALL_DEVICES_ERROR]:", new Date().toLocaleString("pl-PL"), error)
+    console.error(
+      "[LOGOUT_ALL_DEVICES_ERROR]:",
+      new Date().toLocaleString("pl-PL"),
+      error
+    )
     return {
       error:
         "Wystąpił błąd podczas wylogowywania ze wszystkich urządzeń. Spróbuj ponownie.",
@@ -157,5 +164,3 @@ export async function logoutAllDevices() {
 
   await signOut({ redirectTo: "/" })
 }
-
-

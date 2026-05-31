@@ -67,7 +67,11 @@ export async function getExercises() {
 
     return { success: true as const, data }
   } catch (error) {
-    console.error("[GET_EXERCISES_ERROR]:", new Date().toLocaleString("pl-PL"), error)
+    console.error(
+      "[GET_EXERCISES_ERROR]:",
+      new Date().toLocaleString("pl-PL"),
+      error
+    )
     return { error: "Nie udało się pobrać ćwiczeń. Spróbuj odświeżyć stronę." }
   }
 }
@@ -103,7 +107,11 @@ export async function createTrainerExercise(input: unknown) {
     revalidatePath("/dashboard/exercises")
     return { success: true }
   } catch (error) {
-    console.error("[CREATE_TRAINER_EXERCISE_ERROR]:", new Date().toLocaleString("pl-PL"), error)
+    console.error(
+      "[CREATE_TRAINER_EXERCISE_ERROR]:",
+      new Date().toLocaleString("pl-PL"),
+      error
+    )
     return {
       error: "Wystąpił błąd podczas zapisywania danych. Spróbuj ponownie.",
     }
@@ -148,7 +156,11 @@ export async function editTrainerExercise(exercise: exercise) {
     revalidatePath("/dashboard/exercises")
     return { success: true }
   } catch (error) {
-    console.error("[EDIT_TRAINER_EXERCISE_ERROR]:", new Date().toLocaleString("pl-PL"), error)
+    console.error(
+      "[EDIT_TRAINER_EXERCISE_ERROR]:",
+      new Date().toLocaleString("pl-PL"),
+      error
+    )
     return {
       error: "Wystąpił błąd podczas aktualizacji danych. Spróbuj ponownie.",
     }
@@ -181,7 +193,11 @@ export async function deleteTrainerExercise(exerciseId: string) {
     revalidatePath("/dashboard/exercises")
     return { success: true }
   } catch (error) {
-    console.error("[DELETE_TRAINER_EXERCISE_ERROR]:", new Date().toLocaleString("pl-PL"), error)
+    console.error(
+      "[DELETE_TRAINER_EXERCISE_ERROR]:",
+      new Date().toLocaleString("pl-PL"),
+      error
+    )
     return { error: "Wystąpił błąd podczas usuwania danych. Spróbuj ponownie." }
   }
 }

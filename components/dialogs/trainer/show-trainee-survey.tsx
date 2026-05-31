@@ -99,7 +99,7 @@ export function ShowTraineeSurveyDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex justify-center md:justify-start mb-1 gap-2 text-sm text-gold">
+        <div className="text-gold mb-1 flex justify-center gap-2 text-sm md:justify-start">
           <span>
             Wiek: <span className="text-zinc-100">{age} lat</span>
           </span>

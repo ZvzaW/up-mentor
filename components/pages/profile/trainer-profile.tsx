@@ -37,7 +37,10 @@ export default function TrainerProfile({
   const [isDeletingWorkplace, startDeletingWorkplaceTransition] =
     React.useTransition()
 
-  const handleDeleteWorkplace = (workplaceId: string, workplaceName: string) => {
+  const handleDeleteWorkplace = (
+    workplaceId: string,
+    workplaceName: string
+  ) => {
     if (
       !confirm(
         `Czy na pewno chcesz usunąć miejsce „${workplaceName}"? Tej operacji nie można cofnąć.`

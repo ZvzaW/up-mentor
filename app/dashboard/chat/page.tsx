@@ -46,8 +46,7 @@ export default async function ChatPage({ searchParams }: ChatPageProps) {
   }
 
   return (
-    <div className="lg:h-[calc(100dvh-120px)] h-[calc(100dvh-90px)] flex flex-col min-h-0 ">
-
+    <div className="flex h-[calc(100dvh-90px)] min-h-0 flex-col lg:h-[calc(100dvh-120px)]">
       <ChatView
         conversations={conversations}
         currentUserId={session.user.id}

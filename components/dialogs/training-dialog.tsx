@@ -199,7 +199,8 @@ export default function TrainingDialog({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
-            {!readOnly && "Uzupełnij dane treningu - będzie widoczny u Ciebie i u podopiecznego."}
+            {!readOnly &&
+              "Uzupełnij dane treningu - będzie widoczny u Ciebie i u podopiecznego."}
           </DialogDescription>
         </DialogHeader>
 

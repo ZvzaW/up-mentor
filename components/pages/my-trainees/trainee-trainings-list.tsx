@@ -8,7 +8,9 @@ type TraineeTrainingsListProps = {
 export function TraineeTrainingsList({ groups }: TraineeTrainingsListProps) {
   if (groups.length === 0) {
     return (
-      <p className="text-sm text-zinc-400 text-center p-4 bg-dirty-blue/50 rounded-xl ">Brak zaplanowanych treningów.</p>
+      <p className="bg-dirty-blue/50 rounded-xl p-4 text-center text-sm text-zinc-400">
+        Brak zaplanowanych treningów.
+      </p>
     )
   }
 

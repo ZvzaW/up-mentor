@@ -33,37 +33,39 @@ export async function saveSurveyAnswersAction(
           })),
         })
       }
-
     })
 
-      const trainee = await prisma.trainee.findUnique({
-        where: { id: traineeId },
-        select: {
-          slug: true,
-          user: { select: { name: true, surname: true } },
-          cooperation: {
-            where: { status: "active" },
-            select: { trainer_id: true },
-          },
+    const trainee = await prisma.trainee.findUnique({
+      where: { id: traineeId },
+      select: {
+        slug: true,
+        user: { select: { name: true, surname: true } },
+        cooperation: {
+          where: { status: "active" },
+          select: { trainer_id: true },
         },
-      })
+      },
+    })
 
-      if (trainee && trainee.cooperation.length > 0) {
-        await prisma.notification.createMany({
-          data: trainee.cooperation.map((cooperation) => ({
-            user_id: cooperation.trainer_id,
-            title: "Ankieta startowa",
-            message: `${trainee.user.name} ${trainee.user.surname} zaktualizował(a) odpowiedzi ankiety startowej.`,
-            redirect_url: `/dashboard/trainees/${trainee.slug}`,
-            type: "survey",
-          })),
-        })
-      }
-   
+    if (trainee && trainee.cooperation.length > 0) {
+      await prisma.notification.createMany({
+        data: trainee.cooperation.map((cooperation) => ({
+          user_id: cooperation.trainer_id,
+          title: "Ankieta startowa",
+          message: `${trainee.user.name} ${trainee.user.surname} zaktualizował(a) odpowiedzi ankiety startowej.`,
+          redirect_url: `/dashboard/trainees/${trainee.slug}`,
+          type: "survey",
+        })),
+      })
+    }
 
     return { success: true }
   } catch (error) {
-    console.error("[SAVE_SURVEY_ANSWERS_ERROR]:", new Date().toLocaleString("pl-PL"), error)
+    console.error(
+      "[SAVE_SURVEY_ANSWERS_ERROR]:",
+      new Date().toLocaleString("pl-PL"),
+      error
+    )
     return { error: "Nie udało się zapisać ankiety. Spróbuj ponownie później." }
   }
 }
@@ -134,7 +136,11 @@ export async function getSurveyDataAction(traineeId?: string) {
 
     return { success: true, data: mappedData }
   } catch (error) {
-    console.error("[GET_SURVEY_DATA_ERROR]:", new Date().toLocaleString("pl-PL"), error)
+    console.error(
+      "[GET_SURVEY_DATA_ERROR]:",
+      new Date().toLocaleString("pl-PL"),
+      error
+    )
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę" }
   }
 }

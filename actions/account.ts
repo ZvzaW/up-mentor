@@ -4,8 +4,6 @@ import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 
-
-
 export async function deleteAccount() {
   const session = await auth()
   if (!session?.user?.id) {
@@ -144,7 +142,11 @@ export async function deleteAccount() {
       })
     })
   } catch (error) {
-    console.error("[DELETE_ACCOUNT_ERROR]:", new Date().toLocaleString("pl-PL"), error)
+    console.error(
+      "[DELETE_ACCOUNT_ERROR]:",
+      new Date().toLocaleString("pl-PL"),
+      error
+    )
     return {
       error: "Wystąpił błąd podczas usuwania konta. Spróbuj ponownie.",
     }

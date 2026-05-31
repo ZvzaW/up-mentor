@@ -84,20 +84,18 @@ export default async function TraineeDetailsPage({
                   phone={selectedTrainee.phone}
                 />
 
-                
-
                 <ShowTraineeSurveyDialog
                   traineeId={selectedTrainee.id}
                   name={selectedTrainee.fullName}
                   birthdate={selectedTrainee.birthdate}
                 />
 
-<div className="flex max-w-full items-center gap-2 text-sm text-zinc-300">
+                <div className="flex max-w-full items-center gap-2 text-sm text-zinc-300">
                   <MapPin className="text-baby-blue h-4 w-4 shrink-0" />
                   <span className="truncate">{selectedTrainee.workplace}</span>
                 </div>
 
-                <div className=" w-[90%] md:w-full">
+                <div className="w-[90%] md:w-full">
                   <p className="mb-2 flex items-center gap-2 text-sm text-zinc-300">
                     <NotebookPen className="text-baby-blue h-4 w-4" />
                     Prywatna notatka

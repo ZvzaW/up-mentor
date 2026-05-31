@@ -33,7 +33,10 @@ import {
 
 export default function ResetPasswordPage() {
   const searchParams = useSearchParams()
-  const token = useMemo(() => searchParams.get("token")?.trim() ?? "", [searchParams])
+  const token = useMemo(
+    () => searchParams.get("token")?.trim() ?? "",
+    [searchParams]
+  )
 
   const [isPending, setIsPending] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
@@ -74,9 +77,7 @@ export default function ResetPasswordPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="font-michroma text-2xl">Nowe hasło</CardTitle>
-          <CardDescription >
-            Ustaw nowe hasło do swojego konta
-          </CardDescription>
+          <CardDescription>Ustaw nowe hasło do swojego konta</CardDescription>
         </CardHeader>
 
         <CardContent>
@@ -120,10 +121,8 @@ export default function ResetPasswordPage() {
                         />
                       </FormControl>
                       <FormDescription className="flex justify-between">
-                          <span>
-                            Min. 8 znaków: małe i wielkie litery, cyfry
-                          </span>
-                        </FormDescription>
+                        <span>Min. 8 znaków: małe i wielkie litery, cyfry</span>
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -157,15 +156,14 @@ export default function ResetPasswordPage() {
                   </Alert>
                 )}
 
-                 
                 <Button type="submit" className="w-full" disabled={isPending}>
-                    {isPending ? (
-                  <>
-                    <Loader2 className="animate-spin" />
-                  </>
-                ) : (
-                  "Zmień hasło"
-                )} 
+                  {isPending ? (
+                    <>
+                      <Loader2 className="animate-spin" />
+                    </>
+                  ) : (
+                    "Zmień hasło"
+                  )}
                 </Button>
               </form>
             </Form>

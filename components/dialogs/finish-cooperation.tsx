@@ -5,9 +5,7 @@ import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
-import {
-  finishCooperation,
-} from "@/actions/cooperation"
+import { finishCooperation } from "@/actions/cooperation"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -47,20 +45,21 @@ export function FinishCooperationDialog({
     })
   }
 
-  
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Rozwiązanie współpracy</DialogTitle>
-          
-            <p className="text-sm text-gold  mt-3">Czy na pewno chcesz zakończyć współpracę?</p>
-          <DialogDescription className="  ">
-            
-          Utracisz dostęp do danych tej strony współpracy. Natomiast zachowasz zanonimizowaną historię treningów. 
-          Jeśli zostały udostępnione podopiecznemu plany treningowe w systemie, otrzyma je na mail'a w formie pdf.
 
+          <p className="text-gold mt-3 text-sm">
+            Czy na pewno chcesz zakończyć współpracę?
+          </p>
+          <DialogDescription className=" ">
+            Utracisz dostęp do danych tej strony współpracy. Natomiast zachowasz
+            zanonimizowaną historię treningów. Jeśli zostały udostępnione
+            podopiecznemu plany treningowe w systemie, otrzyma je na mail'a w
+            formie pdf.
           </DialogDescription>
         </DialogHeader>
 

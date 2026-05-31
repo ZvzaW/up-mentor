@@ -51,17 +51,21 @@ export default function Navbar({ role }: NavbarProps) {
 
   return (
     <nav className="border-baby-blue font-michroma sticky top-0 z-50 w-full border-b bg-[#1a1e2a]/40 backdrop-blur-xl">
-      <div className=" px-4 sm:px-6 lg:px-8">
+      <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex h-20 items-center justify-between">
           {/*LOGO*/}
-          <Link href="/dashboard" className="group flex items-center" title="Strona główna">
+          <Link
+            href="/dashboard"
+            className="group flex items-center"
+            title="Strona główna"
+          >
             <Image
               src="/logo.svg"
               alt="UP-Mentor"
-              width={240}  
+              width={240}
               height={60}
               priority
-              className="h-16 md:h-9 lg:h-16 w-auto object-contain"
+              className="h-16 w-auto object-contain md:h-9 lg:h-16"
             />
           </Link>
 

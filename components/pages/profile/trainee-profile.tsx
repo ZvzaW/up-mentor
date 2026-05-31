@@ -17,7 +17,7 @@ export default function TraineeProfile({
   specificData,
 }: TraineeProfileProps) {
   return (
-    <section className="w-full md:w-[70%] mx-auto">
+    <section className="mx-auto w-full md:w-[70%]">
       <div>
         <Card>
           <CardContent>

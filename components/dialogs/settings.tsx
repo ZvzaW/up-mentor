@@ -330,10 +330,16 @@ export default function SettingsDialog({
                             {...field}
                             onChange={(e) => {
                               field.onChange(e)
-                              if("confirmNewPassword" in passwordForm.formState.errors) {
+                              if (
+                                "confirmNewPassword" in
+                                passwordForm.formState.errors
+                              ) {
                                 passwordForm.trigger("confirmNewPassword")
                               }
-                              if("currentPassword" in passwordForm.formState.errors) {
+                              if (
+                                "currentPassword" in
+                                passwordForm.formState.errors
+                              ) {
                                 passwordForm.trigger("currentPassword")
                               }
                             }}
@@ -392,12 +398,7 @@ export default function SettingsDialog({
                   >
                     Anuluj
                   </Button>
-                  <Button
-                    type="submit"
-                    disabled={
-                      isPasswordPending
-                    }
-                  >
+                  <Button type="submit" disabled={isPasswordPending}>
                     {isPasswordPending ? (
                       <Loader2 className="animate-spin" />
                     ) : (
@@ -422,8 +423,6 @@ export default function SettingsDialog({
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-           
-
               <div className="bg-destructive/10 border-destructive/30 rounded-md border p-3">
                 <p className="text-destructive text-sm font-bold">
                   TEJ AKCJI NIE MOŻNA COFNĄĆ!
@@ -433,9 +432,9 @@ export default function SettingsDialog({
                   Ciebie rzeczy zostaną bezpowrotnie usunięte z naszej bazy
                   danych!
                 </p>
-              </div> 
-              
-                {baseData.role === "trainer" && (
+              </div>
+
+              {baseData.role === "trainer" && (
                 <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3">
                   <p className="text-sm font-bold text-amber-300">
                     Zalecenie dla trenera
@@ -480,7 +479,11 @@ export default function SettingsDialog({
                   })
                 }}
               >
-                {isDeletePending ? <Loader2 className="animate-spin" /> : "Usuń konto"}
+                {isDeletePending ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  "Usuń konto"
+                )}
               </Button>
             </DialogFooter>
           </div>

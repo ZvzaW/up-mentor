@@ -50,7 +50,9 @@ export default async function TrainerDetailsPage({
         key: cooperation.trainer_id,
         name: `${cooperation.trainer.user.name} ${cooperation.trainer.user.surname}`,
         phone: cooperation.trainer.user.phone,
-        workplace: cooperation.workplace ? formatWorkplaceAddress(cooperation.workplace as WorkplaceAddress) : "Dane niedostępne",
+        workplace: cooperation.workplace
+          ? formatWorkplaceAddress(cooperation.workplace as WorkplaceAddress)
+          : "Dane niedostępne",
         workDescription: cooperation.trainer.work_description,
         price: cooperation.trainer.price_per_training
           ? `${cooperation.trainer.price_per_training} PLN`

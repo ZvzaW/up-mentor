@@ -40,7 +40,6 @@ export default function TraineeStats({ data }: TraineeStatsProps) {
 
         <div className="bg-dirty-blue h-[145px] w-full rounded-xl p-6">
           {ready && weeklyHoursData.length > 0 ? (
-            
             <ResponsiveContainer
               width="100%"
               height="100%"
@@ -83,7 +82,6 @@ export default function TraineeStats({ data }: TraineeStatsProps) {
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-            
           ) : null}
         </div>
       </div>
@@ -95,9 +93,8 @@ export default function TraineeStats({ data }: TraineeStatsProps) {
         <h3 className="text-center text-sm text-zinc-300 uppercase">
           Zrealizowane treningi
         </h3>
-       <div className="bg-dirty-blue h-[145px] w-full rounded-xl p-6">
-          {ready && monthlyWorkoutsData.length > 0 ? ( 
-            
+        <div className="bg-dirty-blue h-[145px] w-full rounded-xl p-6">
+          {ready && monthlyWorkoutsData.length > 0 ? (
             <ResponsiveContainer
               width="100%"
               height="100%"
@@ -139,7 +136,6 @@ export default function TraineeStats({ data }: TraineeStatsProps) {
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-            
           ) : null}
         </div>
       </div>

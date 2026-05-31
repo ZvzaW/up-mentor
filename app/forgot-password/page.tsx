@@ -24,10 +24,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import {
-  emailSchema,
-  type EmailValues,
-} from "@/lib/validations"
+import { emailSchema, type EmailValues } from "@/lib/validations"
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
@@ -124,8 +121,12 @@ export default function ForgotPasswordPage() {
                 <MailCheck className="text-baby-blue" size={30} />
               </div>
 
-              <p className="mt-3 text-sm text-zinc-300"> Jeśli istnieje konto z podanym adresem e-mail, wysłaliśmy link do zmiany hasła. </p>
-              <p className="mt-3 font-semibold ">{email}</p>
+              <p className="mt-3 text-sm text-zinc-300">
+                {" "}
+                Jeśli istnieje konto z podanym adresem e-mail, wysłaliśmy link
+                do zmiany hasła.{" "}
+              </p>
+              <p className="mt-3 font-semibold">{email}</p>
             </div>
           )}
 

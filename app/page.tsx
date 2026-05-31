@@ -81,18 +81,18 @@ export default function LoginPage() {
   }, [isUnauthorized, isCallBack, searchParams, router])
 
   return (
-    <div className="flex  flex-col min-h-screen h-[100vh] items-center justify-center p-4">
+    <div className="flex h-[100vh] min-h-screen flex-col items-center justify-center p-4">
       <Image
-              src="/logo.svg"
-              alt="UP-Mentor"
-              width={240}  
-              height={60}
-              priority
-              className="h-20  lg:h-23 w-auto object-contain mx-auto"
-            />
+        src="/logo.svg"
+        alt="UP-Mentor"
+        width={240}
+        height={60}
+        priority
+        className="mx-auto h-20 w-auto object-contain lg:h-23"
+      />
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="font-michroma text-md ">Logowanie</CardTitle>
+          <CardTitle className="font-michroma text-md">Logowanie</CardTitle>
         </CardHeader>
         <CardContent>
           <form

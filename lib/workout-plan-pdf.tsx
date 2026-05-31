@@ -35,8 +35,7 @@ function sanitizeFilename(value: string) {
 }
 
 function pdfFilename(planName: string, index = 0) {
-  const baseName =
-    sanitizeFilename(planName) || `plan-treningowy-${index + 1}`
+  const baseName = sanitizeFilename(planName) || `plan-treningowy-${index + 1}`
   return `${baseName}.pdf`
 }
 
@@ -172,9 +171,12 @@ function PlanPdfDocument({ plan }: { plan: WorkoutPlanPdfContent }) {
             </Text>
 
             {section.exercise_set.map((set, setIndex) => (
-              <Text key={`${set.order}-${setIndex}`} style={styles.exerciseLine}>
-                {setIndex + 1}. {set.exercise.name} | Serie: {set.series_count} |
-                Powtórzenia: {set.reps_count}
+              <Text
+                key={`${set.order}-${setIndex}`}
+                style={styles.exerciseLine}
+              >
+                {setIndex + 1}. {set.exercise.name} | Serie: {set.series_count}{" "}
+                | Powtórzenia: {set.reps_count}
                 {set.weight != null ? ` | Ciężar: ${set.weight} kg` : ""}
               </Text>
             ))}

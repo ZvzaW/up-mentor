@@ -163,7 +163,6 @@ export function WorkoutPlanList({
     toast.success("Pobrano plan w formacie PDF.")
   }
 
-
   return (
     <div className="space-y-4">
       {plans.length > 0 && (
@@ -308,7 +307,6 @@ export function WorkoutPlanList({
 
                 {/*OPCJE*/}
                 <div className="mt-2 flex items-center justify-center gap-2 sm:mt-0 sm:self-start">
-                    
                   {role === "trainer" && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -367,22 +365,22 @@ export function WorkoutPlanList({
                       </DropdownMenuContent>
                     </DropdownMenu>
                   )}
-                  
+
                   <Button
-                      variant="secondary"
-                      size="sm"
-                      disabled={loadingId !== null}
-                      onClick={() => handleDownloadPdf(plan.id)}
-                    >
-                      {loadingId === `pdf-${plan.id}` ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <>
-                          <Download className="h-4 w-4" />
-                          PDF
-                        </>
-                      )}
-                    </Button>
+                    variant="secondary"
+                    size="sm"
+                    disabled={loadingId !== null}
+                    onClick={() => handleDownloadPdf(plan.id)}
+                  >
+                    {loadingId === `pdf-${plan.id}` ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Download className="h-4 w-4" />
+                        PDF
+                      </>
+                    )}
+                  </Button>
 
                   <Button
                     variant="secondary"

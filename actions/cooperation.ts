@@ -80,7 +80,6 @@ async function getAssignedPlansToTrainee(trainerId: string, traineeId: string) {
   })
 }
 
-
 export async function finishCooperation(partnerId: string) {
   const session = await auth()
   if (!session?.user?.id) {
@@ -188,9 +187,14 @@ export async function finishCooperation(partnerId: string) {
 
     return { success: true as const }
   } catch (error) {
-    console.error("[FINISH_COOPERATION_ERROR]:", new Date().toLocaleString("pl-PL"), error)
+    console.error(
+      "[FINISH_COOPERATION_ERROR]:",
+      new Date().toLocaleString("pl-PL"),
+      error
+    )
     return {
-      error: "Wystąpił błąd podczas rozwiązywania współpracy. Spróbuj ponownie.",
+      error:
+        "Wystąpił błąd podczas rozwiązywania współpracy. Spróbuj ponownie.",
     }
   }
 }

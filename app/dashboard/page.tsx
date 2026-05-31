@@ -106,15 +106,15 @@ function NotificationsPanel({
   }
 
   const handleMarkAsUnread = async (notif: notification) => {
-      const result = await markAsUnread(notif.id)
-      if (result.error) {
-       toast.error(result.error)
-       return
-      }
+    const result = await markAsUnread(notif.id)
+    if (result.error) {
+      toast.error(result.error)
+      return
+    }
 
-      incrementCount()  
-      
-        if (notif.is_read) {
+    incrementCount()
+
+    if (notif.is_read) {
       setGroupedNotifications((prev) => {
         const newGrouped = { ...prev }
         for (const label in newGrouped) {
@@ -128,7 +128,6 @@ function NotificationsPanel({
   }
 
   const handleDeleteNotification = async (notif: notification) => {
-
     const result = await deleteNotification(notif.id)
     if (result.error) {
       toast.error(result.error)
@@ -183,7 +182,7 @@ function NotificationsPanel({
                             <Separator className="flex-1" />
                           </div>
 
-                       {/* KAFELKI POWIADOMIEŃ */}
+                          {/* KAFELKI POWIADOMIEŃ */}
                           <div className="space-y-3">
                             {items.map((notif) => (
                               <div
@@ -194,7 +193,6 @@ function NotificationsPanel({
                                     : ""
                                 }`}
                               >
-                                
                                 <button
                                   onClick={() => handleNotificationClick(notif)}
                                   className="flex min-w-0 flex-1 items-center justify-between gap-2 text-left"
@@ -214,16 +212,17 @@ function NotificationsPanel({
                                       {notif.message}
                                     </p>
                                   </div>
-                                  
                                 </button>
 
-                                
                                 <DropdownMenu>
                                   <DropdownMenuTrigger
                                     onClick={(e) => e.stopPropagation()}
                                     aria-label="Opcje"
                                   >
-                                    <MoreVertical size={16} className="text-zinc-400"/>
+                                    <MoreVertical
+                                      size={16}
+                                      className="text-zinc-400"
+                                    />
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent
                                     align="end"
@@ -244,15 +243,13 @@ function NotificationsPanel({
                                       onClick={() =>
                                         handleDeleteNotification(notif)
                                       }
-                                      className="cursor-pointer gap-2 text-red-400 "
+                                      className="cursor-pointer gap-2 text-red-400"
                                     >
                                       <Trash2 size={14} />
                                       Usuń powiadomienie
                                     </DropdownMenuItem>
                                   </DropdownMenuContent>
                                 </DropdownMenu>
-                             
-                                  
                               </div>
                             ))}
                           </div>

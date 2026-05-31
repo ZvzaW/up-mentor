@@ -64,7 +64,11 @@ export async function sendCoachingRequest(data: CoachingRequestInput) {
     revalidatePath("/dashboard/trainers/catalog")
     return { success: true }
   } catch (error) {
-    console.error("[SEND_COACHING_REQUEST_ERROR]:", new Date().toLocaleString("pl-PL"), error)
+    console.error(
+      "[SEND_COACHING_REQUEST_ERROR]:",
+      new Date().toLocaleString("pl-PL"),
+      error
+    )
     return {
       error: "Wystąpił błąd podczas wysyłania prośby. Spróbuj ponownie.",
     }
@@ -97,7 +101,11 @@ export async function deleteCoachingRequest(trainerId: string) {
     revalidatePath("/dashboard/trainers/catalog")
     return { success: true }
   } catch (error) {
-    console.error("[DELETE_COACHING_REQUEST_ERROR]:", new Date().toLocaleString("pl-PL"), error)
+    console.error(
+      "[DELETE_COACHING_REQUEST_ERROR]:",
+      new Date().toLocaleString("pl-PL"),
+      error
+    )
     return { error: "Wystąpił błąd podczas usuwania danych. Spróbuj ponownie." }
   }
 }
@@ -182,7 +190,11 @@ export async function getPendingRequests() {
 
     return { success: true, data: mappedRequests }
   } catch (error) {
-    console.error("[GET_PENDING_REQUESTS_ERROR]:", new Date().toLocaleString("pl-PL"), error)
+    console.error(
+      "[GET_PENDING_REQUESTS_ERROR]:",
+      new Date().toLocaleString("pl-PL"),
+      error
+    )
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }
@@ -255,8 +267,15 @@ export async function acceptRequest(traineeId: string, workplaceId: string) {
     revalidatePath("/dashboard/trainees")
     return { success: true }
   } catch (error) {
-    console.error("[ACCEPT_REQUEST_ERROR]:", new Date().toLocaleString("pl-PL"), error)
-    if (error instanceof Error && error.message === "ACTIVE_COOPERATION_EXISTS") {
+    console.error(
+      "[ACCEPT_REQUEST_ERROR]:",
+      new Date().toLocaleString("pl-PL"),
+      error
+    )
+    if (
+      error instanceof Error &&
+      error.message === "ACTIVE_COOPERATION_EXISTS"
+    ) {
       return { error: "Posiadasz już aktywną współpracę z tym podopiecznym." }
     }
 
@@ -292,7 +311,11 @@ export async function rejectRequest(traineeId: string) {
     revalidatePath("/dashboard/trainees")
     return { success: true }
   } catch (error) {
-    console.error("[REJECT_REQUEST_ERROR]:", new Date().toLocaleString("pl-PL"), error)
+    console.error(
+      "[REJECT_REQUEST_ERROR]:",
+      new Date().toLocaleString("pl-PL"),
+      error
+    )
     return {
       error: "Wystąpił błąd podczas odrzucania prośby. Spróbuj ponownie.",
     }

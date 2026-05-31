@@ -83,7 +83,6 @@ async function validateTrainerTrainingInput(
   return {}
 }
 
-
 export async function createTraining(raw: CreateTrainingFormValues) {
   const session = await auth()
   if (!session?.user?.id) {
@@ -118,7 +117,11 @@ export async function createTraining(raw: CreateTrainingFormValues) {
     revalidatePath("/dashboard/trainings")
     return { success: true }
   } catch (error) {
-    console.error("[CREATE_TRAINING_ERROR]:", new Date().toLocaleString("pl-PL"), error)
+    console.error(
+      "[CREATE_TRAINING_ERROR]:",
+      new Date().toLocaleString("pl-PL"),
+      error
+    )
     return {
       error: "Wystąpił błąd podczas zapisywania treningu. Spróbuj ponownie.",
     }
@@ -171,7 +174,11 @@ export async function updateTraining(raw: UpdateTrainingFormValues) {
     revalidatePath("/dashboard/trainings")
     return { success: true }
   } catch (error) {
-    console.error("[UPDATE_TRAINING_ERROR]:", new Date().toLocaleString("pl-PL"), error)
+    console.error(
+      "[UPDATE_TRAINING_ERROR]:",
+      new Date().toLocaleString("pl-PL"),
+      error
+    )
     return {
       error: "Wystąpił błąd podczas aktualizacji treningu. Spróbuj ponownie.",
     }
@@ -205,14 +212,16 @@ export async function deleteTraining(id: string) {
     revalidatePath("/dashboard/trainings")
     return { success: true }
   } catch (error) {
-    console.error("[DELETE_TRAINING_ERROR]:", new Date().toLocaleString("pl-PL"), error)
+    console.error(
+      "[DELETE_TRAINING_ERROR]:",
+      new Date().toLocaleString("pl-PL"),
+      error
+    )
     return {
       error: "Wystąpił błąd podczas usuwania treningu. Spróbuj ponownie.",
     }
   }
 }
-
-
 
 function capitalizeMonthLabel(label: string) {
   if (!label) return label
@@ -320,7 +329,11 @@ export async function getTrainingsForTrainee(traineeId: string) {
       data: groupTrainingsByYearAndMonth(listItems, scheduledDates),
     }
   } catch (error) {
-    console.error("[GET_TRAININGS_FOR_TRAINEE_ERROR]:", new Date().toLocaleString("pl-PL"), error)
+    console.error(
+      "[GET_TRAININGS_FOR_TRAINEE_ERROR]:",
+      new Date().toLocaleString("pl-PL"),
+      error
+    )
     return {
       error: "Nie udało się pobrać treningów. Spróbuj odświeżyć stronę.",
     }
@@ -385,10 +398,13 @@ export async function getTrainingsForWeek(weekAnchorIso: string) {
       weekEnd: weekEnd.toISOString(),
     }
   } catch (error) {
-    console.error("[GET_TRAININGS_FOR_WEEK_ERROR]:", new Date().toLocaleString("pl-PL"), error)
+    console.error(
+      "[GET_TRAININGS_FOR_WEEK_ERROR]:",
+      new Date().toLocaleString("pl-PL"),
+      error
+    )
     return {
       error: "Nie udało się pobrać treningów. Spróbuj odświeżyć stronę.",
     }
   }
 }
-

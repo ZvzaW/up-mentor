@@ -1,6 +1,13 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react"
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react"
 import Pusher from "pusher-js"
 import { format, isToday } from "date-fns"
 import { pl } from "date-fns/locale"
@@ -10,10 +17,7 @@ import { getChatMessages, sendChatMessage } from "@/actions/chat"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { getCooperationChannelName } from "@/lib/chat-channel"
-import {
-  ChatConversationDTO,
-  ChatMessageDTO,
-} from "@/lib/types"
+import { ChatConversationDTO, ChatMessageDTO } from "@/lib/types"
 import { cn } from "@/lib/utils"
 import { Card } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -152,7 +156,6 @@ export function ChatView({
     }
   }, [selected, channelName, pusherKey, pusherCluster, currentUserId])
 
-  
   const handleSend = () => {
     if (!selected) return
 
@@ -177,7 +180,7 @@ export function ChatView({
           }
           return [...current, newMessage]
         })
-      } 
+      }
 
       setDraft("")
     })
@@ -185,7 +188,7 @@ export function ChatView({
 
   if (conversations.length === 0) {
     return (
-      <p className="text-muted-foreground rounded-xl border border-white/10 bg-zinc-900/40 p-6 text-center mt-10">
+      <p className="text-muted-foreground mt-10 rounded-xl border border-white/10 bg-zinc-900/40 p-6 text-center">
         Nie masz aktywnych współprac — czat będzie dostępny po nawiązaniu
         współpracy z trenerem lub podopiecznym.
       </p>
@@ -193,16 +196,15 @@ export function ChatView({
   }
 
   return (
-    <div className="flex flex-row gap-4 min-h-0 w-full h-full">
-
+    <div className="flex h-full min-h-0 w-full flex-row gap-4">
       {/* Lista czatów */}
       <Card
         className={cn(
-          "shadow-none flex min-h-0 flex-col gap-2 overflow-y-auto custom-scrollbar p-3 h-full w-full sm:w-[40%]",
+          "custom-scrollbar flex h-full min-h-0 w-full flex-col gap-2 overflow-y-auto p-3 shadow-none sm:w-[40%]",
           selected ? "hidden md:flex" : "flex"
         )}
       >
-        <p className="mb-2 mx-auto font-michroma py-1">Twoje czaty</p>
+        <p className="font-michroma mx-auto mb-2 py-1">Twoje czaty</p>
         {conversations.map((conversation) => {
           const isActive =
             selected?.trainerId === conversation.trainerId &&
@@ -214,42 +216,39 @@ export function ChatView({
               type="button"
               onClick={() => setSelected(conversation)}
               className={cn(
-                "rounded-lg p-3 text-left transition-colors bg-dirty-blue/60",
-                isActive
-                  ? "bg-hover text-gold"
-                  : "hover:bg-hover"
+                "bg-dirty-blue/60 rounded-lg p-3 text-left transition-colors",
+                isActive ? "bg-hover text-gold" : "hover:bg-hover"
               )}
             >
               <p className="truncate">{conversation.partnerName}</p>
-
             </button>
           )
         })}
       </Card>
 
-   {/*Dany czat*/}
+      {/*Dany czat*/}
       <Card
         className={cn(
-          "flex h-full min-h-0 flex-col rounded-xl py-0 shadow-none w-full",
+          "flex h-full min-h-0 w-full flex-col rounded-xl py-0 shadow-none",
           selected ? "flex" : "hidden md:flex"
         )}
       >
         {selected ? (
           <>
-              <div className="flex items-center gap-3 border-b border-white/40 pt-3 px-3 pb-2">
-                <button
-                  type="button"
-                  onClick={() => setSelected(null)}
-                  className="md:hidden text-gold"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                </button>
-                <h2 className="text-gold text-lg flex-1">
-                  {selected.partnerName}
-                </h2>
-              </div>
+            <div className="flex items-center gap-3 border-b border-white/40 px-3 pt-3 pb-2">
+              <button
+                type="button"
+                onClick={() => setSelected(null)}
+                className="text-gold md:hidden"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </button>
+              <h2 className="text-gold flex-1 text-lg">
+                {selected.partnerName}
+              </h2>
+            </div>
 
-            <div className="flex-1 space-y-3 overflow-y-auto custom-scrollbar px-4">
+            <div className="custom-scrollbar flex-1 space-y-3 overflow-y-auto px-4">
               {isLoadingMessages && (
                 <p className="text-center text-sm text-zinc-400">
                   Ładowanie wiadomości…
@@ -280,20 +279,16 @@ export function ChatView({
                 >
                   <div
                     className={cn(
-                      " max-w-[80%] rounded-2xl px-4 py-2 text-sm",
+                      "max-w-[80%] rounded-2xl px-4 py-2 text-sm",
                       message.isOwn
                         ? "bg-baby-blue text-dark-navy"
                         : "bg-gold text-dark-navy"
                     )}
                   >
-                    <p className="whitespace-pre-wrap break-words">
+                    <p className="break-words whitespace-pre-wrap">
                       {message.content}
                     </p>
-                    <p
-                      className={cn(
-                        "mt-1 text-[10px] opacity-70"
-                      )}
-                    >
+                    <p className={cn("mt-1 text-[10px] opacity-70")}>
                       {formatMessageTime(message.createdAt)}
                     </p>
                   </div>

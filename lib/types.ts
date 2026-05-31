@@ -76,7 +76,6 @@ export type ChatConversationDTO = {
   partnerName: string
 }
 
-
 export const EXERCISE_BODY_PARTS = [
   "Klatka piersiowa",
   "Plecy",
@@ -90,7 +89,6 @@ export const EXERCISE_BODY_PARTS = [
   "Łydki",
   "Full body",
 ] as const
-
 
 // ZAPIS
 export type ExerciseSetInput = {
@@ -156,7 +154,6 @@ export type WorkoutPlanItem = {
   } | null
   section: Section[]
 }
-
 
 export type WorkoutPlanFromDb = Omit<WorkoutPlanItem, "section"> & {
   section: Array<
