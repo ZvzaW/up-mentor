@@ -1,19 +1,20 @@
 import { auth } from "@/auth"
 import { startOfWeek } from "date-fns"
 
-import { getMyTrainees } from "@/actions/my-trainees"
+import { getMyTrainees } from "@/lib/server-get-functions/my-trainees"
 import TrainingsView from "@/components/pages/trainings/trainings-view"
 import { getTrainingsForWeek } from "@/actions/training"
 
 export default async function TrainingsPage() {
   const session = await auth()
+  const userId = session?.user?.id ?? ""
 
   const role = session?.user?.role ?? ""
   const weekAnchor = startOfWeek(new Date(), { weekStartsOn: 1 })
 
   const [trainingsResult, traineesResult] = await Promise.all([
     getTrainingsForWeek(weekAnchor.toISOString()),
-    role === "trainer" ? getMyTrainees() : Promise.resolve(null),
+    role === "trainer" ? getMyTrainees(userId) : Promise.resolve(null),
   ])
 
   const trainings = trainingsResult?.data ?? []

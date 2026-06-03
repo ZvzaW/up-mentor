@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 
-export async function saveSurveyAnswersAction(
+export async function saveSurveyAnswers(
   answers: { question_id: string; answer: string }[]
 ) {
   const session = await auth()
@@ -70,7 +70,7 @@ export async function saveSurveyAnswersAction(
   }
 }
 
-export async function getSurveyDataAction(traineeId?: string) {
+export async function getSurveyData(traineeId?: string) {
   const session = await auth()
 
   if (!session?.user?.id) {

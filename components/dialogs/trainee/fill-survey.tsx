@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button"
 
 import { ClipboardList, Loader2, Info } from "lucide-react"
 import { toast } from "sonner"
-import { saveSurveyAnswersAction, getSurveyDataAction } from "@/actions/survey"
+import { saveSurveyAnswers, getSurveyData } from "@/actions/survey"
 import { SkeletonList } from "@/components/ui/skeleton"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
@@ -41,7 +41,7 @@ export function FillSurveyDialog() {
       setError(null)
       setIsLoadingData(true)
 
-      const result = await getSurveyDataAction()
+      const result = await getSurveyData()
 
       if (!isMounted) return
 
@@ -73,14 +73,6 @@ export function FillSurveyDialog() {
   }
 
   const handleSubmit = async () => {
-    const answeredCount = Object.values(answers).filter(
-      (a) => a.trim() !== ""
-    ).length
-    if (answeredCount === 0) {
-      toast.error("Wypełnij przynajmniej jedno pytanie przed zapisem.")
-      return
-    }
-
     setIsPending(true)
     const payload = Object.entries(answers)
       .filter(([text]) => text.trim() !== "")
@@ -89,7 +81,7 @@ export function FillSurveyDialog() {
         answer: text,
       }))
 
-    const result = await saveSurveyAnswersAction(payload)
+    const result = await saveSurveyAnswers(payload)
 
     if (result?.error) {
       toast.error(result.error)

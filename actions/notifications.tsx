@@ -13,7 +13,7 @@ export async function getNotifications(page: number = 0) {
   }
 
   try {
-    const limit = 15
+    const limit = 1
     const notifications = await prisma.notification.findMany({
       where: { user_id: session.user.id },
       take: limit + 1,

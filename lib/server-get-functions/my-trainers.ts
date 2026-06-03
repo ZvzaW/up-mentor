@@ -1,25 +1,12 @@
-"use server"
-
 import { prisma } from "@/lib/prisma"
-import { auth } from "@/auth"
-import { redirect } from "next/navigation"
 import { formatWorkplaceAddress } from "@/lib/utils"
 import { WorkplaceAddress } from "@/lib/types"
 
-export async function getMyTrainers() {
-  const session = await auth()
-  if (!session?.user?.id) {
-    redirect("/?unauthorized=true")
-  }
-
-  if (session.user.role !== "trainee") {
-    return { error: "Brak uprawnień do tej operacji." }
-  }
-
+export async function getMyTrainers(userId: string) {
   try {
     const cooperations = await prisma.cooperation.findMany({
       where: {
-        trainee_id: session.user.id,
+        trainee_id: userId,
         status: "active",
       },
       include: {
@@ -66,20 +53,12 @@ export async function getMyTrainers() {
   }
 }
 
-export async function getMyTrainerBySlug(slug: string) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    redirect("/?unauthorized=true")
-  }
 
-  if (session.user.role !== "trainee") {
-    return { error: "Brak uprawnień do tej operacji." }
-  }
-
+export async function getMyTrainerBySlug(userId: string, slug: string) {
   try {
     const cooperation = await prisma.cooperation.findFirst({
       where: {
-        trainee_id: session.user.id,
+        trainee_id: userId,
         status: "active",
         trainer: {
           slug,
@@ -120,20 +99,12 @@ export async function getMyTrainerBySlug(slug: string) {
   }
 }
 
-export async function countCooperations() {
-  const session = await auth()
-  if (!session?.user?.id) {
-    redirect("/?unauthorized=true")
-  }
 
-  if (session.user.role !== "trainee") {
-    return { error: "Brak uprawnień do tej operacji." }
-  }
-
+export async function countCooperations(userId: string) {
   try {
     const count = await prisma.cooperation.count({
       where: {
-        trainee_id: session.user.id,
+        trainee_id: userId,
         status: "active",
       },
     })

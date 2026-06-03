@@ -1,7 +1,6 @@
 import { auth } from "@/auth"
-import { getChatConversations } from "@/actions/chat"
+import { getChatConversations } from "@/lib/server-get-functions/chat"
 import { ChatView } from "@/components/pages/chat/chat-view"
-import { redirect } from "next/navigation"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 type ChatPageProps = {
@@ -13,12 +12,11 @@ type ChatPageProps = {
 
 export default async function ChatPage({ searchParams }: ChatPageProps) {
   const session = await auth()
-  if (!session?.user?.id) {
-    redirect("/?unauthorized=true")
-  }
+  const userId = session?.user?.id ?? ""
+  const role = session?.user?.role ?? ""
 
   const params = await searchParams
-  const conversationsResult = await getChatConversations()
+  const conversationsResult = await getChatConversations(userId, role)
 
   if (conversationsResult.error) {
     return (
@@ -35,21 +33,21 @@ export default async function ChatPage({ searchParams }: ChatPageProps) {
   let initialTrainerId = params.trainer
   let initialTraineeId = params.trainee
 
-  if (session.user.role === "trainer" && params.trainee) {
-    initialTrainerId = session.user.id
+  if (role === "trainer" && params.trainee) {
+    initialTrainerId = userId
     initialTraineeId = params.trainee
   }
 
-  if (session.user.role === "trainee" && params.trainer) {
+  if (role === "trainee" && params.trainer) {
     initialTrainerId = params.trainer
-    initialTraineeId = session.user.id
+    initialTraineeId = userId
   }
 
   return (
     <div className="flex h-[calc(100dvh-90px)] min-h-0 flex-col lg:h-[calc(100dvh-120px)]">
       <ChatView
         conversations={conversations}
-        currentUserId={session.user.id}
+        currentUserId={userId}
         initialTrainerId={initialTrainerId}
         initialTraineeId={initialTraineeId}
         pusherKey={pusherKey}

@@ -1,13 +1,17 @@
 import { redirect } from "next/navigation"
-import { getMyTrainers } from "@/actions/my-trainers"
+import { getMyTrainers } from "@/lib/server-get-functions/my-trainers"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { BookOpen, ChevronRight, MapPin } from "lucide-react"
+import { auth } from "@/auth"
 
 export default async function TrainersPage() {
-  const result = await getMyTrainers()
+  const session = await auth()
+  const userId = session?.user?.id ?? ""
+
+  const result = await getMyTrainers(userId)
   const trainers = result.data ?? []
 
   if (!result.error && trainers.length === 0) {

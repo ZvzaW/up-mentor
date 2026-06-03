@@ -53,64 +53,7 @@ export async function getMyOpinion(trainerId: string) {
   }
 }
 
-export async function getTrainerOpinions(trainerId: string) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    redirect("/?unauthorized=true")
-  }
 
-  try {
-    const opinions = await prisma.opinion.findMany({
-      where: {
-        trainer_id: trainerId,
-      },
-      include: {
-        trainee: {
-          include: {
-            user: {
-              select: {
-                name: true,
-              },
-            },
-          },
-        },
-      },
-    })
-
-    const reviews = opinions.map((opinion) => ({
-      traineeId: opinion.trainee_id,
-      name: opinion.trainee.user.name,
-      createdAt: opinion.created_at,
-      rate: opinion.rate as 1 | 2 | 3 | 4 | 5,
-      comment: opinion.comment,
-    }))
-
-    const averageRate =
-      reviews.length > 0
-        ? Number(
-            (
-              reviews.reduce((sum, review) => sum + review.rate, 0) /
-              reviews.length
-            ).toFixed(1)
-          )
-        : null
-
-    return {
-      success: true as const,
-      data: {
-        averageRate,
-        reviews,
-      },
-    }
-  } catch (error) {
-    console.error(
-      "[GET_TRAINER_OPINIONS_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
-    return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę" }
-  }
-}
 
 export async function upsertOpinion(opinion: TrainerOpinionFormValues) {
   const session = await auth()
@@ -177,6 +120,7 @@ export async function upsertOpinion(opinion: TrainerOpinionFormValues) {
 
   return { success: true as const }
 }
+
 
 export async function deleteOpinion(trainerId: string) {
   const session = await auth()

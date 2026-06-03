@@ -1,9 +1,10 @@
-import { getExercises } from "@/actions/exercise"
-import { getWorkoutPlanById } from "@/actions/workout-plan"
+import { getExercises } from "@/lib/server-get-functions/exercise"
+import { getWorkoutPlanById } from "@/lib/server-get-functions/workout-plan"
 import { WorkoutPlanForm } from "@/components/pages/workout-plans/workout-plan-form"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Card } from "@/components/ui/card"
 import { redirect } from "next/navigation"
+import { auth } from "@/auth"
 
 type EditWorkoutPlanPageProps = {
   params: Promise<{
@@ -14,10 +15,14 @@ type EditWorkoutPlanPageProps = {
 export default async function EditWorkoutPlanPage({
   params,
 }: EditWorkoutPlanPageProps) {
+  const session = await auth()
+  const userId = session?.user?.id ?? ""
+  const role = session?.user?.role ?? ""
+
   const { id } = await params
   const [planResult, exercisesResult] = await Promise.all([
-    getWorkoutPlanById(id),
-    getExercises(),
+    getWorkoutPlanById(userId, id),
+    getExercises(userId, role),
   ])
 
   if (!planResult.error && !planResult.data) {

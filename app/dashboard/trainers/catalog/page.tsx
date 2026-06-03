@@ -1,12 +1,13 @@
 import Link from "next/link"
-import { getCatalogTrainers } from "@/actions/catalog"
+import { getCatalogTrainers } from "@/lib/server-get-functions/catalog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Card, CardContent } from "@/components/ui/card"
 import { ChevronRight, MapPin, Star } from "lucide-react"
-import { countCooperations } from "@/actions/my-trainers"
+import { countCooperations } from "@/lib/server-get-functions/my-trainers"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { BackButton } from "@/components/common/back-button"
+import { auth } from "@/auth"
 
 type TrainersCatalogPageProps = {
   searchParams?: Promise<{
@@ -17,15 +18,20 @@ type TrainersCatalogPageProps = {
 
 export default async function TrainersCatalogPage({
   searchParams,
-}: TrainersCatalogPageProps) {
+}: TrainersCatalogPageProps) {  
+  
+  const session = await auth()
+  const userId = session?.user?.id ?? ""
+
   const resolvedSearchParams = searchParams ? await searchParams : undefined
   const nameQuery = resolvedSearchParams?.name?.trim() ?? ""
   const cityQuery = resolvedSearchParams?.city?.trim() ?? ""
   const hasActiveFilters = nameQuery.length > 0 || cityQuery.length > 0
 
+
   const [trainersResult, countResult] = await Promise.all([
     getCatalogTrainers({ name: nameQuery, city: cityQuery }),
-    countCooperations(),
+    countCooperations(userId),
   ])
 
   const pageError = trainersResult.error ?? countResult.error

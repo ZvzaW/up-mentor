@@ -3,14 +3,15 @@ import Link from "next/link"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MapPin, NotebookPen, ChevronLeft } from "lucide-react"
-import { getMyTraineeBySlug } from "@/actions/my-trainees"
-import { getTrainingsForTrainee } from "@/actions/training"
+import { getMyTraineeBySlug } from "@/lib/server-get-functions/my-trainees"
+import { getTrainingsForTrainee } from "@/lib/server-get-functions/training"
 import { TraineeQuickActions } from "@/components/pages/my-trainees/trainee-quick-actions"
 import { TraineeNoteEditor } from "@/components/pages/my-trainees/trainee-note-editor"
 import { TraineeTrainingsList } from "@/components/pages/my-trainees/trainee-trainings-list"
 import { ShowTraineeSurveyDialog } from "@/components/dialogs/trainer/show-trainee-survey"
 import { WorkplaceAddress } from "@/lib/types"
 import { formatWorkplaceAddress } from "@/lib/utils"
+import { auth } from "@/auth"
 
 type TraineeDetailsPageProps = {
   params: Promise<{
@@ -21,15 +22,21 @@ type TraineeDetailsPageProps = {
 export default async function TraineeDetailsPage({
   params,
 }: TraineeDetailsPageProps) {
+
+  const session = await auth()
+  
+  const userId = session?.user?.id ?? ""
+
   const { slug } = await params
-  const result = await getMyTraineeBySlug(slug)
+  const result = await getMyTraineeBySlug(userId, slug)
 
   const cooperation = result.data
   const traineeId = cooperation?.trainee.user.id
 
   const trainingsResult = traineeId
-    ? await getTrainingsForTrainee(traineeId)
+    ? await getTrainingsForTrainee(userId, traineeId)
     : null
+
   const trainingsError = trainingsResult?.error
   const trainingGroups = trainingsResult?.data ?? []
 

@@ -7,9 +7,22 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Star } from "lucide-react"
-import { TrainerOpinionsFetch } from "@/components/common/trainer-opinions-list"
+import {
+  TrainerOpinionsList,
+  type TrainerReview,
+} from "@/components/common/trainer-opinions-list"
 
-export function ShowOpinionsDialog({ trainerId }: { trainerId: string }) {
+type ShowOpinionsDialogProps = {
+  reviews: TrainerReview[]
+  averageRate: number | null
+  error?: string | null
+}
+
+export function ShowOpinionsDialog({
+  reviews,
+  averageRate,
+  error,
+}: ShowOpinionsDialogProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -21,7 +34,11 @@ export function ShowOpinionsDialog({ trainerId }: { trainerId: string }) {
         <DialogHeader>
           <DialogTitle className="font-michroma">Opinie klientów</DialogTitle>
         </DialogHeader>
-        <TrainerOpinionsFetch trainerId={trainerId} />
+        <TrainerOpinionsList
+          reviews={reviews}
+          averageRate={averageRate}
+          error={error}
+        />
       </DialogContent>
     </Dialog>
   )

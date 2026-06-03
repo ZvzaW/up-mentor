@@ -1,15 +1,21 @@
 import { Card, CardContent } from "@/components/ui/card"
 import TraineesList from "@/components/pages/my-trainees/trainees-list"
-import { getMyTrainees } from "@/actions/my-trainees"
+import { getMyTrainees } from "@/lib/server-get-functions/my-trainees"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { getPendingRequests } from "@/actions/coaching-request"
+import { getPendingRequests } from "@/lib/server-get-functions/coaching-request"
 import { ManageCoachingRequestsDialog } from "@/components/dialogs/trainer/manage-coaching-request"
 import { TraineeDTO } from "@/lib/types"
+import { auth } from "@/auth"
+
 
 export default async function TraineesPage() {
+  const session = await auth()
+
+  const userId = session?.user?.id ?? ""
+
   const [traineesResult, requestsResult] = await Promise.all([
-    getMyTrainees(),
-    getPendingRequests(),
+    getMyTrainees(userId),
+    getPendingRequests(userId),
   ])
 
   const trainees = traineesResult.data ?? []
