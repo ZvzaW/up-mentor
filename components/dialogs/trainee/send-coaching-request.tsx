@@ -86,7 +86,7 @@ export function SendCoachingRequestDialog({
         <DialogHeader>
           <DialogTitle>Wyślij prośbę o współpracę</DialogTitle>
           <DialogDescription>
-            Wybierz miejsce, w którym chciałbyś trenować, i opcjonalnie zostaw
+            Wybierz miejsce, w którym chcesz trenować i opcjonalnie zostaw
             wiadomość dla trenera.
           </DialogDescription>
         </DialogHeader>
@@ -140,7 +140,7 @@ export function SendCoachingRequestDialog({
               )}
             />
 
-            <DialogFooter className="pt-4">
+            <DialogFooter >
               <Button
                 type="button"
                 variant="destructive"
