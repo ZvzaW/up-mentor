@@ -1,7 +1,5 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { getTrainerOpinions } from "@/actions/opinion"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Star } from "lucide-react"
 import { cn, formatDate } from "@/lib/utils"
@@ -34,19 +32,19 @@ export type TrainerReview = {
   comment: string | null
 }
 
-type TrainerOpinionsUIProps = {
+type TrainerOpinionsListProps = {
   reviews: TrainerReview[]
   averageRate: number | null
   isLoading?: boolean
   error?: string | null
 }
 
-export function TrainerOpinionsUI({
+export function TrainerOpinionsList({
   reviews,
   averageRate,
   isLoading,
   error,
-}: TrainerOpinionsUIProps) {
+}: TrainerOpinionsListProps) {
   if (isLoading) return <SkeletonOpinions />
 
   if (error) {
@@ -95,46 +93,5 @@ export function TrainerOpinionsUI({
         )}
       </div>
     </div>
-  )
-}
-
-export function TrainerOpinionsFetch({ trainerId }: { trainerId: string }) {
-  const [reviews, setReviews] = useState<TrainerReview[]>([])
-  const [averageRate, setAverageRate] = useState<number | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    let isMounted = true
-
-    const fetchOpinions = async () => {
-      setIsLoading(true)
-      const result = await getTrainerOpinions(trainerId)
-
-      if (!isMounted) return
-
-      if (result.error) {
-        setError(result.error)
-      } else if (result.success) {
-        setReviews(result.data.reviews)
-        setAverageRate(result.data.averageRate ?? null)
-      }
-      setIsLoading(false)
-    }
-
-    fetchOpinions()
-
-    return () => {
-      isMounted = false
-    }
-  }, [trainerId])
-
-  return (
-    <TrainerOpinionsUI
-      reviews={reviews}
-      averageRate={averageRate}
-      error={error}
-      isLoading={isLoading}
-    />
   )
 }

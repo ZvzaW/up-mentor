@@ -343,7 +343,7 @@ export const resetPasswordFormSchema = z
 
 export type ResetPasswordValues = z.infer<typeof resetPasswordFormSchema>
 
-export const resetPasswordActionSchema = resetPasswordFormSchema.extend({
+export const resetPasswordSchema = resetPasswordFormSchema.extend({
   token: z.string().trim().min(1, "Nieprawidłowy token resetowania."),
 })
 

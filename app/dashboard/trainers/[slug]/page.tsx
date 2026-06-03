@@ -1,19 +1,23 @@
 import { Suspense } from "react"
 import { redirect } from "next/navigation"
 import Link from "next/link"
-import { getMyTrainerBySlug, countCooperations } from "@/actions/my-trainers"
-import { getTrainerOpinions } from "@/actions/opinion"
+import {
+  getMyTrainerBySlug,
+  countCooperations,
+} from "@/lib/server-get-functions/my-trainers"
+import { getTrainerOpinions } from "@/lib/server-get-functions/opinion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Banknote, BookOpen, MapPin } from "lucide-react"
 import { TrainerQuickActions } from "@/components/pages/my-trainers/trainer-quick-actions"
 import { ManageOpinionDialog } from "@/components/dialogs/trainee/manage-opinion"
-import { TrainerOpinionsUI } from "@/components/common/trainer-opinions-list"
+import { TrainerOpinionsList } from "@/components/common/trainer-opinions-list"
 import { SkeletonOpinions } from "@/components/ui/skeleton"
 import { BackButton } from "@/components/common/back-button"
 import { formatWorkplaceAddress } from "@/lib/utils"
 import { WorkplaceAddress } from "@/lib/types"
+import { auth } from "@/auth"
 
 type TrainerDetailsPageProps = {
   params: Promise<{
@@ -24,11 +28,15 @@ type TrainerDetailsPageProps = {
 export default async function TrainerDetailsPage({
   params,
 }: TrainerDetailsPageProps) {
+  const session = await auth()
+
+  const userId = session?.user?.id ?? ""
+
   const { slug } = await params
 
   const [trainerResult, countResult] = await Promise.all([
-    getMyTrainerBySlug(slug),
-    countCooperations(),
+    getMyTrainerBySlug(userId, slug),
+    countCooperations(userId),
   ])
 
   const cooperation = trainerResult.data
@@ -136,7 +144,7 @@ export default async function TrainerDetailsPage({
               </CardHeader>
               <CardContent>
                 <Suspense fallback={<SkeletonOpinions />}>
-                  <TrainerOpinionsUI
+                  <TrainerOpinionsList
                     reviews={opinionsResult?.data?.reviews || []}
                     averageRate={opinionsResult?.data?.averageRate || null}
                     error={opinionsResult?.error}

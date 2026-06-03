@@ -1,9 +1,15 @@
-import { getExercises } from "@/actions/exercise"
+import { getExercises } from "@/lib/server-get-functions/exercise"
 import { WorkoutPlanForm } from "@/components/pages/workout-plans/workout-plan-form"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { auth } from "@/auth"
 
 export default async function CreateWorkoutPlanPage() {
-  const result = await getExercises()
+  const session = await auth()
+
+  const userId = session?.user?.id ?? ""
+  const role = session?.user?.role ?? ""
+
+  const result = await getExercises(userId, role)
   const exercises = result.data ?? []
 
   return (

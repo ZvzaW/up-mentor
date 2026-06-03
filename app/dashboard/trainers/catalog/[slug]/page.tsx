@@ -1,15 +1,17 @@
 import { redirect } from "next/navigation"
-import { getCatalogTrainerBySlug } from "@/actions/catalog"
+import { getCatalogTrainerBySlug } from "@/lib/server-get-functions/catalog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MapPin } from "lucide-react"
-import { TrainerOpinionsFetch } from "@/components/common/trainer-opinions-list"
+import { TrainerOpinionsList } from "@/components/common/trainer-opinions-list"
 import { Separator } from "@/components/ui/separator"
 import { BackButton } from "@/components/common/back-button"
-import { getCooperationStatus } from "@/actions/coaching-request"
+import { getCooperationStatus } from "@/lib/server-get-functions/coaching-request"
 import { SendCoachingRequestDialog } from "@/components/dialogs/trainee/send-coaching-request"
 import { DeleteCoachingRequestButton } from "@/components/pages/catalog/delete-request"
 import { workplace } from "@prisma/client"
+import { auth } from "@/auth"
+import { getTrainerOpinions } from "@/lib/server-get-functions/opinion"
 
 type TrainerCatalogDetailsPageProps = {
   params: Promise<{
@@ -20,6 +22,10 @@ type TrainerCatalogDetailsPageProps = {
 export default async function TrainerCatalogDetailsPage({
   params,
 }: TrainerCatalogDetailsPageProps) {
+  const session = await auth()
+
+  const userId = session?.user?.id ?? ""
+
   const { slug } = await params
   const result = await getCatalogTrainerBySlug(slug)
   const trainer = result.data
@@ -30,10 +36,15 @@ export default async function TrainerCatalogDetailsPage({
 
   let status = { hasRequest: false, hasCooperation: false }
   if (trainer) {
-    status = await getCooperationStatus(trainer.id)
+    status = await getCooperationStatus(userId, trainer.id)
   }
 
   const canRequest = !status.hasRequest && !status.hasCooperation
+
+  let opinionsResult = null
+  if (trainer) {
+    opinionsResult = await getTrainerOpinions(trainer.id)
+  }
 
   return (
     <div className="space-y-4 p-3">
@@ -146,7 +157,11 @@ export default async function TrainerCatalogDetailsPage({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <TrainerOpinionsFetch trainerId={trainer.id} />
+                <TrainerOpinionsList
+                  reviews={opinionsResult?.data?.reviews || []}
+                  averageRate={opinionsResult?.data?.averageRate || null}
+                  error={opinionsResult?.error}
+                />
               </CardContent>
             </Card>
           </div>

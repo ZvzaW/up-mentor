@@ -1,24 +1,27 @@
-import { getWorkoutPlans } from "@/actions/workout-plan"
+import { getWorkoutPlans } from "@/lib/server-get-functions/workout-plan"
+
 import { auth } from "@/auth"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Card, CardContent } from "@/components/ui/card"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { WorkoutPlanList } from "@/components/pages/workout-plans/workout-plan-list"
-import { getMyTrainees } from "@/actions/my-trainees"
+import { getMyTrainees } from "@/lib/server-get-functions/my-trainees"
 import { Plus } from "lucide-react"
 import { TraineeDTO } from "@/lib/types"
 
 export default async function WorkoutPlansPage() {
   const session = await auth()
+
+  const userId = session?.user?.id ?? ""
   const role = session?.user?.role ?? ""
 
-  const result = await getWorkoutPlans()
+  const result = await getWorkoutPlans(userId, role)
   const plans = result.data ?? []
 
   let trainees: TraineeDTO[] = []
   if (role === "trainer") {
-    const traineesResult = await getMyTrainees()
+    const traineesResult = await getMyTrainees(userId)
     trainees = traineesResult.data ?? []
   }
 

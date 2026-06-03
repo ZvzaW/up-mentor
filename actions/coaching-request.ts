@@ -8,8 +8,6 @@ import {
   type CoachingRequestInput,
 } from "@/lib/validations"
 import { redirect } from "next/navigation"
-import { formatWorkplaceAddress } from "@/lib/utils"
-import { WorkplaceAddress } from "@/lib/types"
 
 export async function sendCoachingRequest(data: CoachingRequestInput) {
   const session = await auth()
@@ -107,95 +105,6 @@ export async function deleteCoachingRequest(trainerId: string) {
       error
     )
     return { error: "Wystąpił błąd podczas usuwania danych. Spróbuj ponownie." }
-  }
-}
-
-export async function getCooperationStatus(trainerId: string) {
-  const session = await auth()
-
-  if (!session?.user?.id) {
-    redirect("/?unauthorized=true")
-  }
-
-  const traineeId = session.user.id
-
-  const [request, cooperation] = await Promise.all([
-    prisma.coaching_request.findUnique({
-      where: {
-        trainer_id_trainee_id: { trainer_id: trainerId, trainee_id: traineeId },
-      },
-    }),
-    prisma.cooperation.findUnique({
-      where: {
-        trainer_id_trainee_id: { trainer_id: trainerId, trainee_id: traineeId },
-        status: "active",
-      },
-    }),
-  ])
-
-  return {
-    hasRequest: !!request,
-    hasCooperation: !!cooperation,
-  }
-}
-
-export async function getPendingRequests() {
-  const session = await auth()
-
-  if (!session?.user?.id) {
-    redirect("/?unauthorized=true")
-  }
-
-  if (session.user.role !== "trainer") {
-    return { error: "Brak uprawnień do tej operacji." }
-  }
-
-  const trainerId = session.user.id
-
-  try {
-    const requests = await prisma.coaching_request.findMany({
-      where: {
-        trainer_id: trainerId,
-        status: "pending",
-      },
-      include: {
-        trainee: {
-          include: {
-            user: {
-              select: { name: true, surname: true },
-            },
-          },
-        },
-        workplace: {
-          select: {
-            name: true,
-            city: true,
-            street: true,
-            building_number: true,
-            flat_number: true,
-          },
-        },
-      },
-      orderBy: { created_at: "desc" },
-    })
-
-    const mappedRequests = requests.map((req) => ({
-      traineeId: req.trainee_id,
-      workplaceId: req.workplace_id,
-      name: `${req.trainee.user.name} ${req.trainee.user.surname}`,
-      message: req.message,
-      createdAt: req.created_at,
-      workplace: formatWorkplaceAddress(req.workplace as WorkplaceAddress),
-    }))
-
-    return { success: true, data: mappedRequests }
-  } catch (error) {
-    console.error(
-      "[GET_PENDING_REQUESTS_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
-    return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }
 

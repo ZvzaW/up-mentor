@@ -18,16 +18,23 @@ import { InfoIcon, Loader2, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { ShowOpinionsDialog } from "@/components/dialogs/trainer/show-opinions"
+import type { TrainerReview } from "@/components/common/trainer-opinions-list"
 import { TrainerDTO, UserDTO } from "@/lib/types"
 
 interface TrainerProfileProps {
   baseData: UserDTO
   specificData: TrainerDTO
+  opinions: {
+    reviews: TrainerReview[]
+    averageRate: number | null
+    error?: string | null
+  }
 }
 
 export default function TrainerProfile({
   baseData,
   specificData,
+  opinions,
 }: TrainerProfileProps) {
   const [isPublic, setIsPublic] = React.useState(specificData.is_public)
   const [deletingWorkplaceId, setDeletingWorkplaceId] = React.useState<
@@ -155,7 +162,11 @@ export default function TrainerProfile({
                   />
                 </div>
 
-                <ShowOpinionsDialog trainerId={baseData.id} />
+                <ShowOpinionsDialog
+                  reviews={opinions.reviews}
+                  averageRate={opinions.averageRate}
+                  error={opinions.error}
+                />
                 <SettingsDialog
                   baseData={baseData}
                   specificData={specificData}

@@ -1,4 +1,4 @@
-import { getExercises } from "@/actions/exercise"
+import { getExercises } from "@/lib/server-get-functions/exercise"
 import { auth } from "@/auth"
 import { AddExerciseDialog } from "@/components/dialogs/trainer/add-exercise"
 import { ExerciseList } from "@/components/pages/exercises/exercise-list"
@@ -7,9 +7,11 @@ import { Card, CardContent } from "@/components/ui/card"
 
 export default async function ExercisesPage() {
   const session = await auth()
+
+  const userId = session?.user?.id ?? ""
   const role = session?.user?.role ?? ""
 
-  const result = await getExercises()
+  const result = await getExercises(userId, role)
   const exercises = result.data ?? []
 
   return (

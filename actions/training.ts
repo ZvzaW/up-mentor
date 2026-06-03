@@ -11,16 +11,10 @@ import {
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { Prisma } from "@prisma/client"
-import { endOfWeek, startOfDay, startOfWeek, format } from "date-fns"
+import { endOfWeek, startOfWeek } from "date-fns"
 import { isTrainingScheduledInPast } from "@/lib/training-calendar-functions"
-import { pl } from "date-fns/locale"
-import {
-  combineDateAndTime,
-  formatDate,
-  formatWorkplaceAddress,
-  toTimeInputValue,
-} from "@/lib/utils"
-import { TrainingDTO, TrainingListItem, WorkplaceAddress } from "@/lib/types"
+import { combineDateAndTime, formatWorkplaceAddress } from "@/lib/utils"
+import { TrainingDTO, WorkplaceAddress } from "@/lib/types"
 
 function mapTraining(t: {
   id: string
@@ -219,123 +213,6 @@ export async function deleteTraining(id: string) {
     )
     return {
       error: "Wystąpił błąd podczas usuwania treningu. Spróbuj ponownie.",
-    }
-  }
-}
-
-function capitalizeMonthLabel(label: string) {
-  if (!label) return label
-  return label.charAt(0).toUpperCase() + label.slice(1)
-}
-
-function groupTrainingsByYearAndMonth(
-  items: any[],
-  scheduledDates: Date[]
-): any[] {
-  const yearMap = new Map<
-    number,
-    Map<string, { monthLabel: string; trainings: any[] }>
-  >()
-
-  items.forEach((item, index) => {
-    const date = scheduledDates[index]
-    const year = date.getFullYear()
-    const month = date.getMonth()
-    const monthKey = `${year}-${month}`
-    const monthLabel = capitalizeMonthLabel(
-      format(date, "LLLL", { locale: pl })
-    )
-
-    if (!yearMap.has(year)) {
-      yearMap.set(year, new Map())
-    }
-    const months = yearMap.get(year)!
-    if (!months.has(monthKey)) {
-      months.set(monthKey, { monthLabel, trainings: [] })
-    }
-    months.get(monthKey)!.trainings.push(item)
-  })
-
-  return Array.from(yearMap.entries())
-    .sort(([a], [b]) => b - a)
-    .map(([year, months]) => ({
-      year,
-      months: Array.from(months.entries())
-        .sort(([a], [b]) => {
-          const [, monthA] = a.split("-").map(Number)
-          const [, monthB] = b.split("-").map(Number)
-          return monthB - monthA
-        })
-        .map(([, group]) => group),
-    }))
-}
-
-export async function getTrainingsForTrainee(traineeId: string) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    redirect("/?unauthorized=true")
-  }
-
-  if (session.user.role !== "trainer") {
-    return { error: "Brak uprawnień do tej operacji." }
-  }
-
-  try {
-    const cooperation = await prisma.cooperation.findFirst({
-      where: {
-        trainer_id: session.user.id,
-        trainee_id: traineeId,
-        status: "active",
-      },
-      include: {
-        workplace: {
-          select: {
-            name: true,
-            street: true,
-            building_number: true,
-            flat_number: true,
-            city: true,
-          },
-        },
-      },
-    })
-
-    if (!cooperation) {
-      return { error: "Brak aktywnej współpracy z tym podopiecznym." }
-    }
-
-    const trainings = await prisma.training.findMany({
-      where: {
-        trainer_id: session.user.id,
-        trainee_id: traineeId,
-      },
-      orderBy: { scheduled_at: "desc" },
-    })
-
-    const listItems = trainings.map((t) => ({
-      id: t.id,
-      date: formatDate(t.scheduled_at),
-      startTime: toTimeInputValue(t.scheduled_at),
-      durationLabel: `${Number(t.duration)} h`,
-      workplaceAddress: formatWorkplaceAddress(
-        cooperation.workplace as WorkplaceAddress
-      ),
-    }))
-
-    const scheduledDates = trainings.map((t) => t.scheduled_at)
-
-    return {
-      success: true,
-      data: groupTrainingsByYearAndMonth(listItems, scheduledDates),
-    }
-  } catch (error) {
-    console.error(
-      "[GET_TRAININGS_FOR_TRAINEE_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
-    return {
-      error: "Nie udało się pobrać treningów. Spróbuj odświeżyć stronę.",
     }
   }
 }

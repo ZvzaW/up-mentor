@@ -1,8 +1,4 @@
-"use server"
-
 import { prisma } from "@/lib/prisma"
-import { auth } from "@/auth"
-import { redirect } from "next/navigation"
 
 type PublicTrainersCatalogFilters = {
   name?: string
@@ -12,15 +8,6 @@ type PublicTrainersCatalogFilters = {
 export async function getCatalogTrainers(
   filters?: PublicTrainersCatalogFilters
 ) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    redirect("/?unauthorized=true")
-  }
-
-  if (session.user.role !== "trainee") {
-    return { error: "Brak uprawnień do tej operacji." }
-  }
-
   const nameQuery = filters?.name?.trim()
   const cityQuery = filters?.city?.trim()
 
@@ -123,15 +110,6 @@ export async function getCatalogTrainers(
 }
 
 export async function getCatalogTrainerBySlug(slug: string) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    redirect("/?unauthorized=true")
-  }
-
-  if (session.user.role !== "trainee") {
-    return { error: "Brak uprawnień do tej operacji." }
-  }
-
   try {
     const trainer = await prisma.trainer.findFirst({
       where: {

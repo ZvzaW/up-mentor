@@ -140,7 +140,7 @@ export function SendCoachingRequestDialog({
               )}
             />
 
-            <DialogFooter >
+            <DialogFooter>
               <Button
                 type="button"
                 variant="destructive"

@@ -29,7 +29,6 @@ export function FinishCooperationDialog({
   const router = useRouter()
   const [open, setOpen] = React.useState(false)
   const [isPending, startTransition] = React.useTransition()
-  const [isDownloading, startDownloadTransition] = React.useTransition()
 
   const handleFinish = () => {
     startTransition(async () => {
@@ -68,7 +67,7 @@ export function FinishCooperationDialog({
             type="button"
             variant="destructive"
             onClick={() => setOpen(false)}
-            disabled={isPending || isDownloading}
+            disabled={isPending}
           >
             Anuluj
           </Button>
@@ -76,7 +75,7 @@ export function FinishCooperationDialog({
             type="button"
             variant="secondary"
             onClick={handleFinish}
-            disabled={isPending || isDownloading}
+            disabled={isPending}
           >
             {isPending ? <Loader2 className="animate-spin" /> : "Rozwiąż"}
           </Button>

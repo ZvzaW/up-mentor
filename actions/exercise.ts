@@ -6,75 +6,9 @@ import {
   editTrainerExerciseSchema,
   trainerExerciseFormSchema,
 } from "@/lib/validations"
-import type { exercise, Prisma } from "@prisma/client"
+import type { exercise } from "@prisma/client"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
-
-async function exerciseVisibility(
-  userId: string,
-  role: string
-): Promise<Prisma.exerciseWhereInput> {
-  const predefined: Prisma.exerciseWhereInput = { trainer_id: null }
-
-  if (role === "trainer") {
-    return {
-      OR: [predefined, { trainer_id: userId }],
-    }
-  }
-
-  if (role === "trainee") {
-    const cooperations = await prisma.cooperation.findMany({
-      where: {
-        trainee_id: userId,
-        status: "active",
-      },
-      select: { trainer_id: true },
-    })
-    const trainerIds = [...new Set(cooperations.map((c) => c.trainer_id))]
-    const or: Prisma.exerciseWhereInput[] = [predefined]
-    if (trainerIds.length > 0) {
-      or.push({ trainer_id: { in: trainerIds } })
-    }
-    return { OR: or }
-  }
-
-  return { id: { in: [] } }
-}
-
-export async function getExercises() {
-  const session = await auth()
-  if (!session?.user?.id) {
-    redirect("/?unauthorized=true")
-  }
-
-  try {
-    const visibility = await exerciseVisibility(
-      session.user.id,
-      session.user.role
-    )
-
-    const data = await prisma.exercise.findMany({
-      where: visibility,
-      select: {
-        id: true,
-        name: true,
-        body_part: true,
-        video_url: true,
-        trainer_id: true,
-      },
-      orderBy: { name: "asc" },
-    })
-
-    return { success: true as const, data }
-  } catch (error) {
-    console.error(
-      "[GET_EXERCISES_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
-    return { error: "Nie udało się pobrać ćwiczeń. Spróbuj odświeżyć stronę." }
-  }
-}
 
 export async function createTrainerExercise(input: unknown) {
   const session = await auth()

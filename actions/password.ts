@@ -9,7 +9,7 @@ import { redirect } from "next/navigation"
 import nodemailer from "nodemailer"
 import crypto from "node:crypto"
 import { emailSchema } from "@/lib/validations"
-import { resetPasswordActionSchema } from "@/lib/validations"
+import { resetPasswordSchema } from "@/lib/validations"
 
 export async function changePassword(input: unknown) {
   const session = await auth()
@@ -158,7 +158,7 @@ export async function resetPassword(input: {
   password: string
   confirmPassword: string
 }) {
-  const validated = resetPasswordActionSchema.safeParse(input)
+  const validated = resetPasswordSchema.safeParse(input)
 
   if (!validated.success) {
     return { error: "Nieprawidłowe dane wejściowe." }
