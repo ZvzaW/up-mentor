@@ -22,9 +22,8 @@ type TraineeDetailsPageProps = {
 export default async function TraineeDetailsPage({
   params,
 }: TraineeDetailsPageProps) {
-
   const session = await auth()
-  
+
   const userId = session?.user?.id ?? ""
 
   const { slug } = await params

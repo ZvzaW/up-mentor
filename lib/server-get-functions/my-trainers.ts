@@ -53,7 +53,6 @@ export async function getMyTrainers(userId: string) {
   }
 }
 
-
 export async function getMyTrainerBySlug(userId: string, slug: string) {
   try {
     const cooperation = await prisma.cooperation.findFirst({
@@ -98,7 +97,6 @@ export async function getMyTrainerBySlug(userId: string, slug: string) {
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }
-
 
 export async function countCooperations(userId: string) {
   try {

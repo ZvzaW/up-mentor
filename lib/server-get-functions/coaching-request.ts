@@ -2,7 +2,6 @@ import { prisma } from "@/lib/prisma"
 import { formatWorkplaceAddress } from "@/lib/utils"
 import { WorkplaceAddress } from "@/lib/types"
 
-
 export async function getCooperationStatus(userId: string, trainerId: string) {
   const [request, cooperation] = await Promise.all([
     prisma.coaching_request.findUnique({
@@ -23,7 +22,6 @@ export async function getCooperationStatus(userId: string, trainerId: string) {
     hasCooperation: !!cooperation,
   }
 }
-
 
 export async function getPendingRequests(userId: string) {
   try {

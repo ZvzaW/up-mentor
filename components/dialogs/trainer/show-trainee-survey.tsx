@@ -10,8 +10,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { ClipboardList, Info, Cake } from "lucide-react"
-import { getSurveyDataAction } from "@/actions/survey"
+import { ClipboardList, Info } from "lucide-react"
+import { getSurveyData } from "@/actions/survey"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { SkeletonList } from "@/components/ui/skeleton"
 import { calculateAge } from "@/lib/utils"
@@ -49,7 +49,7 @@ export function ShowTraineeSurveyDialog({
       setIsLoading(true)
 
       try {
-        const result = await getSurveyDataAction(traineeId)
+        const result = await getSurveyData(traineeId)
 
         if (!isMounted) return
 

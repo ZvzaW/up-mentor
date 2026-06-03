@@ -53,8 +53,6 @@ export async function getMyOpinion(trainerId: string) {
   }
 }
 
-
-
 export async function upsertOpinion(opinion: TrainerOpinionFormValues) {
   const session = await auth()
   if (!session?.user?.id) {
@@ -120,7 +118,6 @@ export async function upsertOpinion(opinion: TrainerOpinionFormValues) {
 
   return { success: true as const }
 }
-
 
 export async function deleteOpinion(trainerId: string) {
   const session = await auth()

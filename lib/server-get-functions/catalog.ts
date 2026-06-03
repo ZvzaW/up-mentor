@@ -109,7 +109,6 @@ export async function getCatalogTrainers(
   }
 }
 
-
 export async function getCatalogTrainerBySlug(slug: string) {
   try {
     const trainer = await prisma.trainer.findFirst({

@@ -1,7 +1,10 @@
 import { Suspense } from "react"
 import { redirect } from "next/navigation"
 import Link from "next/link"
-import { getMyTrainerBySlug, countCooperations } from "@/lib/server-get-functions/my-trainers"
+import {
+  getMyTrainerBySlug,
+  countCooperations,
+} from "@/lib/server-get-functions/my-trainers"
 import { getTrainerOpinions } from "@/lib/server-get-functions/opinion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -26,7 +29,7 @@ export default async function TrainerDetailsPage({
   params,
 }: TrainerDetailsPageProps) {
   const session = await auth()
-  
+
   const userId = session?.user?.id ?? ""
 
   const { slug } = await params

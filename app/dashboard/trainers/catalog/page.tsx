@@ -18,8 +18,7 @@ type TrainersCatalogPageProps = {
 
 export default async function TrainersCatalogPage({
   searchParams,
-}: TrainersCatalogPageProps) {  
-  
+}: TrainersCatalogPageProps) {
   const session = await auth()
   const userId = session?.user?.id ?? ""
 
@@ -27,7 +26,6 @@ export default async function TrainersCatalogPage({
   const nameQuery = resolvedSearchParams?.name?.trim() ?? ""
   const cityQuery = resolvedSearchParams?.city?.trim() ?? ""
   const hasActiveFilters = nameQuery.length > 0 || cityQuery.length > 0
-
 
   const [trainersResult, countResult] = await Promise.all([
     getCatalogTrainers({ name: nameQuery, city: cityQuery }),

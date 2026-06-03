@@ -6,9 +6,7 @@ import {
   formatWorkplaceAddress,
   toTimeInputValue,
 } from "@/lib/utils"
-import {WorkplaceAddress } from "@/lib/types"
-
-
+import { WorkplaceAddress } from "@/lib/types"
 
 function capitalizeMonthLabel(label: string) {
   if (!label) return label
@@ -63,7 +61,10 @@ function groupTrainingsByYearAndMonth(
     }))
 }
 
-export async function getTrainingsForTrainee(userId: string, traineeId: string) {
+export async function getTrainingsForTrainee(
+  userId: string,
+  traineeId: string
+) {
   try {
     const cooperation = await prisma.cooperation.findFirst({
       where: {
@@ -123,5 +124,3 @@ export async function getTrainingsForTrainee(userId: string, traineeId: string) 
     }
   }
 }
-
-

@@ -2,7 +2,7 @@
 
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
-import { toDownloadFiles, toEmailAttachments } from "@/lib/workout-plan-pdf"
+import { toEmailAttachments } from "@/lib/workout-plan-pdf"
 import type { WorkoutPlanFromDb } from "@/lib/types"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"

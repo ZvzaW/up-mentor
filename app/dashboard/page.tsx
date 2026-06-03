@@ -5,10 +5,7 @@ import { useSession } from "next-auth/react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import NotificationsPanel from "@/components/pages/dashboard/notifications-panel"
 import StatsPanel from "@/components/pages/dashboard/stats-panel"
-import {
-  getNotifications,
-  getUnreadCount,
-} from "@/actions/notifications"
+import { getNotifications, getUnreadCount } from "@/actions/notifications"
 import { notification } from "@prisma/client"
 
 export default function DashboardPage() {

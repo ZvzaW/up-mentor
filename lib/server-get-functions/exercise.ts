@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import type { Prisma } from "@prisma/client"
 
-
 async function exerciseVisibility(
   userId: string,
   role: string

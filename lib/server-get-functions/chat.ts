@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { ChatConversationDTO } from "@/lib/types"
 
-
 export async function getChatConversations(userId: string, role: string) {
   try {
     if (role === "trainer") {

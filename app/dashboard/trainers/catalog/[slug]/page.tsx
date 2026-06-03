@@ -3,7 +3,7 @@ import { getCatalogTrainerBySlug } from "@/lib/server-get-functions/catalog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MapPin } from "lucide-react"
-import {TrainerOpinionsList } from "@/components/common/trainer-opinions-list"
+import { TrainerOpinionsList } from "@/components/common/trainer-opinions-list"
 import { Separator } from "@/components/ui/separator"
 import { BackButton } from "@/components/common/back-button"
 import { getCooperationStatus } from "@/lib/server-get-functions/coaching-request"
@@ -23,7 +23,7 @@ export default async function TrainerCatalogDetailsPage({
   params,
 }: TrainerCatalogDetailsPageProps) {
   const session = await auth()
-  
+
   const userId = session?.user?.id ?? ""
 
   const { slug } = await params

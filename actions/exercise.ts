@@ -101,7 +101,6 @@ export async function editTrainerExercise(exercise: exercise) {
   }
 }
 
-
 export async function deleteTrainerExercise(exerciseId: string) {
   const session = await auth()
 

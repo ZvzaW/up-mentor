@@ -5,10 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { toDownloadFile } from "@/lib/workout-plan-pdf"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
-import type {
-  WorkoutPlanInput,
-} from "@/lib/types"
-
+import type { WorkoutPlanInput } from "@/lib/types"
 
 export async function createWorkoutPlan(data: WorkoutPlanInput) {
   const session = await auth()

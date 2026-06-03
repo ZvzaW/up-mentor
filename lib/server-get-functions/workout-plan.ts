@@ -28,7 +28,6 @@ const formatPlans = (plans: WorkoutPlanFromDb[]): WorkoutPlanItem[] => {
   }))
 }
 
-
 export async function getWorkoutPlans(userId: string, role: string) {
   try {
     if (role === "trainer") {
@@ -94,7 +93,6 @@ export async function getWorkoutPlans(userId: string, role: string) {
     return { error: "Nie udało się pobrać planów. Spróbuj odświeżyć stronę." }
   }
 }
-
 
 export async function getWorkoutPlanById(userId: string, planId: string) {
   try {

@@ -7,7 +7,6 @@ import { ManageCoachingRequestsDialog } from "@/components/dialogs/trainer/manag
 import { TraineeDTO } from "@/lib/types"
 import { auth } from "@/auth"
 
-
 export default async function TraineesPage() {
   const session = await auth()
 

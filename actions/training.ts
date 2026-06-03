@@ -11,16 +11,10 @@ import {
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { Prisma } from "@prisma/client"
-import { endOfWeek, startOfDay, startOfWeek, format } from "date-fns"
+import { endOfWeek, startOfWeek } from "date-fns"
 import { isTrainingScheduledInPast } from "@/lib/training-calendar-functions"
-import { pl } from "date-fns/locale"
-import {
-  combineDateAndTime,
-  formatDate,
-  formatWorkplaceAddress,
-  toTimeInputValue,
-} from "@/lib/utils"
-import { TrainingDTO, TrainingListItem, WorkplaceAddress } from "@/lib/types"
+import { combineDateAndTime, formatWorkplaceAddress } from "@/lib/utils"
+import { TrainingDTO, WorkplaceAddress } from "@/lib/types"
 
 function mapTraining(t: {
   id: string
@@ -222,7 +216,6 @@ export async function deleteTraining(id: string) {
     }
   }
 }
-
 
 export async function getTrainingsForWeek(weekAnchorIso: string) {
   const session = await auth()
