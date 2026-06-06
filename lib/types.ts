@@ -11,6 +11,15 @@ export type TrainingDTO = {
   workplaceAddress: string
 }
 
+export type RequestDTO = {
+  traineeId: string
+  workplaceId: string
+  name: string
+  message: string | null
+  createdAt: Date
+  workplace: string
+}
+
 export type WorkplaceAddress = {
   id?: string | undefined
   street: string

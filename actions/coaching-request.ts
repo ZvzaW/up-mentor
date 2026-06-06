@@ -28,15 +28,17 @@ export async function sendCoachingRequest(data: CoachingRequestInput) {
   const traineeId = session.user.id
   const { trainer_id, workplace_id, message } = validated.data
 
+  
   try {
     const existingRequest = await prisma.coaching_request.findUnique({
       where: {
         trainer_id_trainee_id: { trainer_id, trainee_id: traineeId },
       },
+      select: { created_at: true },
     })
 
     if (existingRequest) {
-      return { error: "Wysłałeś już prośbę o współpracę do tego trenera." }
+      return { error: "Wysłałeś/aś już prośbę o współpracę do tego trenera." }
     }
 
     const existingCooperation = await prisma.cooperation.findUnique({
@@ -44,10 +46,23 @@ export async function sendCoachingRequest(data: CoachingRequestInput) {
         trainer_id_trainee_id: { trainer_id, trainee_id: traineeId },
         status: "active",
       },
+      select: { created_at: true },
     })
 
     if (existingCooperation) {
       return { error: "Posiadasz już aktywną współpracę z tym trenerem." }
+    }
+
+    const workplace = await prisma.workplace.findFirst({
+      where: {
+        id: workplace_id,
+        trainer_id: trainer_id,
+      },
+      select: { id: true },
+    })
+
+    if (!workplace) {
+      return { error: "Wybrane miejsce treningów nie jest dostępne." }
     }
 
     await prisma.coaching_request.create({
@@ -108,7 +123,7 @@ export async function deleteCoachingRequest(trainerId: string) {
   }
 }
 
-export async function acceptRequest(traineeId: string, workplaceId: string) {
+export async function acceptRequest(traineeId: string) {
   const session = await auth()
 
   if (!session?.user?.id) {
@@ -123,6 +138,36 @@ export async function acceptRequest(traineeId: string, workplaceId: string) {
 
   try {
     await prisma.$transaction(async (tx) => {
+      const request = await tx.coaching_request.findUnique({
+        where: {
+          trainer_id_trainee_id: {
+            trainer_id: trainerId,
+            trainee_id: traineeId,
+          },
+        },
+        select: {
+          workplace_id: true,
+        },
+      })
+
+      if (!request) {
+        return { error: "Nie znaleziono prośby o współpracę." }
+      }
+
+      const workplaceId = request.workplace_id
+
+      const workplace = await tx.workplace.findFirst({
+        where: {
+          id: workplaceId,
+          trainer_id: trainerId,
+        },
+        select: { id: true },
+      })
+
+      if (!workplace) {
+        return {error: "Miejsce treningów z prośby nie jest dostępne."}
+      }
+
       const existingCooperation = await tx.cooperation.findUnique({
         where: {
           trainer_id_trainee_id: {
@@ -150,7 +195,7 @@ export async function acceptRequest(traineeId: string, workplaceId: string) {
             },
           })
         } else {
-          throw new Error("ACTIVE_COOPERATION_EXISTS")
+          return { error: "Posiadasz już aktywną współpracę z tym podopiecznym." }
         }
       } else {
         await tx.cooperation.create({
@@ -181,13 +226,7 @@ export async function acceptRequest(traineeId: string, workplaceId: string) {
       new Date().toLocaleString("pl-PL"),
       error
     )
-    if (
-      error instanceof Error &&
-      error.message === "ACTIVE_COOPERATION_EXISTS"
-    ) {
-      return { error: "Posiadasz już aktywną współpracę z tym podopiecznym." }
-    }
-
+  
     return {
       error: "Wystąpił błąd podczas akceptacji prośby. Spróbuj ponownie.",
     }
@@ -205,13 +244,11 @@ export async function rejectRequest(traineeId: string) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
-  const trainerId = session.user.id
-
   try {
     await prisma.coaching_request.delete({
       where: {
         trainer_id_trainee_id: {
-          trainer_id: trainerId,
+          trainer_id: session.user.id,
           trainee_id: traineeId,
         },
       },
