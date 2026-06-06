@@ -85,6 +85,12 @@ const baseFlatNumber = z
 
 const baseCity = z.string().trim().min(1, "Miasto jest wymagane")
 
+const basePlanName = z
+  .string()
+  .trim()
+  .min(1, "Nazwa planu treningowego jest wymagana")
+  .max(255, "Nazwa może mieć maksymalnie 255 znaków")
+
 // --- MAIN SCHEMAS ---
 
 // TRAINEE
@@ -246,44 +252,88 @@ export type EditTrainerExerciseFormValues = z.infer<
   typeof editTrainerExerciseSchema
 >
 
-const workoutPlanExerciseSetSchema = z.object({
+//--------------------------------------------------------------------------------
+const ExerciseSetSchema = z.object({
   id: z.string().optional(),
-  uid: z.string(),
   exercise_id: z.string().min(1, "Wybierz ćwiczenie"),
-  series_count: z.number().min(1, "Minimum 1 seria"),
-  reps_count: z.number().min(1, "Minimum 1 powtórzenie"),
-  weight: z.number().nullable(),
-  order: z.number(),
+  series_count: z
+  .number()
+  .int("Liczba serii musi być liczbą całkowitą")
+  .min(1, "Minimum 1 seria")
+  .max(50, "Maksymalnie 50 serii"),
+  reps_count: z
+  .number()
+  .int("Liczba powtórzeń musi być liczbą całkowitą")
+  .min(1, "Minimum 1 powtórzenie")
+  .max(1000, "Maksymalnie 1000 powtórzeń"),
+  weight: z
+  .number()
+  .min(0, "Waga nie może być ujemna")
+  .max(999.99, "Maksymalna waga to 999,99 kg")
+  .nullable(),
+  order: z.number().int().min(1)
 })
 
-const workoutPlanSectionSchema = z.object({
+const SectionSchema = z.object({
   id: z.string().optional(),
-  uid: z.string(),
   body_part: z
-    .string()
-    .max(100, "Partia ciała może mieć maksymalnie 100 znaków")
-    .optional()
-    .nullable(),
-  order: z.number(),
-  exercise_sets: z.array(workoutPlanExerciseSetSchema),
+  .string()
+  .max(100, "Partia ciała może mieć maksymalnie 100 znaków")
+  .optional()
+  .nullable(),
+  order: z.number().int().min(1),
+  exercise_sets: z
+    .array(ExerciseSetSchema)
+    .min(1, "Sekcja musi zawierać co najmniej jedno ćwiczenie")
+    .max(50, "Sekcja może zawierać maksymalnie 50 ćwiczeń"),
 })
 
-export const workoutPlanFormSchema = z.object({
-  name: z
+export const WorkoutPlanPayloadSchema = z.object({
+  name: basePlanName,
+  difficulty: z
     .string()
-    .trim()
-    .min(1, "Nazwa planu treningowego jest wymagana.")
-    .max(255, "Nazwa może mieć maksymalnie 255 znaków"),
+    .max(100, "Poziom może mieć maksymalnie 100 znaków")
+    .nullish()
+    .transform((v) => (v?.trim() ? v.trim() : null)),
+  description: z
+    .string()
+    .max(1000, "Opis może mieć maksymalnie 1000 znaków")
+    .nullish()
+    .transform((v) => (v?.trim() ? v.trim() : null)),
+  sections: z
+    .array(SectionSchema)
+    .min(1, "Plan musi zawierać co najmniej jedną sekcję")
+    .max(20, "Plan może mieć maksymalnie 20 sekcji"),
+})
+
+export type WorkoutPlanPayload = z.infer<typeof WorkoutPlanPayloadSchema>
+
+
+const ExerciseSetFormSchema = ExerciseSetSchema.extend({
+  uid: z.string(),
+})
+
+const SectionFormSchema = SectionSchema.extend({
+  uid: z.string(),
+  exercise_sets: z
+    .array(ExerciseSetFormSchema)
+    .min(1, "Sekcja musi zawierać co najmniej jedno ćwiczenie")
+    .max(50, "Sekcja może zawierać maksymalnie 50 ćwiczeń"),
+})
+
+export const WorkoutPlanFormSchema = z.object({
+  name: basePlanName,
   difficulty: z.string().max(100, "Poziom może mieć maksymalnie 100 znaków"),
   description: z.string().max(1000, "Opis może mieć maksymalnie 1000 znaków"),
   sections: z
-    .array(workoutPlanSectionSchema)
+    .array(SectionFormSchema)
     .min(1, "Plan musi zawierać co najmniej jedną sekcję")
-    .max(20, "Plan może mieć maksymalnie 10 sekcji"),
+    .max(20, "Plan może mieć maksymalnie 20 sekcji"),
 })
 
-export type WorkoutPlanFormValues = z.infer<typeof workoutPlanFormSchema>
+export type WorkoutPlanFormValues = z.infer<typeof WorkoutPlanFormSchema>
 
+//--------------------------------------------------------------------------------
 const trainingDurationSchema = z
   .number()
   .refine((v) => [0.5, 1, 1.5, 2, 2.5, 3].includes(v), {

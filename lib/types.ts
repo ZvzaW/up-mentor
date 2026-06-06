@@ -99,31 +99,7 @@ export const EXERCISE_BODY_PARTS = [
   "Full body",
 ] as const
 
-// ZAPIS
-export type ExerciseSetInput = {
-  id?: string
-  exercise_id: string
-  series_count: number
-  reps_count: number
-  weight?: number | null
-  order: number
-}
 
-export type SectionInput = {
-  id?: string
-  body_part?: string | null
-  order: number
-  exercise_sets: ExerciseSetInput[]
-}
-
-export type WorkoutPlanInput = {
-  name: string
-  difficulty?: string | null
-  description?: string | null
-  sections: SectionInput[]
-}
-
-// ODCZYT
 export type WorkoutPlanUserRef = {
   name: string | null
   surname: string | null

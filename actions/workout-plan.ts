@@ -3,11 +3,34 @@
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { toDownloadFile } from "@/lib/workout-plan-pdf"
+import {  WorkoutPlanPayload, WorkoutPlanPayloadSchema } from "@/lib/validations"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
-import type { WorkoutPlanInput } from "@/lib/types"
 
-export async function createWorkoutPlan(data: WorkoutPlanInput) {
+async function validateExercisesAccess(
+  trainerId: string,
+  exerciseIds: string[]
+) {
+  if (exerciseIds.length === 0) {
+    return {}
+  }
+
+  const uniqueIds = [...new Set(exerciseIds)]
+  const visibleCount = await prisma.exercise.count({
+    where: {
+      id: { in: uniqueIds },
+      OR: [{ trainer_id: null }, { trainer_id: trainerId }],
+    },
+  })
+
+  if (visibleCount !== uniqueIds.length) {
+    return { error: "Wybrano niedostępne dla Ciebie ćwiczenia." }
+  }
+
+  return {}
+}
+
+export async function createWorkoutPlan(data: unknown) {
   const session = await auth()
 
   if (!session?.user?.id) {
@@ -17,15 +40,32 @@ export async function createWorkoutPlan(data: WorkoutPlanInput) {
   if (session.user.role !== "trainer")
     return { error: "Brak uprawnień do tej operacji." }
 
+  const validated = WorkoutPlanPayloadSchema.safeParse(data)
+  if (!validated.success) {
+    return { error: "Nieprawidłowe dane wejściowe." }
+  }
+
+  const planData = validated.data
+  const exerciseIds = planData.sections.flatMap((sec) =>
+    sec.exercise_sets.map((set) => set.exercise_id)
+  )
+  const exerciseValidation = await validateExercisesAccess(
+    session.user.id,
+    exerciseIds
+  )
+  if (exerciseValidation.error) {
+    return { error: exerciseValidation.error }
+  }
+
   try {
     await prisma.workout_plan.create({
       data: {
         trainer_id: session.user.id,
-        name: data.name,
-        difficulty: data.difficulty,
-        description: data.description,
+        name: planData.name,
+        difficulty: planData.difficulty,
+        description: planData.description,
         section: {
-          create: data.sections.map((sec) => ({
+          create: planData.sections.map((sec) => ({
             body_part: sec.body_part,
             order: sec.order,
             exercise_set: {
@@ -56,10 +96,7 @@ export async function createWorkoutPlan(data: WorkoutPlanInput) {
   }
 }
 
-export async function updateWorkoutPlan(
-  planId: string,
-  data: WorkoutPlanInput
-) {
+export async function updateWorkoutPlan(planId: string, data: WorkoutPlanPayload) {
   const session = await auth()
 
   if (!session?.user?.id) {
@@ -69,6 +106,7 @@ export async function updateWorkoutPlan(
   if (session.user.role !== "trainer")
     return { error: "Brak uprawnień do tej operacji." }
 
+ 
   try {
     const existingPlan = await prisma.workout_plan.findFirst({
       where: {
@@ -82,17 +120,34 @@ export async function updateWorkoutPlan(
       return { error: "Nie znaleziono planu do zaktualizowania." }
     }
 
+ const validated = WorkoutPlanPayloadSchema.safeParse(data)
+  if (!validated.success) {
+    return { error: "Nieprawidłowe dane wejściowe." }
+  }
+
+  const planData = validated.data
+  const exerciseIds = planData.sections.flatMap((sec) =>
+    sec.exercise_sets.map((set) => set.exercise_id)
+  )
+  const exerciseValidation = await validateExercisesAccess(
+    session.user.id,
+    exerciseIds
+  )
+  if (exerciseValidation.error) {
+    return { error: exerciseValidation.error }
+  }
+
     await prisma.$transaction(async (tx) => {
       await tx.workout_plan.update({
         where: { id: planId },
         data: {
-          name: data.name,
-          difficulty: data.difficulty,
-          description: data.description,
+          name: planData.name,
+          difficulty: planData.difficulty,
+          description: planData.description,
         },
       })
 
-      const sectionIds = data.sections
+      const sectionIds = planData.sections
         .map((sec) => sec.id)
         .filter((id): id is string => Boolean(id))
 
@@ -103,7 +158,7 @@ export async function updateWorkoutPlan(
         },
       })
 
-      for (const sec of data.sections) {
+      for (const sec of planData.sections) {
         let section: { id: string }
 
         if (sec.id) {

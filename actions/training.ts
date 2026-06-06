@@ -87,14 +87,14 @@ export async function createTraining(raw: CreateTrainingFormValues) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
-  const parsed = createTrainingSchema.safeParse(raw)
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Nieprawidłowe dane." }
+  const validated = createTrainingSchema.safeParse(raw)
+  if (!validated.success) {
+    return { error: "Nieprawidłowe dane wejściowe." }
   }
 
-  const data = parsed.data
+  const data = validated.data
   const validation = await validateTrainerTrainingInput(session.user.id, data)
-  if ("error" in validation) {
+  if (validation.error) {
     return { error: validation.error }
   }
 
@@ -132,14 +132,14 @@ export async function updateTraining(raw: UpdateTrainingFormValues) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
-  const parsed = updateTrainingSchema.safeParse(raw)
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Nieprawidłowe dane." }
+  const validated = updateTrainingSchema.safeParse(raw)
+  if (!validated.success) {
+    return { error: "Nieprawidłowe dane wejściowe." }
   }
 
-  const data = parsed.data
+  const data = validated.data
   const validation = await validateTrainerTrainingInput(session.user.id, data)
-  if ("error" in validation) {
+  if (validation.error) {
     return { error: validation.error }
   }
 

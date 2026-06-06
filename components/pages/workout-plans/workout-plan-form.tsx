@@ -10,7 +10,6 @@ import {
 } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { createWorkoutPlan, updateWorkoutPlan } from "@/actions/workout-plan"
-import type { WorkoutPlanInput } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -48,7 +47,8 @@ import {
 import { CSS } from "@dnd-kit/utilities"
 import { toast } from "sonner"
 import {
-  workoutPlanFormSchema,
+  WorkoutPlanFormSchema,
+  WorkoutPlanPayload,
   type WorkoutPlanFormValues,
 } from "@/lib/validations"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -117,7 +117,7 @@ function buildDefaultValues(
   }
 }
 
-function mapToWorkoutPlanInput(data: WorkoutPlanFormValues): WorkoutPlanInput {
+function mapToWorkoutPlanPayload(data: WorkoutPlanFormValues): WorkoutPlanPayload {
   return {
     name: data.name,
     difficulty: data.difficulty || null,
@@ -505,7 +505,7 @@ export function WorkoutPlanForm({
   const [isSubmitting, startSubmitTransition] = useTransition()
 
   const form = useForm<WorkoutPlanFormValues>({
-    resolver: zodResolver(workoutPlanFormSchema),
+    resolver: zodResolver(WorkoutPlanFormSchema),
     defaultValues: buildDefaultValues(initialPlan),
     mode: "onChange",
   })
@@ -526,7 +526,6 @@ export function WorkoutPlanForm({
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   )
 
-  const sectionsError = form.formState.errors.sections?.message
 
   const handleSectionDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
@@ -556,7 +555,7 @@ export function WorkoutPlanForm({
 
   const onSubmit = (data: WorkoutPlanFormValues) => {
     startSubmitTransition(async () => {
-      const payload = mapToWorkoutPlanInput(data)
+      const payload = mapToWorkoutPlanPayload(data)
       const res = initialPlan
         ? await updateWorkoutPlan(initialPlan.id, payload)
         : await createWorkoutPlan(payload)
@@ -578,7 +577,16 @@ export function WorkoutPlanForm({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit, () => {
-          toast.error("Popraw błędy w formularzu przed zapisem.")
+          const result = WorkoutPlanFormSchema.safeParse(form.getValues())
+          const messages = result.success
+            ? []
+            : [...new Set(result.error.issues.map((issue) => issue.message))]
+          toast.error("Popraw błędy w formularzu przed zapisem.", {
+            description:
+              messages.length > 0
+                ? messages.slice(0, 5).join(".\n")
+                : undefined,
+          })
         })}
         className="mx-auto space-y-6 pb-12"
       >
@@ -693,11 +701,6 @@ export function WorkoutPlanForm({
             </DndContext>
           )}
 
-          {sectionsError && (
-            <Alert variant="destructive" className="mx-auto">
-              <AlertDescription>{sectionsError}</AlertDescription>
-            </Alert>
-          )}
 
           <div className="flex justify-center">
             <Button
