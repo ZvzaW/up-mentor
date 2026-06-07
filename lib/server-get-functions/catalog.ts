@@ -54,54 +54,52 @@ export async function getCatalogTrainers(
       whereClause.AND = andFilters
     }
 
-    const trainers = await prisma.trainer.findMany({
-      where: whereClause,
-      include: {
-        user: {
-          select: {
-            name: true,
-            surname: true,
+    const [trainers, opinionAverages] = await Promise.all([
+      prisma.trainer.findMany({
+        where: whereClause,
+        include: {
+          user: {
+            select: {
+              name: true,
+              surname: true,
+            },
+          },
+          workplace: {
+            distinct: ["city"],
+            select: {
+              city: true,
+            },
+            orderBy: {
+              city: "asc",
+            },
           },
         },
-        workplace: {
-          select: {
-            city: true,
-          },
-          orderBy: {
-            city: "asc",
-          },
+      }),
+      prisma.opinion.groupBy({
+        by: ["trainer_id"],
+        where: {
+          trainer: whereClause,
         },
-        opinion: {
-          select: {
-            rate: true,
-          },
+        _avg: {
+          rate: true,
         },
-      },
-    })
+      }),
+    ])
 
-    const data = trainers.map((trainer) => {
-      const averageRate =
-        trainer.opinion.length > 0
-          ? Number(
-              (
-                trainer.opinion.reduce(
-                  (sum, opinion) => sum + opinion.rate,
-                  0
-                ) / trainer.opinion.length
-              ).toFixed(1)
-            )
-          : null
+    const averageRateByTrainerId = new Map(
+      opinionAverages.map(({ trainer_id, _avg }) => [
+        trainer_id,
+        _avg.rate !== null ? Number(_avg.rate.toFixed(1)) : null,
+      ])
+    )
 
-      return {
-        id: trainer.id,
-        slug: trainer.slug,
-        name: `${trainer.user.name} ${trainer.user.surname}`,
-        workplaces: Array.from(
-          new Set(trainer.workplace.map((workplace) => workplace.city))
-        ),
-        averageRate,
-      }
-    })
+    const data = trainers.map((trainer) => ({
+      id: trainer.id,
+      slug: trainer.slug,
+      name: `${trainer.user.name} ${trainer.user.surname}`,
+      workplaces: trainer.workplace.map((workplace) => workplace.city),
+      averageRate: averageRateByTrainerId.get(trainer.id) ?? null,
+    }))
 
     logger.info({ nameQuery, cityQuery }, "Catalog trainers fetched successfully")
     return { success: true as const, data }

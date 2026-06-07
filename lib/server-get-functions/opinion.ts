@@ -7,22 +7,32 @@ export async function getTrainerOpinions(trainerId: string) {
   logger.info({ trainerId }, "Fetching trainer opinions")
 
   try {
-    const opinions = await prisma.opinion.findMany({
-      where: {
-        trainer_id: trainerId,
-      },
-      include: {
-        trainee: {
-          include: {
-            user: {
-              select: {
-                name: true,
+    const [opinions, { _avg }] = await Promise.all([
+      prisma.opinion.findMany({
+        where: {
+          trainer_id: trainerId,
+        },
+        include: {
+          trainee: {
+            include: {
+              user: {
+                select: {
+                  name: true,
+                },
               },
             },
           },
         },
-      },
-    })
+      }),
+      prisma.opinion.aggregate({
+        where: {
+          trainer_id: trainerId,
+        },
+        _avg: {
+          rate: true,
+        },
+      }),
+    ])
 
     const reviews = opinions.map((opinion) => ({
       traineeId: opinion.trainee_id,
@@ -32,15 +42,7 @@ export async function getTrainerOpinions(trainerId: string) {
       comment: opinion.comment,
     }))
 
-    const averageRate =
-      reviews.length > 0
-        ? Number(
-            (
-              reviews.reduce((sum, review) => sum + review.rate, 0) /
-              reviews.length
-            ).toFixed(1)
-          )
-        : null
+    const averageRate = _avg.rate !== null ? Number(_avg.rate.toFixed(1)) : null
 
     logger.info({ trainerId }, "Trainer opinions fetched successfully")
 
