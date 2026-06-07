@@ -3,6 +3,7 @@
 import * as argon2 from "argon2"
 
 import { auth } from "@/auth"
+import { getAuthJwt, hashToken } from "@/lib/auth-tokens"
 import { prisma } from "@/lib/prisma"
 import { changePasswordSchema } from "@/lib/validations"
 import { redirect } from "next/navigation"
@@ -21,8 +22,8 @@ export async function changePassword(input: unknown) {
   if (!validated.success) return { error: "Nieprawidłowe dane wejściowe." }
 
   const { currentPassword, newPassword, logoutOtherDevices } = validated.data
-  const currentRefreshToken =
-    (session as { refreshToken?: string | null }).refreshToken ?? null
+  const jwt = await getAuthJwt()
+  const currentRefreshTokenId = jwt?.refreshTokenId ?? null
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -43,12 +44,12 @@ export async function changePassword(input: unknown) {
       data: { password: hashed },
     })
 
-    if (logoutOtherDevices && currentRefreshToken) {
+    if (logoutOtherDevices && currentRefreshTokenId) {
       await prisma.refresh_token.deleteMany({
         where: {
           user_id: session.user.id,
-          token: {
-            not: currentRefreshToken,
+          id: {
+            not: currentRefreshTokenId,
           },
         },
       })
@@ -81,9 +82,6 @@ function getBaseUrl() {
   return "https://localhost:3000"
 }
 
-function hashResetToken(token: string) {
-  return crypto.createHash("sha256").update(token).digest("hex")
-}
 
 export async function requestPasswordReset(emailInput: string) {
   const validated = emailSchema.safeParse({
@@ -106,7 +104,7 @@ export async function requestPasswordReset(emailInput: string) {
   }
 
   const token = crypto.randomBytes(32).toString("hex")
-  const tokenHash = hashResetToken(token)
+  const tokenHash = hashToken(token)
   const expiresAt = new Date(Date.now() + 15 * 60 * 1000)
 
   try {
@@ -165,7 +163,7 @@ export async function resetPassword(input: {
   }
 
   const { token, password } = validated.data
-  const tokenHash = hashResetToken(token)
+  const tokenHash = hashToken(token)
 
   try {
     const tokenRecord = await prisma.password_reset_token.findUnique({

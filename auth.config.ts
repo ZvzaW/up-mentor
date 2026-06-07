@@ -54,8 +54,6 @@ export const authConfig = {
     async session({ session, token }) {
       const t = token as JWT
 
-      session.accessToken = t.accessToken
-      session.refreshToken = t.refreshToken
       session.error = t.error
 
       if (session.user) {

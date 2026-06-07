@@ -16,6 +16,7 @@ import * as argon2 from "argon2"
 import { redirect } from "next/navigation"
 import { signOut, auth } from "@/auth"
 import { signIn } from "@/auth"
+import { getAuthJwt } from "@/lib/auth-tokens"
 import { AuthError } from "next-auth"
 
 export async function register(
@@ -125,13 +126,13 @@ export async function login(data: { email: string; password: string }) {
 }
 
 export async function logout() {
-  const session = await auth()
-  const tokenToDelete = session?.refreshToken
+  const jwt = await getAuthJwt()
+  const refreshTokenId = jwt?.refreshTokenId
 
   try {
-    if (tokenToDelete) {
-      await prisma.refresh_token.deleteMany({
-        where: { token: tokenToDelete },
+    if (refreshTokenId) {
+      await prisma.refresh_token.delete({
+        where: { id: refreshTokenId },
       })
     }
   } catch (error) {
