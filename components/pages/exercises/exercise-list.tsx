@@ -17,18 +17,18 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { EXERCISE_BODY_PARTS } from "@/lib/types"
-import { exercise } from "@prisma/client"
+import { exercise, user_role } from "@prisma/client"
 
 type OriginFilter = "all" | "predefined" | "author"
 
 type ExerciseListProps = {
   exercises: exercise[]
-  role: string
+  role: user_role
 }
 
-function exerciseSourceLabel(ex: exercise, role: string) {
+function exerciseSourceLabel(ex: exercise, role: user_role) {
   if (ex.trainer_id === null) return "Baza"
-  return role === "trainer" ? "Twoje" : "Trenera"
+  return role === user_role.trainer ? "Twoje" : "Trenera"
 }
 
 export function ExerciseList({ exercises, role }: ExerciseListProps) {
@@ -184,7 +184,7 @@ export function ExerciseList({ exercises, role }: ExerciseListProps) {
                           )}
                         </div>
                       </div>
-                      {role === "trainer" && ex.trainer_id !== null && (
+                      {role === user_role.trainer && ex.trainer_id !== null && (
                         <div className="my-auto flex shrink-0 flex-col gap-0.5">
                           <EditExerciseDialog exercise={ex} />
                           <DeleteExerciseButton exerciseId={ex.id} />

@@ -6,7 +6,7 @@ import {
   editTrainerExerciseSchema,
   trainerExerciseFormSchema,
 } from "@/lib/validations"
-import type { exercise } from "@prisma/client"
+import { exercise, user_role } from "@prisma/client"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
@@ -17,7 +17,7 @@ export async function createTrainerExercise(input: unknown) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer") {
+  if (session.user.role !== user_role.trainer) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
@@ -59,7 +59,7 @@ export async function editTrainerExercise(exercise: exercise) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer") {
+  if (session.user.role !== user_role.trainer) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
@@ -108,7 +108,7 @@ export async function deleteTrainerExercise(exerciseId: string) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer") {
+  if (session.user.role !== user_role.trainer) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 

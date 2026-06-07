@@ -104,6 +104,8 @@ export default function DashboardPage() {
     error,
   }
 
+  if (!userRole) return null
+
   return (
     <div className="flex min-h-[calc(100vh-20rem)] w-full flex-col justify-center p-3">
       <div className="block lg:hidden">

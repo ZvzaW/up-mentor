@@ -1,6 +1,7 @@
 "use server"
 
 import { auth } from "@/auth"
+import { user_role } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { formatDate, toTimeInputValue } from "@/lib/utils"
 import {
@@ -42,9 +43,9 @@ function formatNextTrainingLabel(scheduledAt: Date) {
 }
 
 //------------------------------------------------------------------------------------------------
-async function getNextTraining(userId: string, role: string) {
+async function getNextTraining(userId: string, role: user_role) {
   const where =
-    role === "trainer"
+    role === user_role.trainer
       ? { trainer_id: userId, scheduled_at: { gte: new Date() } }
       : { trainee_id: userId, scheduled_at: { gte: new Date() } }
 
@@ -71,7 +72,7 @@ export async function getStatistics() {
   try {
     const nextTraining = await getNextTraining(userId, role)
 
-    if (role === "trainer") {
+    if (role === user_role.trainer) {
       const trainerStats = await getTrainerStatistics(userId)
       return {
         success: true,
@@ -80,7 +81,7 @@ export async function getStatistics() {
       }
     }
 
-    if (role === "trainee") {
+    if (role === user_role.trainee) {
       const traineeStats = await getTraineeStatistics(userId)
       return {
         success: true,

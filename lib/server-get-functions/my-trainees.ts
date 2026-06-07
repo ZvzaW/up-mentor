@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { cooperation_status } from "@prisma/client"
 import { TraineeDTO, WorkplaceAddress } from "@/lib/types"
 
 export async function getMyTrainees(userId: string) {
@@ -6,7 +7,7 @@ export async function getMyTrainees(userId: string) {
     const cooperations = await prisma.cooperation.findMany({
       where: {
         trainer_id: userId,
-        status: "active",
+        status: cooperation_status.active,
       },
       include: {
         trainee: {
@@ -58,7 +59,7 @@ export async function getMyTraineeBySlug(userId: string, slug: string) {
     const cooperation = await prisma.cooperation.findFirst({
       where: {
         trainer_id: userId,
-        status: "active",
+        status: cooperation_status.active,
         trainee: {
           slug,
         },

@@ -7,15 +7,16 @@ import { getPusherServer, isPusherConfigured } from "@/lib/pusher-server"
 import { ChatMessageDTO } from "@/lib/types"
 import { sendChatMessageSchema } from "@/lib/validations"
 import { redirect } from "next/navigation"
+import { cooperation_status, user_role } from "@prisma/client"
 
 async function assertCooperationAccess(
   userId: string,
-  role: string,
+  role: user_role,
   trainerId: string,
   traineeId: string
 ): Promise<string | null> {
-  const isTrainerParticipant = role === "trainer" && userId === trainerId
-  const isTraineeParticipant = role === "trainee" && userId === traineeId
+  const isTrainerParticipant = role === user_role.trainer && userId === trainerId
+  const isTraineeParticipant = role === user_role.trainee && userId === traineeId
 
   if (!isTrainerParticipant && !isTraineeParticipant) {
     return "Brak uprawnień do tej rozmowy."
@@ -25,7 +26,7 @@ async function assertCooperationAccess(
     where: {
       trainer_id: trainerId,
       trainee_id: traineeId,
-      status: "active",
+      status: cooperation_status.active,
     },
     select: { trainer_id: true },
   })

@@ -7,6 +7,7 @@ import type { WorkoutPlanFromDb } from "@/lib/types"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import nodemailer from "nodemailer"
+import { cooperation_status, user_role } from "@prisma/client"
 
 const transporter = nodemailer.createTransport({
   host: process.env.MAILTRAP_HOST,
@@ -87,9 +88,9 @@ export async function finishCooperation(partnerId: string) {
   }
 
   const trainerId =
-    session.user.role === "trainer" ? session.user.id : partnerId
+    session.user.role === user_role.trainer ? session.user.id : partnerId
   const traineeId =
-    session.user.role === "trainee" ? session.user.id : partnerId
+    session.user.role === user_role.trainee ? session.user.id : partnerId
 
   try {
     const cooperation = await prisma.cooperation.findUnique({
@@ -124,7 +125,7 @@ export async function finishCooperation(partnerId: string) {
       },
     })
 
-    if (!cooperation || cooperation.status !== "active") {
+    if (!cooperation || cooperation.status !== cooperation_status.active) {
       return { error: "Nie znaleziono aktywnej współpracy do zakończenia." }
     }
 
@@ -163,7 +164,7 @@ export async function finishCooperation(partnerId: string) {
           },
         },
         data: {
-          status: "finished",
+          status: cooperation_status.finished,
           workplace_id: null,
         },
       }),

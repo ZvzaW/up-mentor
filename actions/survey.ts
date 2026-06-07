@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
+import { cooperation_status, user_role } from "@prisma/client"
 
 export async function saveSurveyAnswers(
   answers: { question_id: string; answer: string }[]
@@ -12,7 +13,7 @@ export async function saveSurveyAnswers(
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainee") {
+  if (session.user.role !== user_role.trainee) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
@@ -41,7 +42,7 @@ export async function saveSurveyAnswers(
         slug: true,
         user: { select: { name: true, surname: true } },
         cooperation: {
-          where: { status: "active" },
+          where: { status: cooperation_status.active },
           select: { trainer_id: true },
         },
       },
@@ -82,11 +83,11 @@ export async function getSurveyData(traineeId?: string) {
 
   const traineeIdToFetch = traineeId || userId
 
-  if (userRole === "trainee") {
+  if (userRole === user_role.trainee) {
     if (traineeIdToFetch !== userId) {
       return { error: "Brak uprawnień do tej ankiety." }
     }
-  } else if (userRole === "trainer") {
+  } else if (userRole === user_role.trainer) {
     if (!traineeId) {
       return { error: "Nie podano podopiecznego." }
     }
@@ -95,7 +96,7 @@ export async function getSurveyData(traineeId?: string) {
       where: {
         trainer_id: userId,
         trainee_id: traineeId,
-        status: "active",
+        status: cooperation_status.active,
       },
     })
 

@@ -7,6 +7,7 @@ import {
   trainerOpinionSchema,
 } from "@/lib/validations"
 import { redirect } from "next/navigation"
+import { cooperation_status, user_role } from "@prisma/client"
 
 export async function getMyOpinion(trainerId: string) {
   const session = await auth()
@@ -14,7 +15,7 @@ export async function getMyOpinion(trainerId: string) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainee") {
+  if (session.user.role !== user_role.trainee) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
@@ -59,7 +60,7 @@ export async function upsertOpinion(opinion: TrainerOpinionFormValues) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainee") {
+  if (session.user.role !== user_role.trainee) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
@@ -80,7 +81,7 @@ export async function upsertOpinion(opinion: TrainerOpinionFormValues) {
     select: { status: true },
   })
 
-  if (!cooperation || cooperation.status !== "active") {
+  if (!cooperation || cooperation.status !== cooperation_status.active) {
     return {
       error: "Możesz ocenić tylko trenera, z którym masz aktywną współpracę.",
     }
@@ -125,7 +126,7 @@ export async function deleteOpinion(trainerId: string) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainee") {
+  if (session.user.role !== user_role.trainee) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 

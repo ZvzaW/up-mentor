@@ -13,9 +13,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { logout } from "@/actions/authorization"
 import { toast } from "sonner"
+import { user_role } from "@prisma/client"
 
 interface NavbarProps {
-  role: "trainer" | "trainee" | string
+  role: user_role
 }
 
 export default function Navbar({ role }: NavbarProps) {
@@ -31,7 +32,7 @@ export default function Navbar({ role }: NavbarProps) {
   }
 
   const roleSpecificLink =
-    role === "trainer"
+    role === user_role.trainer
       ? { name: "Podopieczni", href: "/dashboard/trainees" }
       : { name: "Trenerzy", href: "/dashboard/trainers" }
 

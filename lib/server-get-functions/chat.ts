@@ -1,13 +1,14 @@
 import { prisma } from "@/lib/prisma"
 import { ChatConversationDTO } from "@/lib/types"
+import { cooperation_status, user_role } from "@prisma/client"
 
-export async function getChatConversations(userId: string, role: string) {
+export async function getChatConversations(userId: string, role: user_role) {
   try {
-    if (role === "trainer") {
+    if (role === user_role.trainer) {
       const cooperations = await prisma.cooperation.findMany({
         where: {
           trainer_id: userId,
-          status: "active",
+          status: cooperation_status.active,
         },
         include: {
           trainee: {
@@ -30,11 +31,11 @@ export async function getChatConversations(userId: string, role: string) {
       return { success: true, data }
     }
 
-    if (role === "trainee") {
+    if (role === user_role.trainee) {
       const cooperations = await prisma.cooperation.findMany({
         where: {
           trainee_id: userId,
-          status: "active",
+          status: cooperation_status.active,
         },
         include: {
           trainer: {

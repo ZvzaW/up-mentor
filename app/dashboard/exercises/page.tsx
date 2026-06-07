@@ -4,12 +4,16 @@ import { AddExerciseDialog } from "@/components/dialogs/trainer/add-exercise"
 import { ExerciseList } from "@/components/pages/exercises/exercise-list"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Card, CardContent } from "@/components/ui/card"
+import { user_role } from "@prisma/client"
+import { redirect } from "next/navigation"
 
 export default async function ExercisesPage() {
   const session = await auth()
-
-  const userId = session?.user?.id ?? ""
-  const role = session?.user?.role ?? ""
+  if (!session?.user?.id || !session.user.role) {
+    redirect("/?unauthorized=true")
+  }
+  const userId = session.user.id
+  const role = session.user.role
 
   const result = await getExercises(userId, role)
   const exercises = result.data ?? []
@@ -21,7 +25,7 @@ export default async function ExercisesPage() {
           Katalog ćwiczeń
         </h1>
 
-        {role === "trainer" && <AddExerciseDialog />}
+        {role === user_role.trainer && <AddExerciseDialog />}
       </div>
 
       {result.error && (

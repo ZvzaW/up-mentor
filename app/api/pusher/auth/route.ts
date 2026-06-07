@@ -2,6 +2,7 @@ import { auth } from "@/auth"
 import { parseCooperationChannelName } from "@/lib/chat-channel"
 import { prisma } from "@/lib/prisma"
 import { getPusherServer } from "@/lib/pusher-server"
+import { cooperation_status, user_role } from "@prisma/client"
 
 export async function POST(request: Request) {
   const session = await auth()
@@ -33,8 +34,8 @@ export async function POST(request: Request) {
   const role = session.user.role
 
   const isParticipant =
-    (role === "trainer" && userId === trainerId) ||
-    (role === "trainee" && userId === traineeId)
+    (role === user_role.trainer && userId === trainerId) ||
+    (role === user_role.trainee && userId === traineeId)
 
   if (!isParticipant) {
     return new Response("Forbidden", { status: 403 })
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
     where: {
       trainer_id: trainerId,
       trainee_id: traineeId,
-      status: "active",
+      status: cooperation_status.active,
     },
     select: { trainer_id: true },
   })

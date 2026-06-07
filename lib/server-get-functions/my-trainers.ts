@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { cooperation_status } from "@prisma/client"
 import { formatWorkplaceAddress } from "@/lib/utils"
 import { WorkplaceAddress } from "@/lib/types"
 
@@ -7,7 +8,7 @@ export async function getMyTrainers(userId: string) {
     const cooperations = await prisma.cooperation.findMany({
       where: {
         trainee_id: userId,
-        status: "active",
+        status: cooperation_status.active,
       },
       include: {
         trainer: {
@@ -58,7 +59,7 @@ export async function getMyTrainerBySlug(userId: string, slug: string) {
     const cooperation = await prisma.cooperation.findFirst({
       where: {
         trainee_id: userId,
-        status: "active",
+        status: cooperation_status.active,
         trainer: {
           slug,
         },
@@ -103,7 +104,7 @@ export async function countCooperations(userId: string) {
     const count = await prisma.cooperation.count({
       where: {
         trainee_id: userId,
-        status: "active",
+        status: cooperation_status.active,
       },
     })
 

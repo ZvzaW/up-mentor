@@ -16,8 +16,11 @@ export default async function EditWorkoutPlanPage({
   params,
 }: EditWorkoutPlanPageProps) {
   const session = await auth()
-  const userId = session?.user?.id ?? ""
-  const role = session?.user?.role ?? ""
+  if (!session?.user?.id || !session.user.role) {
+    redirect("/?unauthorized=true")
+  }
+  const userId = session.user.id
+  const role = session.user.role
 
   const { id } = await params
   const [planResult, exercisesResult] = await Promise.all([

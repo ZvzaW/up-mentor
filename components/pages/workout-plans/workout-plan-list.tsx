@@ -44,6 +44,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { TraineeDTO } from "@/lib/types"
+import { user_role } from "@prisma/client"
 
 const DIFFICULTY_LEVELS = [
   "Początkujący",
@@ -55,7 +56,7 @@ type DifficultyFilter = "all" | (typeof DIFFICULTY_LEVELS)[number] | "none"
 
 interface WorkoutPlanListProps {
   plans: WorkoutPlanItem[]
-  role: string
+  role: user_role
   trainees?: TraineeDTO[]
 }
 
@@ -275,7 +276,7 @@ export function WorkoutPlanList({
                   </div>
 
                   <div className="text-muted-foreground mx-auto max-w-full pt-1 text-center text-xs break-words sm:mx-0 sm:text-left">
-                    {role === "trainer" ? (
+                    {role === user_role.trainer ? (
                       <div>
                         Udostępniono dla:{" "}
                         {assignedLibraries.length > 0 ? (
@@ -307,7 +308,7 @@ export function WorkoutPlanList({
 
                 {/*OPCJE*/}
                 <div className="mt-2 flex items-center justify-center gap-2 sm:mt-0 sm:self-start">
-                  {role === "trainer" && (
+                  {role === user_role.trainer && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button

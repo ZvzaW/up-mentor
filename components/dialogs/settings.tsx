@@ -14,6 +14,7 @@ import {
   Pencil,
 } from "lucide-react"
 import { toDateInputValue } from "@/lib/utils"
+import { user_role } from "@prisma/client"
 
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -57,7 +58,7 @@ export interface SettingsDialogProps {
     surname: string
     email: string
     phone: string
-    role: string
+    role: user_role
   }
   specificData: {
     birthdate?: Date
@@ -82,7 +83,7 @@ export default function SettingsDialog({
   const [isPasswordPending, startPasswordTransition] = React.useTransition()
   const [isEditPending, startEditTransition] = React.useTransition()
   const [isDeletePending, startDeleteTransition] = React.useTransition()
-  const isTrainer = baseData.role === "trainer"
+  const isTrainer = baseData.role === user_role.trainer
   const formSchema = isTrainer
     ? trainerPersonalDataSchema
     : traineePersonalDataSchema
@@ -431,7 +432,7 @@ export default function SettingsDialog({
                 </p>
               </div>
 
-              {baseData.role === "trainer" && (
+              {baseData.role === user_role.trainer && (
                 <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3">
                   <p className="text-sm font-bold text-amber-300">
                     Zalecenie dla trenera
@@ -561,7 +562,7 @@ export default function SettingsDialog({
                     )}
                   />
 
-                  {baseData.role === "trainee" && (
+                  {baseData.role === user_role.trainee && (
                     <FormField
                       control={editForm.control}
                       name={"birthdate" as Path<EditFormValues>}

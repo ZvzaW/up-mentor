@@ -10,7 +10,7 @@ import {
 } from "@/lib/validations"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
-import { Prisma } from "@prisma/client"
+import { cooperation_status, Prisma, user_role } from "@prisma/client"
 import { endOfWeek, startOfWeek } from "date-fns"
 import { isTrainingScheduledInPast } from "@/lib/training-calendar-functions"
 import { combineDateAndTime, formatWorkplaceAddress } from "@/lib/utils"
@@ -26,10 +26,10 @@ function mapTraining(t: {
     trainee: { user: { name: string; surname: string } }
     trainer: { user: { name: string; surname: string } }
     workplace: WorkplaceAddress | null
-    status: string
+    status: cooperation_status
   }
 }): TrainingDTO {
-  const isFinished = t.cooperation.status === "finished"
+  const isFinished = t.cooperation.status === cooperation_status.finished
   const workplaceAddress = t.cooperation.workplace
     ? formatWorkplaceAddress(t.cooperation.workplace)
     : "Dane niedostępne"
@@ -58,7 +58,7 @@ async function validateTrainerTrainingInput(
     where: {
       trainer_id: trainerId,
       trainee_id: data.trainee_id,
-      status: "active",
+      status: cooperation_status.active,
     },
   })
 
@@ -83,7 +83,7 @@ export async function createTraining(raw: CreateTrainingFormValues) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer") {
+  if (session.user.role !== user_role.trainer) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
@@ -128,7 +128,7 @@ export async function updateTraining(raw: UpdateTrainingFormValues) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer") {
+  if (session.user.role !== user_role.trainer) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
@@ -185,7 +185,7 @@ export async function deleteTraining(id: string) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer") {
+  if (session.user.role !== user_role.trainer) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
@@ -228,7 +228,7 @@ export async function getTrainingsForWeek(weekAnchorIso: string) {
 
   try {
     const where =
-      session.user.role === "trainer"
+      session.user.role === user_role.trainer
         ? { trainer_id: session.user.id }
         : { trainee_id: session.user.id }
 

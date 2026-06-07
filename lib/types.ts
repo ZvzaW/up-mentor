@@ -1,4 +1,4 @@
-import { workplace } from "@prisma/client"
+import { user_role, workplace } from "@prisma/client"
 
 export type TrainingDTO = {
   id: string
@@ -35,7 +35,7 @@ export type UserDTO = {
   surname: string
   email: string
   phone: string
-  role: string
+  role: user_role
 }
 
 export type TrainerDTO = {

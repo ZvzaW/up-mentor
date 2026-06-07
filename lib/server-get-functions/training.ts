@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { cooperation_status } from "@prisma/client"
 import { format } from "date-fns"
 import { pl } from "date-fns/locale"
 import {
@@ -70,7 +71,7 @@ export async function getTrainingsForTrainee(
       where: {
         trainer_id: userId,
         trainee_id: traineeId,
-        status: "active",
+        status: cooperation_status.active,
       },
       include: {
         workplace: {

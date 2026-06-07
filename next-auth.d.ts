@@ -1,15 +1,16 @@
 import { DefaultSession } from "next-auth"
+import { user_role } from "@prisma/client"
 
 declare module "next-auth" {
   interface User {
-    role: string
+    role: user_role
   }
 
   interface Session {
     error?: "RefreshTokenError"
     user: {
       id: string
-      role: string
+      role: user_role
     } & DefaultSession["user"]
   }
 }
@@ -20,7 +21,7 @@ declare module "next-auth/jwt" {
     refreshToken: string
     refreshTokenId: string
     accessTokenExpires: number
-    role: string
+    role: user_role
     id: string
     error?: "RefreshTokenError"
   }

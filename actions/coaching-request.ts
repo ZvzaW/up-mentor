@@ -8,6 +8,7 @@ import {
   type CoachingRequestInput,
 } from "@/lib/validations"
 import { redirect } from "next/navigation"
+import { cooperation_status, user_role } from "@prisma/client"
 
 export async function sendCoachingRequest(data: CoachingRequestInput) {
   const session = await auth()
@@ -16,7 +17,7 @@ export async function sendCoachingRequest(data: CoachingRequestInput) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainee") {
+  if (session.user.role !== user_role.trainee) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
@@ -43,7 +44,7 @@ export async function sendCoachingRequest(data: CoachingRequestInput) {
     const existingCooperation = await prisma.cooperation.findUnique({
       where: {
         trainer_id_trainee_id: { trainer_id, trainee_id: traineeId },
-        status: "active",
+        status: cooperation_status.active,
       },
       select: { created_at: true },
     })
@@ -94,7 +95,7 @@ export async function deleteCoachingRequest(trainerId: string) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainee") {
+  if (session.user.role !== user_role.trainee) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
@@ -129,7 +130,7 @@ export async function acceptRequest(traineeId: string) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer") {
+  if (session.user.role !== user_role.trainer) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
@@ -180,7 +181,7 @@ export async function acceptRequest(traineeId: string) {
       })
 
       if (existingCooperation) {
-        if (existingCooperation.status === "finished") {
+        if (existingCooperation.status === cooperation_status.finished) {
           await tx.cooperation.update({
             where: {
               trainer_id_trainee_id: {
@@ -189,7 +190,7 @@ export async function acceptRequest(traineeId: string) {
               },
             },
             data: {
-              status: "active",
+              status: cooperation_status.active,
               workplace_id: workplaceId,
             },
           })
@@ -204,7 +205,7 @@ export async function acceptRequest(traineeId: string) {
             trainer_id: trainerId,
             trainee_id: traineeId,
             workplace_id: workplaceId,
-            status: "active",
+            status: cooperation_status.active,
           },
         })
       }
@@ -241,7 +242,7 @@ export async function rejectRequest(traineeId: string) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer") {
+  if (session.user.role !== user_role.trainer) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 

@@ -9,11 +9,12 @@ import TrainerStats from "@/components/pages/statistics/trainer-stats"
 import TraineeStats from "@/components/pages/statistics/trainee-stats"
 import { getStatistics } from "@/actions/statistics"
 import StatsPanelSkeleton from "@/components/ui/skeleton"
+import { user_role } from "@prisma/client"
 
 type StatisticsResult = Awaited<ReturnType<typeof getStatistics>>
 
 interface StatsPanelProps {
-  role: string
+  role: user_role
 }
 
 export default function StatsPanel({ role }: StatsPanelProps) {
@@ -74,7 +75,7 @@ export default function StatsPanel({ role }: StatsPanelProps) {
                 </div>
               </div>
 
-              {role === "trainer" ? (
+              {role === user_role.trainer ? (
                 <TrainerStats data={result.trainer} />
               ) : (
                 <TraineeStats data={result.trainee} />

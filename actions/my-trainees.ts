@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
+import { user_role } from "@prisma/client"
 
 export async function updateMyTraineeNote(traineeId: string, note: string) {
   const session = await auth()
@@ -10,7 +11,7 @@ export async function updateMyTraineeNote(traineeId: string, note: string) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer") {
+  if (session.user.role !== user_role.trainer) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 

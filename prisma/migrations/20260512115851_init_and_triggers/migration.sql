@@ -1,3 +1,8 @@
+-- CreateEnum
+CREATE TYPE "user_role" AS ENUM ('trainer', 'trainee');
+
+CREATE TYPE "cooperation_status" AS ENUM ('active', 'finished');
+
 -- CreateTable
 CREATE TABLE "user" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
@@ -6,7 +11,7 @@ CREATE TABLE "user" (
     "email" VARCHAR(100) NOT NULL,
     "phone" VARCHAR(30) NOT NULL,
     "password" TEXT NOT NULL,
-    "role" VARCHAR(20) NOT NULL,
+    "role" "user_role" NOT NULL,
 
     CONSTRAINT "user_pk" PRIMARY KEY ("id")
 );
@@ -38,7 +43,6 @@ CREATE TABLE "coaching_request" (
     "workplace_id" UUID NOT NULL,
     "message" TEXT,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "status" VARCHAR(10) NOT NULL DEFAULT 'pending',
 
     CONSTRAINT "coaching_request_pk" PRIMARY KEY ("trainer_id","trainee_id")
 );
@@ -50,7 +54,7 @@ CREATE TABLE "cooperation" (
     "workplace_id" UUID,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "trainer_note" TEXT,
-    "status" VARCHAR(10) NOT NULL DEFAULT 'active',
+    "status" "cooperation_status" NOT NULL DEFAULT 'active',
 
     CONSTRAINT "cooperation_pk" PRIMARY KEY ("trainer_id","trainee_id")
 );
@@ -304,7 +308,40 @@ ALTER TABLE "chat_message" ADD CONSTRAINT "chat_message_cooperation" FOREIGN KEY
 
 
 
---TRIGGERY - POWIADOMIENIA
+
+--TRIGGERY 
+CREATE OR REPLACE FUNCTION check_workplace_for_cooperation()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_workplace_trainer_id UUID;
+BEGIN
+    IF NEW.workplace_id IS NULL THEN
+        RETURN NEW;
+    END IF;
+
+    SELECT trainer_id INTO v_workplace_trainer_id
+    FROM workplace
+    WHERE id = NEW.workplace_id;
+
+    IF v_workplace_trainer_id IS NULL THEN
+        RAISE EXCEPTION 'Workplace does not exist';
+    END IF;
+
+    IF v_workplace_trainer_id <> NEW.trainer_id THEN
+        RAISE EXCEPTION 'Workplace trainer_id must match cooperation trainer_id';
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_workplace_check
+BEFORE INSERT OR UPDATE OF workplace_id, trainer_id ON cooperation
+FOR EACH ROW
+EXECUTE FUNCTION check_workplace_for_cooperation();
+
+
+-- POWIADOMIENIA - TRIGGERY
 -- 1. NOWY TRENER
 CREATE OR REPLACE FUNCTION notify_on_new_trainer()
 RETURNS TRIGGER AS $$

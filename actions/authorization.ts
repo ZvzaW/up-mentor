@@ -11,7 +11,7 @@ import {
   RegisterTrainerFormValues,
   registerTrainerSchema,
 } from "@/lib/validations"
-import { Prisma } from "@prisma/client"
+import { Prisma, user_role } from "@prisma/client"
 import * as argon2 from "argon2"
 import { redirect } from "next/navigation"
 import { signOut, auth } from "@/auth"
@@ -21,10 +21,10 @@ import { AuthError } from "next-auth"
 
 export async function register(
   formData: RegisterTraineeFormValues | RegisterTrainerFormValues,
-  role: "trainee" | "trainer"
+  role: user_role
 ) {
   const schema =
-    role === "trainer" ? registerTrainerSchema : registerTraineeSchema
+    role === user_role.trainer ? registerTrainerSchema : registerTraineeSchema
   const validatedFields = schema.safeParse(formData)
 
   if (!validatedFields.success)
@@ -35,7 +35,7 @@ export async function register(
 
   let generatedSlug = ""
 
-  if (role === "trainer") {
+  if (role === user_role.trainer) {
     generatedSlug = await generateUniqueTrainerSlug(data.name, data.surname)
   } else {
     generatedSlug = await generateUniqueTraineeSlug(data.name, data.surname)
@@ -54,7 +54,7 @@ export async function register(
         },
       })
 
-      if (role === "trainer") {
+      if (role === user_role.trainer) {
         const d = data as RegisterTrainerFormValues
         await tx.trainer.create({
           data: { id: newUser.id, slug: generatedSlug },

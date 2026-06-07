@@ -34,11 +34,12 @@ import {
   type RegisterTrainerFormValues,
 } from "@/lib/validations"
 import { register } from "@/actions/authorization"
+import { user_role } from "@prisma/client"
 
 const PASSWORD_MAX_LENGTH = 30
 
 export default function RegisterPage() {
-  const [activeTab, setActiveTab] = useState<"trainee" | "trainer">("trainee")
+  const [activeTab, setActiveTab] = useState<user_role>(user_role.trainee)
   const [traineeError, setTraineeError] = useState<string | null>(null)
   const [trainerError, setTrainerError] = useState<string | null>(null)
 
@@ -79,12 +80,12 @@ export default function RegisterPage() {
   const [isPending, setIsPending] = useState(false)
 
   const handleTabChange = (value: string) => {
-    const tab = value === "trainer" ? "trainer" : "trainee"
+    const tab = value === user_role.trainer ? user_role.trainer : user_role.trainee
     setActiveTab(tab)
     setTraineeError(null)
     setTrainerError(null)
 
-    if (tab === "trainee") {
+    if (tab === user_role.trainee) {
       traineeForm.reset()
     } else {
       trainerForm.reset()
@@ -95,7 +96,7 @@ export default function RegisterPage() {
     setTraineeError(null)
     setIsPending(true)
     try {
-      const result = await register(data, "trainee")
+      const result = await register(data, user_role.trainee)
       if (result?.error) {
         setTraineeError(result.error)
       }
@@ -108,7 +109,7 @@ export default function RegisterPage() {
     setTrainerError(null)
     setIsPending(true)
     try {
-      const result = await register(data, "trainer")
+      const result = await register(data, user_role.trainer)
       if (result?.error) {
         setTrainerError(result.error)
       }
@@ -133,12 +134,12 @@ export default function RegisterPage() {
             className="w-full"
           >
             <TabsList className="mb-6 grid w-full grid-cols-2">
-              <TabsTrigger value="trainee">Podopieczny</TabsTrigger>
-              <TabsTrigger value="trainer">Trener</TabsTrigger>
+              <TabsTrigger value={user_role.trainee}>Podopieczny</TabsTrigger>
+              <TabsTrigger value={user_role.trainer}>Trener</TabsTrigger>
             </TabsList>
 
             {/* TRAINEE TAB */}
-            <TabsContent value="trainee">
+            <TabsContent value={user_role.trainee}>
               <Form {...traineeForm}>
                 <form
                   className="space-y-6"
@@ -291,7 +292,7 @@ export default function RegisterPage() {
 
             {/*------------------------------------------------------------------------------------- */}
             {/* TRAINER TAB */}
-            <TabsContent value="trainer">
+            <TabsContent value={user_role.trainer}>
               <Form {...trainerForm}>
                 <form
                   className="space-y-6"

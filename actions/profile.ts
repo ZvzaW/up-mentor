@@ -10,7 +10,7 @@ import {
   createWorkplaceSchema,
   editWorkplaceSchema,
 } from "@/lib/validations"
-import { Prisma, workplace } from "@prisma/client"
+import { Prisma, user_role, workplace } from "@prisma/client"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
@@ -22,7 +22,7 @@ export async function updatePersonalData(input: unknown) {
 
   const role = session.user.role
   const schema =
-    role === "trainer" ? trainerPersonalDataSchema : traineePersonalDataSchema
+    role === user_role.trainer ? trainerPersonalDataSchema : traineePersonalDataSchema
 
   const validated = schema.safeParse(input)
   if (!validated.success) return { error: "Nieprawidłowe dane wejściowe." }
@@ -40,7 +40,7 @@ export async function updatePersonalData(input: unknown) {
         },
       })
 
-      if (role === "trainee") {
+      if (role === user_role.trainee) {
         const traineeData = data as TraineePersonalDataValues
 
         await tx.trainee.update({
@@ -71,7 +71,7 @@ export async function updateTrainerCard(input: unknown) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer") {
+  if (session.user.role !== user_role.trainer) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
@@ -112,7 +112,7 @@ export async function editWorkplace(workplace: workplace) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer") {
+  if (session.user.role !== user_role.trainer) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
@@ -162,7 +162,7 @@ export async function addWorkplace(input: unknown) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer") {
+  if (session.user.role !== user_role.trainer) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
@@ -206,7 +206,7 @@ export async function deleteWorkplace(workplaceId: string) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer") {
+  if (session.user.role !== user_role.trainer) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
@@ -262,7 +262,7 @@ export async function changeProfileVisibility(isPublic: boolean) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer") {
+  if (session.user.role !== user_role.trainer) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 

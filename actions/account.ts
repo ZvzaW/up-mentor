@@ -3,6 +3,7 @@
 import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
+import { cooperation_status, user_role } from "@prisma/client"
 
 export async function deleteAccount() {
   const session = await auth()
@@ -24,7 +25,7 @@ export async function deleteAccount() {
       }
 
       //Trainer
-      if (user.role === "trainer") {
+      if (user.role === user_role.trainer) {
         await tx.coaching_request.deleteMany({
           where: { trainer_id: userId },
         })
@@ -40,7 +41,7 @@ export async function deleteAccount() {
         await tx.cooperation.updateMany({
           where: { trainer_id: userId },
           data: {
-            status: "finished",
+            status: cooperation_status.finished,
             workplace_id: null,
           },
         })
@@ -75,7 +76,7 @@ export async function deleteAccount() {
           },
         })
         //Trainee
-      } else if (user.role === "trainee") {
+      } else if (user.role === user_role.trainee) {
         await tx.chat_message.deleteMany({
           where: { trainee_id: userId },
         })
@@ -87,9 +88,9 @@ export async function deleteAccount() {
         await tx.cooperation.updateMany({
           where: {
             trainee_id: userId,
-            status: { not: "finished" },
+            status: { not: cooperation_status.finished },
           },
-          data: { status: "finished" },
+          data: { status: cooperation_status.finished },
         })
 
         await tx.plans_library.deleteMany({
@@ -111,10 +112,10 @@ export async function deleteAccount() {
       //Both roles
       const now = new Date()
 
-      if (user.role === "trainer" || user.role === "trainee") {
+      if (user.role === user_role.trainer || user.role === user_role.trainee) {
         await tx.training.deleteMany({
           where: {
-            ...(user.role === "trainer"
+            ...(user.role === user_role.trainer
               ? { trainer_id: userId }
               : { trainee_id: userId }),
             scheduled_at: { gt: now },

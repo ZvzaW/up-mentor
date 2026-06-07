@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import type { WorkoutPlanFromDb, WorkoutPlanItem } from "@/lib/types"
+import { user_role } from "@prisma/client"
 
 const formatPlans = (plans: WorkoutPlanFromDb[]): WorkoutPlanItem[] => {
   return plans.map((plan) => ({
@@ -28,9 +29,9 @@ const formatPlans = (plans: WorkoutPlanFromDb[]): WorkoutPlanItem[] => {
   }))
 }
 
-export async function getWorkoutPlans(userId: string, role: string) {
+export async function getWorkoutPlans(userId: string, role: user_role) {
   try {
-    if (role === "trainer") {
+    if (role === user_role.trainer) {
       const plans = await prisma.workout_plan.findMany({
         where: { trainer_id: userId },
         include: {
@@ -56,7 +57,7 @@ export async function getWorkoutPlans(userId: string, role: string) {
       })
 
       return { data: formatPlans(plans) }
-    } else if (role === "trainee") {
+    } else if (role === user_role.trainee) {
       const plans = await prisma.workout_plan.findMany({
         where: {
           plans_library: {

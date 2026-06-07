@@ -2,6 +2,7 @@ import { auth } from "@/auth"
 import Navbar from "@/components/layout/navbar"
 import LogoutTrigger from "@/components/auth/logout-trigger"
 import { DashboardRoleProvider } from "@/components/providers/dashboard-role-provider"
+import { redirect } from "next/navigation"
 
 export default async function DashboardLayout({
   children,
@@ -9,7 +10,10 @@ export default async function DashboardLayout({
   children: React.ReactNode
 }) {
   const session = await auth()
-  const userRole = session?.user?.role ?? ""
+  if (!session?.user?.role) {
+    redirect("/?unauthorized=true")
+  }
+  const userRole = session.user.role
 
   const hasAuthError = session?.error === "RefreshTokenError"
 

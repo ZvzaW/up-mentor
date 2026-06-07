@@ -4,7 +4,7 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { toDownloadFile } from "@/lib/workout-plan-pdf"
 import { WorkoutPlanPayload, WorkoutPlanPayloadSchema } from "@/lib/validations"
-import { Prisma } from "@prisma/client"
+import { cooperation_status, Prisma, user_role } from "@prisma/client"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
@@ -38,7 +38,7 @@ export async function createWorkoutPlan(data: unknown) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer")
+  if (session.user.role !== user_role.trainer)
     return { error: "Brak uprawnień do tej operacji." }
 
   const validated = WorkoutPlanPayloadSchema.safeParse(data)
@@ -107,7 +107,7 @@ export async function updateWorkoutPlan(
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer")
+  if (session.user.role !== user_role.trainer)
     return { error: "Brak uprawnień do tej operacji." }
 
   try {
@@ -262,7 +262,7 @@ export async function cloneWorkoutPlan(planId: string) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer")
+  if (session.user.role !== user_role.trainer)
     return { error: "Brak uprawnień do tej operacji." }
 
   try {
@@ -327,7 +327,7 @@ export async function deleteWorkoutPlan(planId: string) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer")
+  if (session.user.role !== user_role.trainer)
     return { error: "Brak uprawnień do tej operacji." }
 
   try {
@@ -364,7 +364,7 @@ export async function generateWorkoutPlanPdf(planId: string) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer" && session.user.role !== "trainee") {
+  if (session.user.role !== user_role.trainer && session.user.role !== user_role.trainee) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
@@ -372,7 +372,7 @@ export async function generateWorkoutPlanPdf(planId: string) {
     const plan = await prisma.workout_plan.findFirst({
       where: {
         id: planId,
-        ...(session.user.role === "trainer"
+        ...(session.user.role === user_role.trainer
           ? { trainer_id: session.user.id }
           : {
               plans_library: {
@@ -401,7 +401,7 @@ export async function generateWorkoutPlanPdf(planId: string) {
       return { error: "Nie znaleziono planu lub brak dostępu." }
     }
 
-    if (session.user.role === "trainer") {
+    if (session.user.role === user_role.trainer) {
       const assignmentCount = await prisma.plans_library.count({
         where: { workout_plan_id: planId },
       })
@@ -432,7 +432,7 @@ export async function assignPlanToTrainee(planId: string, traineeId: string) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer")
+    if (session.user.role !== user_role.trainer)
     return { error: "Brak uprawnień do tej operacji." }
 
   try {
@@ -452,7 +452,7 @@ export async function assignPlanToTrainee(planId: string, traineeId: string) {
       where: {
         trainer_id: session.user.id,
         trainee_id: traineeId,
-        status: "active",
+        status: cooperation_status.active,
       },
       select: { trainee_id: true },
     })

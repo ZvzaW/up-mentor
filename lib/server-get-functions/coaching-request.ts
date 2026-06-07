@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { cooperation_status } from "@prisma/client"
 import { formatWorkplaceAddress } from "@/lib/utils"
 import { WorkplaceAddress } from "@/lib/types"
 
@@ -12,7 +13,7 @@ export async function getCooperationStatus(userId: string, trainerId: string) {
     prisma.cooperation.findUnique({
       where: {
         trainer_id_trainee_id: { trainer_id: trainerId, trainee_id: userId },
-        status: "active",
+        status: cooperation_status.active,
       },
     }),
   ])
@@ -28,7 +29,6 @@ export async function getPendingRequests(userId: string) {
     const requests = await prisma.coaching_request.findMany({
       where: {
         trainer_id: userId,
-        status: "pending",
       },
       include: {
         trainee: {
