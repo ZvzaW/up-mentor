@@ -130,6 +130,16 @@ export async function finishCooperation(partnerId: string) {
     }
 
     const assignedPlans = await getAssignedPlansToTrainee(trainerId, traineeId)
+
+    if (assignedPlans.length > 0) {
+      await sendAssignedPlansEmail({
+        traineeEmail: cooperation.trainee.user.email,
+        traineeName: cooperation.trainee.user.name,
+        trainerFullName: `${cooperation.trainer.user.name} ${cooperation.trainer.user.surname}`,
+        plans: assignedPlans,
+      })
+    }
+
     const now = new Date()
 
     await prisma.$transaction([
@@ -169,19 +179,6 @@ export async function finishCooperation(partnerId: string) {
         },
       }),
     ])
-
-    if (assignedPlans.length > 0) {
-      try {
-        await sendAssignedPlansEmail({
-          traineeEmail: cooperation.trainee.user.email,
-          traineeName: cooperation.trainee.user.name,
-          trainerFullName: `${cooperation.trainer.user.name} ${cooperation.trainer.user.surname}`,
-          plans: assignedPlans,
-        })
-      } catch (emailError) {
-        console.error("[SEND_PLANS_ERROR]:", emailError)
-      }
-    }
 
     revalidatePath("/dashboard/trainers")
     revalidatePath("/dashboard/trainees")
