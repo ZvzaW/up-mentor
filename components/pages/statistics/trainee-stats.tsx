@@ -10,6 +10,7 @@ import {
   LabelList,
   Rectangle,
 } from "recharts"
+import type { BarShapeProps } from "recharts"
 import { Separator } from "@/components/ui/separator"
 import type { TraineeStatistics } from "@/lib/types"
 
@@ -64,7 +65,7 @@ export default function TraineeStats({ data }: TraineeStatsProps) {
                 <Bar
                   dataKey="h"
                   barSize={25}
-                  shape={(props: any) => {
+                  shape={(props: BarShapeProps) => {
                     const { index, ...rest } = props
                     const fill = index === 0 ? "#F0DAA7" : "#8CA0D0"
                     return (
@@ -119,7 +120,7 @@ export default function TraineeStats({ data }: TraineeStatsProps) {
                 <Bar
                   dataKey="trainings"
                   barSize={25}
-                  shape={(props: any) => {
+                  shape={(props: BarShapeProps) => {
                     const { index, ...rest } = props
                     const fill = index === 0 ? "#F0DAA7" : "#8CA0D0"
                     return (

@@ -10,6 +10,7 @@ import {
   LabelList,
   Rectangle,
 } from "recharts"
+import type { BarShapeProps, RenderableText } from "recharts"
 import type { TrainerStatistics } from "@/lib/types"
 
 interface TrainerStatsProps {
@@ -57,7 +58,7 @@ export default function TrainerStats({ data }: TrainerStatsProps) {
                     position="top"
                     fill="#e5e5e5"
                     fontSize={12}
-                    formatter={(label: any) => `${label ?? ""}h`}
+                    formatter={(label: RenderableText) => `${label ?? ""}h`}
                   />
                 </Bar>
               </BarChart>
@@ -91,7 +92,7 @@ export default function TrainerStats({ data }: TrainerStatsProps) {
                   />
                   <Bar
                     dataKey="trainings"
-                    shape={(props: any) => {
+                    shape={(props: BarShapeProps) => {
                       const { index, ...rest } = props
                       const fill = index === 1 ? "#F0DAA7" : "#8CA0D0"
                       return (
@@ -141,7 +142,7 @@ export default function TrainerStats({ data }: TrainerStatsProps) {
                   />
                   <Bar
                     dataKey="salary"
-                    shape={(props: any) => {
+                    shape={(props: BarShapeProps) => {
                       const { index, ...rest } = props
                       const fill = index === 1 ? "#F0DAA7" : "#8CA0D0"
                       return (
@@ -158,7 +159,7 @@ export default function TrainerStats({ data }: TrainerStatsProps) {
                       position="top"
                       fill="white"
                       fontSize={12}
-                      formatter={(label: any) => `${label ?? ""}zł`}
+                      formatter={(label: RenderableText) => `${label ?? ""}zł`}
                     />
                   </Bar>
                 </BarChart>

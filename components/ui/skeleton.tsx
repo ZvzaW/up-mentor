@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils"
+import { user_role } from "@prisma/client"
 
 function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
   return (
@@ -76,9 +77,8 @@ export { Skeleton }
 
 function NextTrainingSkeleton() {
   return (
-    <div className="bg-dirty-blue flex items-center justify-between rounded-xl py-4">
-      <Skeleton className="ml-5 h-4 w-32 rounded" />
-      <Skeleton className="mr-4 h-11 w-40 rounded-lg" />
+    <div>
+      <Skeleton className="h-20 rounded-xl" />
     </div>
   )
 }
@@ -123,7 +123,7 @@ function TraineeChartsSkeleton() {
   )
 }
 
-export default function StatsPanelSkeleton({ role }: { role: string }) {
+export default function StatsPanelSkeleton({ role }: { role: user_role }) {
   return (
     <div
       className="space-y-0"
@@ -131,7 +131,7 @@ export default function StatsPanelSkeleton({ role }: { role: string }) {
       aria-label="Ładowanie statystyk"
     >
       <NextTrainingSkeleton />
-      {role === "trainer" ? (
+      {role === user_role.trainer ? (
         <TrainerChartsSkeleton />
       ) : (
         <TraineeChartsSkeleton />

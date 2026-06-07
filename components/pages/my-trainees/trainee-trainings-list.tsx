@@ -1,8 +1,9 @@
 import { Clock3, MapPin } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
+import type { TrainingYearGroup } from "@/lib/types"
 
 type TraineeTrainingsListProps = {
-  groups: any[]
+  groups: TrainingYearGroup[]
 }
 
 export function TraineeTrainingsList({ groups }: TraineeTrainingsListProps) {
@@ -17,7 +18,7 @@ export function TraineeTrainingsList({ groups }: TraineeTrainingsListProps) {
   return (
     <div className="custom-scrollbar max-h-[400px] space-y-6 overflow-y-auto pr-2">
       {groups.map((yearGroup) =>
-        yearGroup.months.map((monthGroup: any) => (
+        yearGroup.months.map((monthGroup) => (
           <div
             key={`${yearGroup.year}-${monthGroup.monthLabel}`}
             className="space-y-6"
@@ -29,7 +30,7 @@ export function TraineeTrainingsList({ groups }: TraineeTrainingsListProps) {
             </div>
 
             <div className="space-y-3">
-              {monthGroup.trainings.map((training: any) => (
+              {monthGroup.trainings.map((training) => (
                 <div
                   key={training.id}
                   className="bg-dirty-blue space-y-3 rounded-md p-4"

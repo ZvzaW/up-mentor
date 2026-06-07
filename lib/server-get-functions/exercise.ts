@@ -1,23 +1,24 @@
 import { prisma } from "@/lib/prisma"
-import type { Prisma } from "@prisma/client"
+import { cooperation_status, Prisma, user_role } from "@prisma/client"
+import { getLogger } from "@/lib/server-logger"
 
 async function exerciseVisibility(
   userId: string,
-  role: string
+  role: user_role
 ): Promise<Prisma.exerciseWhereInput> {
   const predefined: Prisma.exerciseWhereInput = { trainer_id: null }
 
-  if (role === "trainer") {
+  if (role === user_role.trainer) {
     return {
       OR: [predefined, { trainer_id: userId }],
     }
   }
 
-  if (role === "trainee") {
+  if (role === user_role.trainee) {
     const cooperations = await prisma.cooperation.findMany({
       where: {
         trainee_id: userId,
-        status: "active",
+        status: cooperation_status.active,
       },
       select: { trainer_id: true },
     })
@@ -32,7 +33,11 @@ async function exerciseVisibility(
   return { id: { in: [] } }
 }
 
-export async function getExercises(userId: string, role: string) {
+export async function getExercises(userId: string, role: user_role) {
+  const logger = await getLogger()
+
+  logger.info({ userId, role }, "Fetching exercises")
+
   try {
     const visibility = await exerciseVisibility(userId, role)
 
@@ -48,13 +53,10 @@ export async function getExercises(userId: string, role: string) {
       orderBy: { name: "asc" },
     })
 
+    logger.info({ userId, role }, "Exercises fetched successfully")
     return { success: true as const, data }
-  } catch (error) {
-    console.error(
-      "[GET_EXERCISES_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+  } catch {
+    logger.error({ userId, role }, "Error fetching exercises")
     return { error: "Nie udało się pobrać ćwiczeń. Spróbuj odświeżyć stronę." }
   }
 }

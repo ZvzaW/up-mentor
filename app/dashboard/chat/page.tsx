@@ -2,6 +2,8 @@ import { auth } from "@/auth"
 import { getChatConversations } from "@/lib/server-get-functions/chat"
 import { ChatView } from "@/components/pages/chat/chat-view"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { user_role } from "@prisma/client"
+import { redirect } from "next/navigation"
 
 type ChatPageProps = {
   searchParams: Promise<{
@@ -12,8 +14,11 @@ type ChatPageProps = {
 
 export default async function ChatPage({ searchParams }: ChatPageProps) {
   const session = await auth()
-  const userId = session?.user?.id ?? ""
-  const role = session?.user?.role ?? ""
+  if (!session?.user?.id || !session.user.role) {
+    redirect("/?unauthorized=true")
+  }
+  const userId = session.user.id
+  const role = session.user.role
 
   const params = await searchParams
   const conversationsResult = await getChatConversations(userId, role)
@@ -33,12 +38,12 @@ export default async function ChatPage({ searchParams }: ChatPageProps) {
   let initialTrainerId = params.trainer
   let initialTraineeId = params.trainee
 
-  if (role === "trainer" && params.trainee) {
+  if (role === user_role.trainer && params.trainee) {
     initialTrainerId = userId
     initialTraineeId = params.trainee
   }
 
-  if (role === "trainee" && params.trainer) {
+  if (role === user_role.trainee && params.trainer) {
     initialTrainerId = params.trainer
     initialTraineeId = userId
   }

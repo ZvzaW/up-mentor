@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { cooperation_status } from "@prisma/client"
 import { format } from "date-fns"
 import { pl } from "date-fns/locale"
 import {
@@ -7,6 +8,7 @@ import {
   toTimeInputValue,
 } from "@/lib/utils"
 import { WorkplaceAddress } from "@/lib/types"
+import { getLogger } from "@/lib/server-logger"
 
 function capitalizeMonthLabel(label: string) {
   if (!label) return label
@@ -65,12 +67,16 @@ export async function getTrainingsForTrainee(
   userId: string,
   traineeId: string
 ) {
+  const logger = await getLogger()
+
+  logger.info({ userId, traineeId }, "Fetching trainings for trainee")
+
   try {
     const cooperation = await prisma.cooperation.findFirst({
       where: {
         trainer_id: userId,
         trainee_id: traineeId,
-        status: "active",
+        status: cooperation_status.active,
       },
       include: {
         workplace: {
@@ -109,16 +115,17 @@ export async function getTrainingsForTrainee(
 
     const scheduledDates = trainings.map((t) => t.scheduled_at)
 
+    logger.info(
+      { userId, traineeId },
+      "Trainings for trainee fetched successfully"
+    )
+
     return {
       success: true,
       data: groupTrainingsByYearAndMonth(listItems, scheduledDates),
     }
-  } catch (error) {
-    console.error(
-      "[GET_TRAININGS_FOR_TRAINEE_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+  } catch {
+    logger.error({ userId, traineeId }, "Error fetching trainings for trainee")
     return {
       error: "Nie udało się pobrać treningów. Spróbuj odświeżyć stronę.",
     }

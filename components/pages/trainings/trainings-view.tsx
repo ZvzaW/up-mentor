@@ -10,14 +10,15 @@ import {
   isTrainingScheduledInPast,
   type TrainingSlot,
 } from "@/lib/training-calendar-functions"
-import { TrainingDTO } from "@/lib/types"
+import { TraineeDTO, TrainingDTO } from "@/lib/types"
+import { user_role } from "@prisma/client"
 
 type TrainingsViewProps = {
-  role: "trainer" | "trainee" | string
+  role: user_role
   initialTrainings: TrainingDTO[]
   initialWeekAnchor: string
   initialFetchError?: string | null
-  trainees: any[] | null
+  trainees: TraineeDTO[] | null
 }
 
 type DialogState = {
@@ -41,7 +42,7 @@ export default function TrainingsView({
   initialFetchError = null,
   trainees,
 }: TrainingsViewProps) {
-  const isTrainer = role === "trainer"
+  const isTrainer = role === user_role.trainer
   const [weekAnchor, setWeekAnchor] = React.useState(
     () => new Date(initialWeekAnchor)
   )

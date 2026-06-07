@@ -5,17 +5,24 @@ import { auth } from "@/auth"
 import { formatDate } from "@/lib/utils"
 import { redirect } from "next/navigation"
 import { notification } from "@prisma/client"
+import { getLogger } from "@/lib/server-logger"
 
 export async function getNotifications(page: number = 0) {
+  const logger = await getLogger()
+
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }
 
+  const userId = session.user.id
+
+  logger.info({ userId, page }, "Fetching notifications")
+
   try {
     const limit = 15
     const notifications = await prisma.notification.findMany({
-      where: { user_id: session.user.id },
+      where: { user_id: userId },
       take: limit + 1,
       skip: page * limit,
       orderBy: { created_at: "desc" },
@@ -27,13 +34,10 @@ export async function getNotifications(page: number = 0) {
       : notifications
     const grouped = groupNotificationsByDate(notificationsToDisplay)
 
+    logger.info({ userId, page }, "Notifications fetched successfully")
     return { grouped, hasMore }
-  } catch (error) {
-    console.error(
-      "[GET_NOTIFICATIONS_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+  } catch {
+    logger.error({ userId, page }, "Error fetching notifications")
     return {
       grouped: {},
       hasMore: false,
@@ -75,26 +79,32 @@ function groupNotificationsByDate(notifications: notification[]) {
 }
 
 export async function getUnreadCount() {
+  const logger = await getLogger()
+
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }
 
+  const userId = session.user.id
+
+  logger.info({ userId }, "Fetching unread notifications count")
+
   try {
     const count = await prisma.notification.count({
       where: {
-        user_id: session.user.id,
+        user_id: userId,
         is_read: false,
       },
     })
 
-    return { count, error: null }
-  } catch (error) {
-    console.error(
-      "[GET_UNREAD_COUNT_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
+    logger.info(
+      { userId, count },
+      "Unread notifications count fetched successfully"
     )
+    return { count, error: null }
+  } catch {
+    logger.error({ userId }, "Error fetching unread notifications count")
     return {
       count: 0,
       error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę",
@@ -103,26 +113,35 @@ export async function getUnreadCount() {
 }
 
 export async function markAsRead(id: string) {
+  const logger = await getLogger()
+
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }
 
+  const userId = session.user.id
+
+  logger.info({ userId, notificationId: id }, "Marking notification as read")
+
   try {
     await prisma.notification.update({
       where: {
         id: id,
-        user_id: session.user.id,
+        user_id: userId,
       },
       data: { is_read: true },
     })
 
+    logger.info(
+      { userId, notificationId: id },
+      "Notification marked as read successfully"
+    )
     return { error: null }
-  } catch (error) {
-    console.error(
-      "[MARK_AS_READ_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
+  } catch {
+    logger.error(
+      { userId, notificationId: id },
+      "Error marking notification as read"
     )
     return {
       error: "Coś poszło nie tak przy odczytywaniu powiadomienia.",
@@ -131,26 +150,35 @@ export async function markAsRead(id: string) {
 }
 
 export async function markAsUnread(id: string) {
+  const logger = await getLogger()
+
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }
 
+  const userId = session.user.id
+
+  logger.info({ userId, notificationId: id }, "Marking notification as unread")
+
   try {
     await prisma.notification.update({
       where: {
         id: id,
-        user_id: session.user.id,
+        user_id: userId,
       },
       data: { is_read: false },
     })
 
+    logger.info(
+      { userId, notificationId: id },
+      "Notification marked as unread successfully"
+    )
     return { error: null }
-  } catch (error) {
-    console.error(
-      "[MARK_AS_UNREAD_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
+  } catch {
+    logger.error(
+      { userId, notificationId: id },
+      "Error marking notification as unread"
     )
     return {
       error:
@@ -160,26 +188,32 @@ export async function markAsUnread(id: string) {
 }
 
 export async function deleteNotification(id: string) {
+  const logger = await getLogger()
+
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }
 
+  const userId = session.user.id
+
+  logger.info({ userId, notificationId: id }, "Deleting notification")
+
   try {
     await prisma.notification.delete({
       where: {
         id: id,
-        user_id: session.user.id,
+        user_id: userId,
       },
     })
 
-    return { success: true }
-  } catch (error) {
-    console.error(
-      "[DELETE_NOTIFICATION_ERROR]: ",
-      new Date().toLocaleString("pl-PL"),
-      error
+    logger.info(
+      { userId, notificationId: id },
+      "Notification deleted successfully"
     )
+    return { success: true }
+  } catch {
+    logger.error({ userId, notificationId: id }, "Error deleting notification")
     return {
       error: "Wystąpił błąd podczas usuwania powiadomienia. Spróbuj ponownie.",
     }

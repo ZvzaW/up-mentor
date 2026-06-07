@@ -50,7 +50,7 @@ import {
   trainingDialogSchema,
   type TrainingDialogFormValues,
 } from "@/lib/validations"
-import { TrainingDTO, WorkplaceAddress } from "@/lib/types"
+import { TraineeDTO, TrainingDTO, WorkplaceAddress } from "@/lib/types"
 
 const DURATION_OPTIONS = [
   { value: 0.5, label: "30 min" },
@@ -67,7 +67,7 @@ type TrainingDialogProps = {
   mode: "create" | "edit" | "view"
   training: TrainingDTO | null
   initialSlot?: TrainingSlot | null
-  trainees: any[] | null
+  trainees: TraineeDTO[] | null
   isTrainer: boolean
   onSaved: () => void
 }

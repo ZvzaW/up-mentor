@@ -1,8 +1,14 @@
 import { prisma } from "@/lib/prisma"
+import { cooperation_status } from "@prisma/client"
 import { formatWorkplaceAddress } from "@/lib/utils"
 import { WorkplaceAddress } from "@/lib/types"
+import { getLogger } from "@/lib/server-logger"
 
 export async function getCooperationStatus(userId: string, trainerId: string) {
+  const logger = await getLogger()
+
+  logger.info({ userId, trainerId }, "Fetching cooperation status")
+
   const [request, cooperation] = await Promise.all([
     prisma.coaching_request.findUnique({
       where: {
@@ -12,10 +18,12 @@ export async function getCooperationStatus(userId: string, trainerId: string) {
     prisma.cooperation.findUnique({
       where: {
         trainer_id_trainee_id: { trainer_id: trainerId, trainee_id: userId },
-        status: "active",
+        status: cooperation_status.active,
       },
     }),
   ])
+
+  logger.info({ userId, trainerId }, "Cooperation status fetched successfully")
 
   return {
     hasRequest: !!request,
@@ -24,11 +32,14 @@ export async function getCooperationStatus(userId: string, trainerId: string) {
 }
 
 export async function getPendingRequests(userId: string) {
+  const logger = await getLogger()
+
+  logger.info({ userId }, "Fetching pending coaching requests")
+
   try {
     const requests = await prisma.coaching_request.findMany({
       where: {
         trainer_id: userId,
-        status: "pending",
       },
       include: {
         trainee: {
@@ -60,13 +71,10 @@ export async function getPendingRequests(userId: string) {
       workplace: formatWorkplaceAddress(req.workplace as WorkplaceAddress),
     }))
 
+    logger.info({ userId }, "Pending coaching requests fetched successfully")
     return { success: true, data: mappedRequests }
-  } catch (error) {
-    console.error(
-      "[GET_PENDING_REQUESTS_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+  } catch {
+    logger.error({ userId }, "Error fetching pending coaching requests")
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }

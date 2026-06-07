@@ -3,29 +3,77 @@
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { toDownloadFile } from "@/lib/workout-plan-pdf"
+import { WorkoutPlanPayload, WorkoutPlanPayloadSchema } from "@/lib/validations"
+import { cooperation_status, Prisma, user_role } from "@prisma/client"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
-import type { WorkoutPlanInput } from "@/lib/types"
+import { getLogger } from "@/lib/server-logger"
 
-export async function createWorkoutPlan(data: WorkoutPlanInput) {
+async function validateExercisesAccess(
+  trainerId: string,
+  exerciseIds: string[]
+) {
+  if (exerciseIds.length === 0) {
+    return {}
+  }
+
+  const uniqueIds = [...new Set(exerciseIds)]
+  const visibleCount = await prisma.exercise.count({
+    where: {
+      id: { in: uniqueIds },
+      OR: [{ trainer_id: null }, { trainer_id: trainerId }],
+    },
+  })
+
+  if (visibleCount !== uniqueIds.length) {
+    return { error: "Wybrano niedostępne dla Ciebie ćwiczenia." }
+  }
+
+  return {}
+}
+
+export async function createWorkoutPlan(data: unknown) {
+  const logger = await getLogger()
+
   const session = await auth()
 
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer")
+  if (session.user.role !== user_role.trainer)
     return { error: "Brak uprawnień do tej operacji." }
 
+  const userId = session.user.id
+
+  logger.info({ userId }, "Creating workout plan")
+
+  const validated = WorkoutPlanPayloadSchema.safeParse(data)
+  if (!validated.success) {
+    return { error: "Nieprawidłowe dane wejściowe." }
+  }
+
+  const planData = validated.data
+  const exerciseIds = planData.sections.flatMap((sec) =>
+    sec.exercise_sets.map((set) => set.exercise_id)
+  )
+  const exerciseValidation = await validateExercisesAccess(
+    session.user.id,
+    exerciseIds
+  )
+  if (exerciseValidation.error) {
+    return { error: exerciseValidation.error }
+  }
+
   try {
-    const newPlan = await prisma.workout_plan.create({
+    await prisma.workout_plan.create({
       data: {
         trainer_id: session.user.id,
-        name: data.name,
-        difficulty: data.difficulty,
-        description: data.description,
+        name: planData.name,
+        difficulty: planData.difficulty,
+        description: planData.description,
         section: {
-          create: data.sections.map((sec) => ({
+          create: planData.sections.map((sec) => ({
             body_part: sec.body_part,
             order: sec.order,
             exercise_set: {
@@ -42,14 +90,11 @@ export async function createWorkoutPlan(data: WorkoutPlanInput) {
       },
     })
 
+    logger.info({ userId }, "Workout plan created successfully")
     revalidatePath("/dashboard/workout-plans")
-    return { data: newPlan }
-  } catch (error) {
-    console.error(
-      "[CREATE_WORKOUT_PLAN_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+    return { success: true }
+  } catch {
+    logger.error({ userId }, "Error creating workout plan")
     return {
       error: "Wystąpił błąd podczas zapisywania planu. Spróbuj ponownie.",
     }
@@ -58,16 +103,22 @@ export async function createWorkoutPlan(data: WorkoutPlanInput) {
 
 export async function updateWorkoutPlan(
   planId: string,
-  data: WorkoutPlanInput
+  data: WorkoutPlanPayload
 ) {
+  const logger = await getLogger()
+
   const session = await auth()
 
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer")
+  if (session.user.role !== user_role.trainer)
     return { error: "Brak uprawnień do tej operacji." }
+
+  const userId = session.user.id
+
+  logger.info({ userId, planId }, "Updating workout plan")
 
   try {
     const existingPlan = await prisma.workout_plan.findFirst({
@@ -79,20 +130,37 @@ export async function updateWorkoutPlan(
     })
 
     if (!existingPlan) {
-      return { error: "Nie znaleziono planu." }
+      return { error: "Nie znaleziono planu do zaktualizowania." }
+    }
+
+    const validated = WorkoutPlanPayloadSchema.safeParse(data)
+    if (!validated.success) {
+      return { error: "Nieprawidłowe dane wejściowe." }
+    }
+
+    const planData = validated.data
+    const exerciseIds = planData.sections.flatMap((sec) =>
+      sec.exercise_sets.map((set) => set.exercise_id)
+    )
+    const exerciseValidation = await validateExercisesAccess(
+      session.user.id,
+      exerciseIds
+    )
+    if (exerciseValidation.error) {
+      return { error: exerciseValidation.error }
     }
 
     await prisma.$transaction(async (tx) => {
       await tx.workout_plan.update({
         where: { id: planId },
         data: {
-          name: data.name,
-          difficulty: data.difficulty,
-          description: data.description,
+          name: planData.name,
+          difficulty: planData.difficulty,
+          description: planData.description,
         },
       })
 
-      const sectionIds = data.sections
+      const sectionIds = planData.sections
         .map((sec) => sec.id)
         .filter((id): id is string => Boolean(id))
 
@@ -103,7 +171,7 @@ export async function updateWorkoutPlan(
         },
       })
 
-      for (const sec of data.sections) {
+      for (const sec of planData.sections) {
         let section: { id: string }
 
         if (sec.id) {
@@ -182,15 +250,12 @@ export async function updateWorkoutPlan(
       }
     })
 
+    logger.info({ userId, planId }, "Workout plan updated successfully")
     revalidatePath("/dashboard/workout-plans")
     revalidatePath(`/dashboard/workout-plans/edit/${planId}`)
     return { success: true }
-  } catch (error) {
-    console.error(
-      "[UPDATE_WORKOUT_PLAN_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+  } catch {
+    logger.error({ userId, planId }, "Error updating workout plan")
     return {
       error: "Wystąpił błąd podczas aktualizacji planu. Spróbuj ponownie.",
     }
@@ -198,18 +263,27 @@ export async function updateWorkoutPlan(
 }
 
 export async function cloneWorkoutPlan(planId: string) {
+  const logger = await getLogger()
+
   const session = await auth()
 
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer")
+  if (session.user.role !== user_role.trainer)
     return { error: "Brak uprawnień do tej operacji." }
+
+  const userId = session.user.id
+
+  logger.info({ userId, planId }, "Cloning workout plan")
 
   try {
     const existingPlan = await prisma.workout_plan.findUnique({
-      where: { id: planId },
+      where: {
+        id: planId,
+        trainer_id: session.user.id,
+      },
       include: {
         section: {
           include: { exercise_set: true },
@@ -217,8 +291,8 @@ export async function cloneWorkoutPlan(planId: string) {
       },
     })
 
-    if (!existingPlan || existingPlan.trainer_id !== session.user.id) {
-      return { error: "Nie znaleziono planu." }
+    if (!existingPlan) {
+      return { error: "Nie znaleziono planu do sklonowania." }
     }
 
     await prisma.workout_plan.create({
@@ -245,14 +319,11 @@ export async function cloneWorkoutPlan(planId: string) {
       },
     })
 
+    logger.info({ userId, planId }, "Workout plan cloned successfully")
     revalidatePath("/dashboard/workout-plans")
     return { success: true }
-  } catch (error) {
-    console.error(
-      "[CLONE_WORKOUT_PLAN_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+  } catch {
+    logger.error({ userId, planId }, "Error cloning workout plan")
     return {
       error: "Wystąpił błąd podczas klonowania planu. Spróbuj ponownie.",
     }
@@ -260,54 +331,70 @@ export async function cloneWorkoutPlan(planId: string) {
 }
 
 export async function deleteWorkoutPlan(planId: string) {
+  const logger = await getLogger()
+
   const session = await auth()
 
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer")
+  if (session.user.role !== user_role.trainer)
     return { error: "Brak uprawnień do tej operacji." }
+
+  const userId = session.user.id
+
+  logger.info({ userId, planId }, "Deleting workout plan")
 
   try {
     const existingPlan = await prisma.workout_plan.findUnique({
-      where: { id: planId },
+      where: {
+        id: planId,
+        trainer_id: session.user.id,
+      },
+      select: { id: true },
     })
 
-    if (!existingPlan || existingPlan.trainer_id !== session.user.id) {
-      return { error: "Nie znaleziono planu." }
+    if (!existingPlan) {
+      return { error: "Nie znaleziono planu do usunięcia." }
     }
 
     await prisma.workout_plan.delete({ where: { id: planId } })
 
+    logger.info({ userId, planId }, "Workout plan deleted successfully")
     revalidatePath("/dashboard/workout-plans")
     return { success: true }
-  } catch (error) {
-    console.error(
-      "[DELETE_WORKOUT_PLAN_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+  } catch {
+    logger.error({ userId, planId }, "Error deleting workout plan")
     return { error: "Wystąpił błąd podczas usuwania planu. Spróbuj ponownie." }
   }
 }
 
 export async function generateWorkoutPlanPdf(planId: string) {
+  const logger = await getLogger()
+
   const session = await auth()
 
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer" && session.user.role !== "trainee") {
+  if (
+    session.user.role !== user_role.trainer &&
+    session.user.role !== user_role.trainee
+  ) {
     return { error: "Brak uprawnień do tej operacji." }
   }
+
+  const userId = session.user.id
+
+  logger.info({ userId, planId }, "Generating workout plan PDF")
 
   try {
     const plan = await prisma.workout_plan.findFirst({
       where: {
         id: planId,
-        ...(session.user.role === "trainer"
+        ...(session.user.role === user_role.trainer
           ? { trainer_id: session.user.id }
           : {
               plans_library: {
@@ -336,7 +423,7 @@ export async function generateWorkoutPlanPdf(planId: string) {
       return { error: "Nie znaleziono planu lub brak dostępu." }
     }
 
-    if (session.user.role === "trainer") {
+    if (session.user.role === user_role.trainer) {
       const assignmentCount = await prisma.plans_library.count({
         where: { workout_plan_id: planId },
       })
@@ -348,13 +435,10 @@ export async function generateWorkoutPlanPdf(planId: string) {
 
     const file = await toDownloadFile(plan)
 
+    logger.info({ userId, planId }, "Workout plan PDF generated successfully")
     return { success: true as const, data: file }
-  } catch (error) {
-    console.error(
-      "[GENERATE_WORKOUT_PLAN_PDF_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+  } catch {
+    logger.error({ userId, planId }, "Error generating workout plan PDF")
     return {
       error: "Nie udało się wygenerować pliku PDF. Spróbuj ponownie.",
     }
@@ -362,31 +446,78 @@ export async function generateWorkoutPlanPdf(planId: string) {
 }
 
 export async function assignPlanToTrainee(planId: string, traineeId: string) {
+  const logger = await getLogger()
+
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer")
+  if (session.user.role !== user_role.trainer)
     return { error: "Brak uprawnień do tej operacji." }
 
+  const userId = session.user.id
+
+  logger.info(
+    { userId, planId, traineeId },
+    "Assigning workout plan to trainee"
+  )
+
   try {
-    const assignment = await prisma.plans_library.create({
+    const existingPlan = await prisma.workout_plan.findFirst({
+      where: {
+        id: planId,
+        trainer_id: session.user.id,
+      },
+      select: { id: true },
+    })
+
+    if (!existingPlan) {
+      logger.warn({ userId, planId }, "Workout plan to assign not found")
+      return { error: "Nie znaleziono planu do przypisania." }
+    }
+
+    const activeCooperation = await prisma.cooperation.findFirst({
+      where: {
+        trainer_id: session.user.id,
+        trainee_id: traineeId,
+        status: cooperation_status.active,
+      },
+      select: { trainee_id: true },
+    })
+
+    if (!activeCooperation) {
+      logger.warn(
+        { userId, planId, traineeId },
+        "No active cooperation with the selected trainee"
+      )
+      return {
+        error: "Brak aktywnej współpracy z wybranym podopiecznym.",
+      }
+    }
+
+    await prisma.plans_library.create({
       data: {
         workout_plan_id: planId,
         trainee_id: traineeId,
       },
     })
 
-    revalidatePath("/dashboard/workout-plans")
-    return { success: true, data: assignment }
-  } catch (error: any) {
-    console.error(
-      "[ASSIGN_PLAN_TO_TRAINEE_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
+    logger.info(
+      { userId, planId, traineeId },
+      "Workout plan assigned to trainee successfully"
     )
-    if (error.code === "P2002") {
+    revalidatePath("/dashboard/workout-plans")
+    return { success: true }
+  } catch (error) {
+    logger.error(
+      { userId, planId, traineeId },
+      "Error assigning workout plan to trainee"
+    )
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
       return {
         error: "Ten plan jest już przypisany do wybranego podopiecznego.",
       }

@@ -17,31 +17,23 @@ import {
 
 import { acceptRequest, rejectRequest } from "@/actions/coaching-request"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-
-type Request = {
-  traineeId: string
-  workplaceId: string
-  name: string
-  message: string | null
-  createdAt: Date
-  workplace: string
-}
+import { RequestDTO } from "@/lib/types"
 
 export function ManageCoachingRequestsDialog({
   requests,
   error,
 }: {
-  requests: Request[]
+  requests: RequestDTO[]
   error: string | undefined
 }) {
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [loadingId, setLoadingId] = useState<string | null>(null)
 
-  const handleAccept = (traineeId: string, workplaceId: string) => {
+  const handleAccept = (traineeId: string) => {
     setLoadingId(traineeId)
     startTransition(async () => {
-      const result = await acceptRequest(traineeId, workplaceId)
+      const result = await acceptRequest(traineeId)
       if (result.error) {
         toast.error(result.error)
       } else {
@@ -126,7 +118,7 @@ export function ManageCoachingRequestsDialog({
 
                     {req.message && (
                       <div className="bg-dirty-navy/50 rounded-md p-3 text-xs break-words text-zinc-300 italic">
-                        "{req.message}"
+                        „{req.message}”
                       </div>
                     )}
 
@@ -148,9 +140,7 @@ export function ManageCoachingRequestsDialog({
                       <Button
                         size="sm"
                         className="border border-emerald-500 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/40"
-                        onClick={() =>
-                          handleAccept(req.traineeId, req.workplaceId)
-                        }
+                        onClick={() => handleAccept(req.traineeId)}
                         disabled={isPending}
                       >
                         {isCurrentLoading ? (

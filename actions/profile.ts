@@ -10,19 +10,27 @@ import {
   createWorkplaceSchema,
   editWorkplaceSchema,
 } from "@/lib/validations"
-import { Prisma, workplace } from "@prisma/client"
+import { Prisma, user_role, workplace } from "@prisma/client"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
+import { getLogger } from "@/lib/server-logger"
 
 export async function updatePersonalData(input: unknown) {
+  const logger = await getLogger()
+
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }
 
+  const userId = session.user.id
   const role = session.user.role
+
+  logger.info({ userId, role }, "Updating personal data")
   const schema =
-    role === "trainer" ? trainerPersonalDataSchema : traineePersonalDataSchema
+    role === user_role.trainer
+      ? trainerPersonalDataSchema
+      : traineePersonalDataSchema
 
   const validated = schema.safeParse(input)
   if (!validated.success) return { error: "Nieprawidłowe dane wejściowe." }
@@ -40,7 +48,7 @@ export async function updatePersonalData(input: unknown) {
         },
       })
 
-      if (role === "trainee") {
+      if (role === user_role.trainee) {
         const traineeData = data as TraineePersonalDataValues
 
         await tx.trainee.update({
@@ -49,12 +57,10 @@ export async function updatePersonalData(input: unknown) {
         })
       }
     })
-  } catch (error) {
-    console.error(
-      "[UPDATE_PERSONAL_DATA_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+
+    logger.info({ userId, role }, "Personal data updated successfully")
+  } catch {
+    logger.error({ userId, role }, "Error updating personal data")
     return {
       error: "Wystąpił błąd podczas aktualizacji danych. Spróbuj ponownie.",
     }
@@ -66,14 +72,20 @@ export async function updatePersonalData(input: unknown) {
 
 //--- TRAINER ---
 export async function updateTrainerCard(input: unknown) {
+  const logger = await getLogger()
+
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer") {
+  if (session.user.role !== user_role.trainer) {
     return { error: "Brak uprawnień do tej operacji." }
   }
+
+  const userId = session.user.id
+
+  logger.info({ userId }, "Updating trainer card")
 
   const validated = trainerCardSchema.safeParse(input)
   if (!validated.success) {
@@ -91,14 +103,11 @@ export async function updateTrainerCard(input: unknown) {
       },
     })
 
+    logger.info({ userId }, "Trainer card updated successfully")
     revalidatePath("/dashboard/profile")
     return { success: true }
-  } catch (error) {
-    console.error(
-      "[UPDATE_TRAINER_CARD_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+  } catch {
+    logger.error({ userId }, "Error updating trainer card")
     return {
       error: "Wystąpił błąd podczas aktualizacji danych. Spróbuj ponownie.",
     }
@@ -106,15 +115,21 @@ export async function updateTrainerCard(input: unknown) {
 }
 
 export async function editWorkplace(workplace: workplace) {
+  const logger = await getLogger()
+
   const session = await auth()
 
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer") {
+  if (session.user.role !== user_role.trainer) {
     return { error: "Brak uprawnień do tej operacji." }
   }
+
+  const userId = session.user.id
+
+  logger.info({ userId, workplaceId: workplace.id }, "Editing workplace")
 
   const validated = editWorkplaceSchema.safeParse(workplace)
   if (!validated.success) {
@@ -142,14 +157,14 @@ export async function editWorkplace(workplace: workplace) {
       return { error: "Nie znaleziono miejsca pracy lub brak uprawnień." }
     }
 
+    logger.info(
+      { userId, workplaceId: data.id },
+      "Workplace edited successfully"
+    )
     revalidatePath("/dashboard/profile")
     return { success: true }
-  } catch (error) {
-    console.error(
-      "[EDIT_WORKPLACE_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+  } catch {
+    logger.error({ userId, workplaceId: data.id }, "Error editing workplace")
     return {
       error: "Wystąpił błąd podczas aktualizacji danych. Spróbuj ponownie.",
     }
@@ -157,14 +172,20 @@ export async function editWorkplace(workplace: workplace) {
 }
 
 export async function addWorkplace(input: unknown) {
+  const logger = await getLogger()
+
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer") {
+  if (session.user.role !== user_role.trainer) {
     return { error: "Brak uprawnień do tej operacji." }
   }
+
+  const userId = session.user.id
+
+  logger.info({ userId }, "Adding workplace")
 
   const validated = createWorkplaceSchema.safeParse(input)
   if (!validated.success) {
@@ -176,7 +197,7 @@ export async function addWorkplace(input: unknown) {
   try {
     await prisma.workplace.create({
       data: {
-        trainer_id: session.user.id,
+        trainer_id: userId,
         name: data.name,
         street: data.street,
         building_number: data.building_number,
@@ -185,14 +206,11 @@ export async function addWorkplace(input: unknown) {
       },
     })
 
+    logger.info({ userId }, "Workplace added successfully")
     revalidatePath("/dashboard/profile")
     return { success: true }
-  } catch (error) {
-    console.error(
-      "[ADD_WORKPLACE_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+  } catch {
+    logger.error({ userId }, "Error adding workplace")
     return {
       error: "Wystąpił błąd podczas zapisywania danych. Spróbuj ponownie.",
     }
@@ -200,15 +218,21 @@ export async function addWorkplace(input: unknown) {
 }
 
 export async function deleteWorkplace(workplaceId: string) {
+  const logger = await getLogger()
+
   const session = await auth()
 
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer") {
+  if (session.user.role !== user_role.trainer) {
     return { error: "Brak uprawnień do tej operacji." }
   }
+
+  const userId = session.user.id
+
+  logger.info({ userId, workplaceId }, "Deleting workplace")
 
   try {
     const workplacesCount = await prisma.workplace.count({
@@ -216,6 +240,10 @@ export async function deleteWorkplace(workplaceId: string) {
     })
 
     if (workplacesCount <= 1) {
+      logger.warn(
+        { userId, workplaceId },
+        "Workplace not deleted because it is the last one"
+      )
       return {
         error:
           "Nie możesz usunąć tego miejsca pracy. Profil trenera musi posiadać co najmniej jedno miejsce.",
@@ -230,17 +258,18 @@ export async function deleteWorkplace(workplaceId: string) {
     })
 
     if (result.count === 0) {
+      logger.warn(
+        { userId, workplaceId },
+        "Workplace not deleted because it is not found"
+      )
       return { error: "Nie znaleziono miejsca pracy lub brak uprawnień." }
     }
 
+    logger.info({ userId, workplaceId }, "Workplace deleted successfully")
     revalidatePath("/dashboard/profile")
     return { success: true }
   } catch (error) {
-    console.error(
-      "[DELETE_WORKPLACE_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+    logger.error({ userId, workplaceId }, "Error deleting workplace")
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2003"
@@ -256,15 +285,21 @@ export async function deleteWorkplace(workplaceId: string) {
 }
 
 export async function changeProfileVisibility(isPublic: boolean) {
+  const logger = await getLogger()
+
   const session = await auth()
 
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer") {
+  if (session.user.role !== user_role.trainer) {
     return { error: "Brak uprawnień do tej operacji." }
   }
+
+  const userId = session.user.id
+
+  logger.info({ userId, isPublic }, "Changing profile visibility")
 
   try {
     await prisma.trainer.update({
@@ -272,14 +307,11 @@ export async function changeProfileVisibility(isPublic: boolean) {
       data: { is_public: isPublic },
     })
 
+    logger.info({ userId, isPublic }, "Profile visibility changed successfully")
     revalidatePath("/dashboard/profile")
     return { success: true }
-  } catch (error) {
-    console.error(
-      "[CHANGE_PROFILE_VISIBILITY_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+  } catch {
+    logger.error({ userId, isPublic }, "Error changing profile visibility")
     return {
       error: "Wystąpił błąd podczas zapisywania zmian. Spróbuj ponownie.",
     }

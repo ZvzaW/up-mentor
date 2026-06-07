@@ -1,23 +1,38 @@
 import { prisma } from "@/lib/prisma"
+import { getLogger } from "@/lib/server-logger"
 
 export async function getTrainerOpinions(trainerId: string) {
+  const logger = await getLogger()
+
+  logger.info({ trainerId }, "Fetching trainer opinions")
+
   try {
-    const opinions = await prisma.opinion.findMany({
-      where: {
-        trainer_id: trainerId,
-      },
-      include: {
-        trainee: {
-          include: {
-            user: {
-              select: {
-                name: true,
+    const [opinions, { _avg }] = await Promise.all([
+      prisma.opinion.findMany({
+        where: {
+          trainer_id: trainerId,
+        },
+        include: {
+          trainee: {
+            include: {
+              user: {
+                select: {
+                  name: true,
+                },
               },
             },
           },
         },
-      },
-    })
+      }),
+      prisma.opinion.aggregate({
+        where: {
+          trainer_id: trainerId,
+        },
+        _avg: {
+          rate: true,
+        },
+      }),
+    ])
 
     const reviews = opinions.map((opinion) => ({
       traineeId: opinion.trainee_id,
@@ -27,15 +42,9 @@ export async function getTrainerOpinions(trainerId: string) {
       comment: opinion.comment,
     }))
 
-    const averageRate =
-      reviews.length > 0
-        ? Number(
-            (
-              reviews.reduce((sum, review) => sum + review.rate, 0) /
-              reviews.length
-            ).toFixed(1)
-          )
-        : null
+    const averageRate = _avg.rate !== null ? Number(_avg.rate.toFixed(1)) : null
+
+    logger.info({ trainerId }, "Trainer opinions fetched successfully")
 
     return {
       success: true as const,
@@ -44,12 +53,8 @@ export async function getTrainerOpinions(trainerId: string) {
         reviews,
       },
     }
-  } catch (error) {
-    console.error(
-      "[GET_TRAINER_OPINIONS_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+  } catch {
+    logger.error({ trainerId }, "Error fetching trainer opinions")
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę" }
   }
 }

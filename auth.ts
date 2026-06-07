@@ -1,7 +1,9 @@
 import NextAuth from "next-auth"
+import type { JWT } from "next-auth/jwt"
 import Credentials from "next-auth/providers/credentials"
 import { authConfig } from "./auth.config"
 import { prisma } from "@/lib/prisma"
+import { hashToken } from "@/lib/auth-tokens"
 import * as argon2 from "argon2"
 import crypto from "node:crypto"
 
@@ -25,9 +27,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         return {
           id: user.id,
-          email: user.email,
-          phone: user.phone,
-          name: `${user.name} ${user.surname}`,
           role: user.role,
         }
       },
@@ -40,10 +39,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const refreshToken = crypto.randomBytes(40).toString("hex")
         const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
 
-        await prisma.refresh_token.create({
+        const record = await prisma.refresh_token.create({
           data: {
             user_id: user.id!,
-            token: refreshToken,
+            token: hashToken(refreshToken),
             expires_at: expiresAt,
           },
         })
@@ -52,40 +51,52 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           ...token,
           accessToken: crypto.randomBytes(20).toString("hex"),
           accessTokenExpires: Date.now() + 15 * 60 * 1000,
-          refreshToken: refreshToken,
+          refreshToken,
+          refreshTokenId: record.id,
           id: user.id!,
-          role: (user as any).role,
+          role: user.role,
         }
       }
 
-      const t = token as any
+      const t = token as JWT
 
       if (Date.now() < t.accessTokenExpires) {
         return token
       }
 
-      return await refreshAccessToken(token)
+      return await refreshAccessToken(t)
     },
   },
 })
 
-async function refreshAccessToken(token: any) {
+async function refreshAccessToken(token: JWT) {
   try {
     const storedToken = await prisma.refresh_token.findUnique({
-      where: { token: token.refreshToken },
+      where: { token: hashToken(token.refreshToken) },
     })
 
-    if (!storedToken || storedToken.expires_at < new Date()) {
+    if (!storedToken) {
       throw new Error("RefreshTokenExpired")
     }
 
-    console.log("REFRESH TOKEN")
+    if (storedToken.expires_at < new Date()) {
+      await prisma.refresh_token.delete({
+        where: { id: storedToken.id },
+      })
+      throw new Error("RefreshTokenExpired")
+    }
+
+    const newAccessToken = crypto.randomBytes(20).toString("hex")
+    const newAccessTokenExpires = Date.now() + 15 * 60 * 1000
+
     return {
       ...token,
-      accessToken: crypto.randomBytes(20).toString("hex"),
-      accessTokenExpires: Date.now() + 15 * 60 * 1000,
+      accessToken: newAccessToken,
+      accessTokenExpires: newAccessTokenExpires,
+      refreshToken: token.refreshToken,
+      refreshTokenId: storedToken.id,
     }
   } catch {
-    return { ...token, error: "RefreshTokenError" }
+    return { ...token, error: "RefreshTokenError" as const }
   }
 }

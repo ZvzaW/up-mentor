@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { getLogger } from "@/lib/server-logger"
 
 type PublicTrainersCatalogFilters = {
   name?: string
@@ -8,8 +9,12 @@ type PublicTrainersCatalogFilters = {
 export async function getCatalogTrainers(
   filters?: PublicTrainersCatalogFilters
 ) {
+  const logger = await getLogger()
+
   const nameQuery = filters?.name?.trim()
   const cityQuery = filters?.city?.trim()
+
+  logger.info({ nameQuery, cityQuery }, "Fetching catalog trainers")
 
   try {
     type TrainerFindManyArgs = NonNullable<
@@ -49,67 +54,69 @@ export async function getCatalogTrainers(
       whereClause.AND = andFilters
     }
 
-    const trainers = await prisma.trainer.findMany({
-      where: whereClause,
-      include: {
-        user: {
-          select: {
-            name: true,
-            surname: true,
+    const [trainers, opinionAverages] = await Promise.all([
+      prisma.trainer.findMany({
+        where: whereClause,
+        include: {
+          user: {
+            select: {
+              name: true,
+              surname: true,
+            },
+          },
+          workplace: {
+            distinct: ["city"],
+            select: {
+              city: true,
+            },
+            orderBy: {
+              city: "asc",
+            },
           },
         },
-        workplace: {
-          select: {
-            city: true,
-          },
-          orderBy: {
-            city: "asc",
-          },
+      }),
+      prisma.opinion.groupBy({
+        by: ["trainer_id"],
+        where: {
+          trainer: whereClause,
         },
-        opinion: {
-          select: {
-            rate: true,
-          },
+        _avg: {
+          rate: true,
         },
-      },
-    })
+      }),
+    ])
 
-    const data = trainers.map((trainer) => {
-      const averageRate =
-        trainer.opinion.length > 0
-          ? Number(
-              (
-                trainer.opinion.reduce(
-                  (sum, opinion) => sum + opinion.rate,
-                  0
-                ) / trainer.opinion.length
-              ).toFixed(1)
-            )
-          : null
-
-      return {
-        id: trainer.id,
-        slug: trainer.slug,
-        name: `${trainer.user.name} ${trainer.user.surname}`,
-        workplaces: Array.from(
-          new Set(trainer.workplace.map((workplace) => workplace.city))
-        ),
-        averageRate,
-      }
-    })
-
-    return { success: true as const, data }
-  } catch (error) {
-    console.error(
-      "[GET_CATALOG_TRAINERS_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
+    const averageRateByTrainerId = new Map(
+      opinionAverages.map(({ trainer_id, _avg }) => [
+        trainer_id,
+        _avg.rate !== null ? Number(_avg.rate.toFixed(1)) : null,
+      ])
     )
+
+    const data = trainers.map((trainer) => ({
+      id: trainer.id,
+      slug: trainer.slug,
+      name: `${trainer.user.name} ${trainer.user.surname}`,
+      workplaces: trainer.workplace.map((workplace) => workplace.city),
+      averageRate: averageRateByTrainerId.get(trainer.id) ?? null,
+    }))
+
+    logger.info(
+      { nameQuery, cityQuery },
+      "Catalog trainers fetched successfully"
+    )
+    return { success: true as const, data }
+  } catch {
+    logger.error({ nameQuery, cityQuery }, "Error fetching catalog trainers")
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }
 
 export async function getCatalogTrainerBySlug(slug: string) {
+  const logger = await getLogger()
+
+  logger.info({ slug }, "Getting catalog trainer by slug")
+
   try {
     const trainer = await prisma.trainer.findFirst({
       where: {
@@ -138,8 +145,11 @@ export async function getCatalogTrainerBySlug(slug: string) {
     })
 
     if (!trainer) {
+      logger.info({ slug }, "Catalog trainer not found by slug")
       return { success: true as const, data: null }
     }
+
+    logger.info({ slug }, "Catalog trainer found by slug")
 
     return {
       success: true as const,
@@ -153,12 +163,8 @@ export async function getCatalogTrainerBySlug(slug: string) {
         workplaces: trainer.workplace,
       },
     }
-  } catch (error) {
-    console.error(
-      "[GET_CATALOG_TRAINER_BY_SLUG_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+  } catch {
+    logger.error({ slug }, "Error getting catalog trainer by slug")
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }

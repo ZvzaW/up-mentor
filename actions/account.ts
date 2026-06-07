@@ -3,14 +3,20 @@
 import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
+import { cooperation_status, user_role } from "@prisma/client"
+import { getLogger } from "@/lib/server-logger"
 
 export async function deleteAccount() {
+  const logger = await getLogger()
+
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }
 
   const userId = session.user.id
+
+  logger.info({ userId }, "Deleting account")
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -24,7 +30,7 @@ export async function deleteAccount() {
       }
 
       //Trainer
-      if (user.role === "trainer") {
+      if (user.role === user_role.trainer) {
         await tx.coaching_request.deleteMany({
           where: { trainer_id: userId },
         })
@@ -40,7 +46,7 @@ export async function deleteAccount() {
         await tx.cooperation.updateMany({
           where: { trainer_id: userId },
           data: {
-            status: "finished",
+            status: cooperation_status.finished,
             workplace_id: null,
           },
         })
@@ -75,7 +81,7 @@ export async function deleteAccount() {
           },
         })
         //Trainee
-      } else if (user.role === "trainee") {
+      } else if (user.role === user_role.trainee) {
         await tx.chat_message.deleteMany({
           where: { trainee_id: userId },
         })
@@ -87,9 +93,9 @@ export async function deleteAccount() {
         await tx.cooperation.updateMany({
           where: {
             trainee_id: userId,
-            status: { not: "finished" },
+            status: { not: cooperation_status.finished },
           },
-          data: { status: "finished" },
+          data: { status: cooperation_status.finished },
         })
 
         await tx.plans_library.deleteMany({
@@ -111,10 +117,10 @@ export async function deleteAccount() {
       //Both roles
       const now = new Date()
 
-      if (user.role === "trainer" || user.role === "trainee") {
+      if (user.role === user_role.trainer || user.role === user_role.trainee) {
         await tx.training.deleteMany({
           where: {
-            ...(user.role === "trainer"
+            ...(user.role === user_role.trainer
               ? { trainer_id: userId }
               : { trainee_id: userId }),
             scheduled_at: { gt: now },
@@ -141,12 +147,10 @@ export async function deleteAccount() {
         },
       })
     })
-  } catch (error) {
-    console.error(
-      "[DELETE_ACCOUNT_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+
+    logger.info("Account deleted successfully")
+  } catch {
+    logger.error({ userId }, "Error deleting account")
     return {
       error: "Wystąpił błąd podczas usuwania konta. Spróbuj ponownie.",
     }

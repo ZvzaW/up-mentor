@@ -74,7 +74,14 @@ export function ChatView({
   const [messages, setMessages] = useState<ChatMessageDTO[]>([])
   const [messagesError, setMessagesError] = useState<string | null>(null)
   const [draft, setDraft] = useState("")
-  const [isLoadingMessages, setIsLoadingMessages] = useState(false)
+  const [isLoadingMessages, setIsLoadingMessages] = useState(
+    () =>
+      resolveInitialConversation(
+        conversations,
+        initialTrainerId,
+        initialTraineeId
+      ) !== null
+  )
   const [isPending, startTransition] = useTransition()
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -87,35 +94,29 @@ export function ChatView({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [])
 
-  const loadMessages = useCallback(
-    async (trainerId: string, traineeId: string) => {
-      setIsLoadingMessages(true)
-      setMessagesError(null)
-      const result = await getChatMessages(trainerId, traineeId)
-      setIsLoadingMessages(false)
+  useEffect(() => {
+    if (!selected) return
+
+    let cancelled = false
+    const { trainerId, traineeId } = selected
+
+    void getChatMessages(trainerId, traineeId).then((result) => {
+      if (cancelled) return
 
       if (result.error) {
         setMessagesError(result.error)
         setMessages([])
-        return
-      }
-
-      if (result.data) {
+      } else if (result.data) {
         setMessages(result.data)
       }
-    },
-    []
-  )
 
-  useEffect(() => {
-    if (!selected) {
-      setMessages([])
-      setMessagesError(null)
-      return
+      setIsLoadingMessages(false)
+    })
+
+    return () => {
+      cancelled = true
     }
-
-    void loadMessages(selected.trainerId, selected.traineeId)
-  }, [selected, loadMessages])
+  }, [selected])
 
   useEffect(() => {
     scrollToBottom()
@@ -155,6 +156,26 @@ export function ChatView({
       pusher.disconnect()
     }
   }, [selected, channelName, pusherKey, pusherCluster, currentUserId])
+
+  const handleSelectConversation = (conversation: ChatConversationDTO) => {
+    const isActive =
+      selected?.trainerId === conversation.trainerId &&
+      selected?.traineeId === conversation.traineeId
+
+    if (isActive) return
+
+    setSelected(conversation)
+    setMessages([])
+    setMessagesError(null)
+    setIsLoadingMessages(true)
+  }
+
+  const handleDeselectConversation = () => {
+    setSelected(null)
+    setMessages([])
+    setMessagesError(null)
+    setIsLoadingMessages(false)
+  }
 
   const handleSend = () => {
     if (!selected) return
@@ -214,7 +235,7 @@ export function ChatView({
             <button
               key={`${conversation.trainerId}-${conversation.traineeId}`}
               type="button"
-              onClick={() => setSelected(conversation)}
+              onClick={() => handleSelectConversation(conversation)}
               className={cn(
                 "bg-dirty-blue/60 rounded-lg p-3 text-left transition-colors",
                 isActive ? "bg-hover text-gold" : "hover:bg-hover"
@@ -238,7 +259,7 @@ export function ChatView({
             <div className="flex items-center gap-3 border-b border-white/40 px-3 pt-3 pb-2">
               <button
                 type="button"
-                onClick={() => setSelected(null)}
+                onClick={handleDeselectConversation}
                 className="text-gold md:hidden"
               >
                 <ArrowLeft className="h-4 w-4" />

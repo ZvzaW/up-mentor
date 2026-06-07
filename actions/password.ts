@@ -3,6 +3,7 @@
 import * as argon2 from "argon2"
 
 import { auth } from "@/auth"
+import { getAuthJwt, hashToken } from "@/lib/auth-tokens"
 import { prisma } from "@/lib/prisma"
 import { changePasswordSchema } from "@/lib/validations"
 import { redirect } from "next/navigation"
@@ -10,19 +11,26 @@ import nodemailer from "nodemailer"
 import crypto from "node:crypto"
 import { emailSchema } from "@/lib/validations"
 import { resetPasswordSchema } from "@/lib/validations"
+import { getLogger } from "@/lib/server-logger"
 
 export async function changePassword(input: unknown) {
+  const logger = await getLogger()
+
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }
 
+  const userId = session.user.id
+
+  logger.info({ userId }, "Changing password")
+
   const validated = changePasswordSchema.safeParse(input)
   if (!validated.success) return { error: "Nieprawidłowe dane wejściowe." }
 
   const { currentPassword, newPassword, logoutOtherDevices } = validated.data
-  const currentRefreshToken =
-    (session as { refreshToken?: string | null }).refreshToken ?? null
+  const jwt = await getAuthJwt()
+  const currentRefreshTokenId = jwt?.refreshTokenId ?? null
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -43,22 +51,20 @@ export async function changePassword(input: unknown) {
       data: { password: hashed },
     })
 
-    if (logoutOtherDevices && currentRefreshToken) {
+    if (logoutOtherDevices && currentRefreshTokenId) {
       await prisma.refresh_token.deleteMany({
         where: {
           user_id: session.user.id,
-          token: {
-            not: currentRefreshToken,
+          id: {
+            not: currentRefreshTokenId,
           },
         },
       })
     }
-  } catch (error) {
-    console.error(
-      "[CHANGE_PASSWORD_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+
+    logger.info({ userId }, "Password changed successfully")
+  } catch {
+    logger.error({ userId }, "Error changing password")
     return { error: "Wystąpił błąd podczas zmiany hasła. Spróbuj ponownie." }
   }
 
@@ -81,11 +87,11 @@ function getBaseUrl() {
   return "https://localhost:3000"
 }
 
-function hashResetToken(token: string) {
-  return crypto.createHash("sha256").update(token).digest("hex")
-}
-
 export async function requestPasswordReset(emailInput: string) {
+  const logger = await getLogger()
+
+  logger.info("Requesting password reset")
+
   const validated = emailSchema.safeParse({
     email: emailInput,
   })
@@ -106,7 +112,7 @@ export async function requestPasswordReset(emailInput: string) {
   }
 
   const token = crypto.randomBytes(32).toString("hex")
-  const tokenHash = hashResetToken(token)
+  const tokenHash = hashToken(token)
   const expiresAt = new Date(Date.now() + 15 * 60 * 1000)
 
   try {
@@ -138,13 +144,10 @@ export async function requestPasswordReset(emailInput: string) {
         `,
     })
 
+    logger.info("Password reset email sent successfully")
     return { success: true }
-  } catch (error) {
-    console.error(
-      "[REQUEST_PASSWORD_RESET_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+  } catch {
+    logger.error("Error requesting password reset")
     await prisma.password_reset_token.deleteMany({
       where: { token: tokenHash },
     })
@@ -158,6 +161,10 @@ export async function resetPassword(input: {
   password: string
   confirmPassword: string
 }) {
+  const logger = await getLogger()
+
+  logger.info("Resetting password")
+
   const validated = resetPasswordSchema.safeParse(input)
 
   if (!validated.success) {
@@ -165,7 +172,7 @@ export async function resetPassword(input: {
   }
 
   const { token, password } = validated.data
-  const tokenHash = hashResetToken(token)
+  const tokenHash = hashToken(token)
 
   try {
     const tokenRecord = await prisma.password_reset_token.findUnique({
@@ -179,6 +186,7 @@ export async function resetPassword(input: {
           where: { token: tokenHash },
         })
       }
+      logger.error("Token not found or expired")
       return { error: "Link jest nieprawidłowy lub wygasł." }
     }
 
@@ -199,13 +207,10 @@ export async function resetPassword(input: {
       })
     })
 
+    logger.info("Password reset successfully")
     return { success: true }
-  } catch (error) {
-    console.error(
-      "[RESET_PASSWORD_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+  } catch {
+    logger.error("Error resetting password")
     return {
       error: "Wystąpił błąd podczas resetowania hasła. Spróbuj ponownie.",
     }

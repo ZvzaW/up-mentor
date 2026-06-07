@@ -1,16 +1,15 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import NotificationsPanel from "@/components/pages/dashboard/notifications-panel"
 import StatsPanel from "@/components/pages/dashboard/stats-panel"
+import { useDashboardRole } from "@/components/providers/dashboard-role-provider"
 import { getNotifications, getUnreadCount } from "@/actions/notifications"
 import { notification } from "@prisma/client"
 
 export default function DashboardPage() {
-  const { data: session } = useSession()
-  const userRole = session?.user?.role ?? ""
+  const userRole = useDashboardRole()
 
   const [mobileTab, setMobileTab] = useState<"notifications" | "stats">(
     "notifications"
@@ -104,6 +103,8 @@ export default function DashboardPage() {
     loadMore,
     error,
   }
+
+  if (!userRole) return null
 
   return (
     <div className="flex min-h-[calc(100vh-20rem)] w-full flex-col justify-center p-3">

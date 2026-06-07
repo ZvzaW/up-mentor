@@ -2,12 +2,15 @@ import { getExercises } from "@/lib/server-get-functions/exercise"
 import { WorkoutPlanForm } from "@/components/pages/workout-plans/workout-plan-form"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { auth } from "@/auth"
+import { redirect } from "next/navigation"
 
 export default async function CreateWorkoutPlanPage() {
   const session = await auth()
-
-  const userId = session?.user?.id ?? ""
-  const role = session?.user?.role ?? ""
+  if (!session?.user?.id || !session.user.role) {
+    redirect("/?unauthorized=true")
+  }
+  const userId = session.user.id
+  const role = session.user.role
 
   const result = await getExercises(userId, role)
   const exercises = result.data ?? []

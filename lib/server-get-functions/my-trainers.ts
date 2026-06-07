@@ -1,13 +1,19 @@
 import { prisma } from "@/lib/prisma"
+import { cooperation_status } from "@prisma/client"
 import { formatWorkplaceAddress } from "@/lib/utils"
 import { WorkplaceAddress } from "@/lib/types"
+import { getLogger } from "@/lib/server-logger"
 
 export async function getMyTrainers(userId: string) {
+  const logger = await getLogger()
+
+  logger.info({ userId }, "Fetching trainers")
+
   try {
     const cooperations = await prisma.cooperation.findMany({
       where: {
         trainee_id: userId,
-        status: "active",
+        status: cooperation_status.active,
       },
       include: {
         trainer: {
@@ -42,23 +48,24 @@ export async function getMyTrainers(userId: string) {
       slug: cooperation.trainer.slug,
     }))
 
+    logger.info({ userId }, "Trainers fetched successfully")
     return { success: true, data: mappedCooperations }
-  } catch (error) {
-    console.error(
-      "[GET_MY_TRAINERS_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+  } catch {
+    logger.error({ userId }, "Error fetching trainers")
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }
 
 export async function getMyTrainerBySlug(userId: string, slug: string) {
+  const logger = await getLogger()
+
+  logger.info({ userId, slug }, "Fetching trainer by slug")
+
   try {
     const cooperation = await prisma.cooperation.findFirst({
       where: {
         trainee_id: userId,
-        status: "active",
+        status: cooperation_status.active,
         trainer: {
           slug,
         },
@@ -87,33 +94,31 @@ export async function getMyTrainerBySlug(userId: string, slug: string) {
       },
     })
 
+    logger.info({ userId, slug }, "Trainer fetched by slug successfully")
     return { success: true, data: cooperation }
-  } catch (error) {
-    console.error(
-      "[GET_MY_TRAINER_BY_SLUG_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+  } catch {
+    logger.error({ userId, slug }, "Error fetching trainer by slug")
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }
 
 export async function countCooperations(userId: string) {
+  const logger = await getLogger()
+
+  logger.info({ userId }, "Counting active cooperations")
+
   try {
     const count = await prisma.cooperation.count({
       where: {
         trainee_id: userId,
-        status: "active",
+        status: cooperation_status.active,
       },
     })
 
+    logger.info({ userId, count }, "Active cooperations counted successfully")
     return { success: true, data: count }
-  } catch (error) {
-    console.error(
-      "[COUNT_COOPERATIONS_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+  } catch {
+    logger.error({ userId }, "Error counting active cooperations")
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }

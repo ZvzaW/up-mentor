@@ -10,11 +10,12 @@ import {
 } from "@/lib/validations"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
-import { Prisma } from "@prisma/client"
+import { cooperation_status, Prisma, user_role } from "@prisma/client"
 import { endOfWeek, startOfWeek } from "date-fns"
 import { isTrainingScheduledInPast } from "@/lib/training-calendar-functions"
 import { combineDateAndTime, formatWorkplaceAddress } from "@/lib/utils"
 import { TrainingDTO, WorkplaceAddress } from "@/lib/types"
+import { getLogger } from "@/lib/server-logger"
 
 function mapTraining(t: {
   id: string
@@ -26,10 +27,10 @@ function mapTraining(t: {
     trainee: { user: { name: string; surname: string } }
     trainer: { user: { name: string; surname: string } }
     workplace: WorkplaceAddress | null
-    status: string
+    status: cooperation_status
   }
 }): TrainingDTO {
-  const isFinished = t.cooperation.status === "finished"
+  const isFinished = t.cooperation.status === cooperation_status.finished
   const workplaceAddress = t.cooperation.workplace
     ? formatWorkplaceAddress(t.cooperation.workplace)
     : "Dane niedostępne"
@@ -58,7 +59,7 @@ async function validateTrainerTrainingInput(
     where: {
       trainer_id: trainerId,
       trainee_id: data.trainee_id,
-      status: "active",
+      status: cooperation_status.active,
     },
   })
 
@@ -78,23 +79,29 @@ async function validateTrainerTrainingInput(
 }
 
 export async function createTraining(raw: CreateTrainingFormValues) {
+  const logger = await getLogger()
+
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer") {
+  if (session.user.role !== user_role.trainer) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
-  const parsed = createTrainingSchema.safeParse(raw)
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Nieprawidłowe dane." }
+  const userId = session.user.id
+
+  logger.info({ userId }, "Creating training")
+
+  const validated = createTrainingSchema.safeParse(raw)
+  if (!validated.success) {
+    return { error: "Nieprawidłowe dane wejściowe." }
   }
 
-  const data = parsed.data
+  const data = validated.data
   const validation = await validateTrainerTrainingInput(session.user.id, data)
-  if ("error" in validation) {
+  if (validation.error) {
     return { error: validation.error }
   }
 
@@ -108,14 +115,11 @@ export async function createTraining(raw: CreateTrainingFormValues) {
       },
     })
 
+    logger.info({ userId }, "Training created successfully")
     revalidatePath("/dashboard/trainings")
     return { success: true }
-  } catch (error) {
-    console.error(
-      "[CREATE_TRAINING_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+  } catch {
+    logger.error({ userId }, "Error creating training")
     return {
       error: "Wystąpił błąd podczas zapisywania treningu. Spróbuj ponownie.",
     }
@@ -123,23 +127,29 @@ export async function createTraining(raw: CreateTrainingFormValues) {
 }
 
 export async function updateTraining(raw: UpdateTrainingFormValues) {
+  const logger = await getLogger()
+
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer") {
+  if (session.user.role !== user_role.trainer) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
-  const parsed = updateTrainingSchema.safeParse(raw)
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Nieprawidłowe dane." }
+  const userId = session.user.id
+
+  logger.info({ userId }, "Updating training")
+
+  const validated = updateTrainingSchema.safeParse(raw)
+  if (!validated.success) {
+    return { error: "Nieprawidłowe dane wejściowe." }
   }
 
-  const data = parsed.data
+  const data = validated.data
   const validation = await validateTrainerTrainingInput(session.user.id, data)
-  if ("error" in validation) {
+  if (validation.error) {
     return { error: validation.error }
   }
 
@@ -149,10 +159,15 @@ export async function updateTraining(raw: UpdateTrainingFormValues) {
     })
 
     if (!existing) {
+      logger.warn({ userId, trainingId: data.id }, "Training not found")
       return { error: "Nie znaleziono treningu." }
     }
 
     if (isTrainingScheduledInPast(existing.scheduled_at)) {
+      logger.warn(
+        { userId, trainingId: data.id },
+        "Training cannot be edited because it is in the past"
+      )
       return { error: "Nie można edytować treningu z przeszłości." }
     }
 
@@ -165,14 +180,14 @@ export async function updateTraining(raw: UpdateTrainingFormValues) {
       },
     })
 
+    logger.info(
+      { userId, trainingId: data.id },
+      "Training updated successfully"
+    )
     revalidatePath("/dashboard/trainings")
     return { success: true }
-  } catch (error) {
-    console.error(
-      "[UPDATE_TRAINING_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+  } catch {
+    logger.error({ userId, trainingId: data.id }, "Error updating training")
     return {
       error: "Wystąpił błąd podczas aktualizacji treningu. Spróbuj ponownie.",
     }
@@ -180,14 +195,20 @@ export async function updateTraining(raw: UpdateTrainingFormValues) {
 }
 
 export async function deleteTraining(id: string) {
+  const logger = await getLogger()
+
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== "trainer") {
+  if (session.user.role !== user_role.trainer) {
     return { error: "Brak uprawnień do tej operacji." }
   }
+
+  const userId = session.user.id
+
+  logger.info({ userId, trainingId: id }, "Deleting training")
 
   try {
     const existing = await prisma.training.findFirst({
@@ -195,22 +216,24 @@ export async function deleteTraining(id: string) {
     })
 
     if (!existing) {
+      logger.warn({ userId, trainingId: id }, "Training not found")
       return { error: "Nie znaleziono treningu." }
     }
 
     if (isTrainingScheduledInPast(existing.scheduled_at)) {
+      logger.warn(
+        { userId, trainingId: id },
+        "Training cannot be deleted because it is in the past"
+      )
       return { error: "Nie można usunąć treningu z przeszłości." }
     }
 
     await prisma.training.delete({ where: { id } })
+    logger.info({ userId, trainingId: id }, "Training deleted successfully")
     revalidatePath("/dashboard/trainings")
     return { success: true }
-  } catch (error) {
-    console.error(
-      "[DELETE_TRAINING_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+  } catch {
+    logger.error({ userId, trainingId: id }, "Error deleting training")
     return {
       error: "Wystąpił błąd podczas usuwania treningu. Spróbuj ponownie.",
     }
@@ -218,17 +241,24 @@ export async function deleteTraining(id: string) {
 }
 
 export async function getTrainingsForWeek(weekAnchorIso: string) {
+  const logger = await getLogger()
+
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }
+
+  const userId = session.user.id
+
+  logger.info({ userId, weekAnchorIso }, "Fetching trainings for week")
+
   const anchor = new Date(weekAnchorIso)
   const weekStart = startOfWeek(anchor, { weekStartsOn: 1 })
   const weekEnd = endOfWeek(anchor, { weekStartsOn: 1 })
 
   try {
     const where =
-      session.user.role === "trainer"
+      session.user.role === user_role.trainer
         ? { trainer_id: session.user.id }
         : { trainee_id: session.user.id }
 
@@ -268,18 +298,18 @@ export async function getTrainingsForWeek(weekAnchorIso: string) {
       orderBy: { scheduled_at: "asc" },
     })
 
+    logger.info(
+      { userId, weekAnchorIso },
+      "Trainings for week fetched successfully"
+    )
     return {
       success: true,
       data: trainings.map(mapTraining),
       weekStart: weekStart.toISOString(),
       weekEnd: weekEnd.toISOString(),
     }
-  } catch (error) {
-    console.error(
-      "[GET_TRAININGS_FOR_WEEK_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+  } catch {
+    logger.error({ userId, weekAnchorIso }, "Error fetching trainings for week")
     return {
       error: "Nie udało się pobrać treningów. Spróbuj odświeżyć stronę.",
     }
