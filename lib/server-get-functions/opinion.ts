@@ -1,6 +1,11 @@
 import { prisma } from "@/lib/prisma"
+import { getLogger } from "@/lib/server-logger"
 
 export async function getTrainerOpinions(trainerId: string) {
+  const logger = await getLogger()
+
+  logger.info({ trainerId }, "Fetching trainer opinions")
+
   try {
     const opinions = await prisma.opinion.findMany({
       where: {
@@ -37,6 +42,8 @@ export async function getTrainerOpinions(trainerId: string) {
           )
         : null
 
+    logger.info({ trainerId }, "Trainer opinions fetched successfully")
+
     return {
       success: true as const,
       data: {
@@ -45,11 +52,7 @@ export async function getTrainerOpinions(trainerId: string) {
       },
     }
   } catch (error) {
-    console.error(
-      "[GET_TRAINER_OPINIONS_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+    logger.error({ trainerId }, "Error fetching trainer opinions")
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę" }
   }
 }

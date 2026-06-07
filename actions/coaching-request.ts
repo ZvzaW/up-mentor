@@ -9,8 +9,11 @@ import {
 } from "@/lib/validations"
 import { redirect } from "next/navigation"
 import { cooperation_status, user_role } from "@prisma/client"
+import { getLogger } from "@/lib/server-logger"
 
 export async function sendCoachingRequest(data: CoachingRequestInput) {
+  const logger = await getLogger()
+
   const session = await auth()
 
   if (!session?.user?.id) {
@@ -29,6 +32,8 @@ export async function sendCoachingRequest(data: CoachingRequestInput) {
   const traineeId = session.user.id
   const { trainer_id, workplace_id, message } = validated.data
 
+  logger.info({ traineeId, trainerId: trainer_id }, "Sending coaching request")
+
   try {
     const existingRequest = await prisma.coaching_request.findUnique({
       where: {
@@ -38,6 +43,7 @@ export async function sendCoachingRequest(data: CoachingRequestInput) {
     })
 
     if (existingRequest) {
+      logger.info({ traineeId, trainerId: trainer_id }, "Coaching request already sent")
       return { error: "Wysłałeś/aś już prośbę o współpracę do tego trenera." }
     }
 
@@ -50,6 +56,7 @@ export async function sendCoachingRequest(data: CoachingRequestInput) {
     })
 
     if (existingCooperation) {
+      logger.info({ traineeId, trainerId: trainer_id }, "Cooperation already exists")
       return { error: "Posiadasz już aktywną współpracę z tym trenerem." }
     }
 
@@ -75,13 +82,10 @@ export async function sendCoachingRequest(data: CoachingRequestInput) {
     })
 
     revalidatePath("/dashboard/trainers/catalog")
+    logger.info({ traineeId, trainerId: trainer_id }, "Coaching request sent successfully")
     return { success: true }
   } catch (error) {
-    console.error(
-      "[SEND_COACHING_REQUEST_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+    logger.error({ traineeId, trainerId: trainer_id }, "Error sending coaching request")
     return {
       error: "Wystąpił błąd podczas wysyłania prośby. Spróbuj ponownie.",
     }
@@ -89,6 +93,8 @@ export async function sendCoachingRequest(data: CoachingRequestInput) {
 }
 
 export async function deleteCoachingRequest(trainerId: string) {
+  const logger = await getLogger()
+
   const session = await auth()
 
   if (!session?.user?.id) {
@@ -101,6 +107,8 @@ export async function deleteCoachingRequest(trainerId: string) {
 
   const traineeId = session.user.id
 
+  logger.info({ traineeId, trainerId }, "Deleting coaching request")
+
   try {
     await prisma.coaching_request.delete({
       where: {
@@ -112,18 +120,17 @@ export async function deleteCoachingRequest(trainerId: string) {
     })
 
     revalidatePath("/dashboard/trainers/catalog")
+    logger.info({ traineeId, trainerId }, "Coaching request deleted successfully")
     return { success: true }
   } catch (error) {
-    console.error(
-      "[DELETE_COACHING_REQUEST_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+    logger.error({ traineeId, trainerId }, "Error deleting coaching request")
     return { error: "Wystąpił błąd podczas usuwania danych. Spróbuj ponownie." }
   }
 }
 
 export async function acceptRequest(traineeId: string) {
+  const logger = await getLogger()
+
   const session = await auth()
 
   if (!session?.user?.id) {
@@ -135,6 +142,8 @@ export async function acceptRequest(traineeId: string) {
   }
 
   const trainerId = session.user.id
+
+  logger.info({ trainerId, traineeId }, "Accepting coaching request")
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -165,6 +174,7 @@ export async function acceptRequest(traineeId: string) {
       })
 
       if (!workplace) {
+        logger.warn({ trainerId, traineeId, workplaceId }, "Workplace not found")
         return { error: "Miejsce treningów z prośby nie jest dostępne." }
       }
 
@@ -195,6 +205,7 @@ export async function acceptRequest(traineeId: string) {
             },
           })
         } else {
+          logger.warn({ trainerId, traineeId, workplaceId }, "Cooperation already exists")
           return {
             error: "Posiadasz już aktywną współpracę z tym podopiecznym.",
           }
@@ -221,13 +232,10 @@ export async function acceptRequest(traineeId: string) {
     })
 
     revalidatePath("/dashboard/trainees")
+    logger.info({ trainerId, traineeId }, "Coaching request accepted successfully")
     return { success: true }
   } catch (error) {
-    console.error(
-      "[ACCEPT_REQUEST_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+    logger.error({ trainerId, traineeId }, "Error accepting coaching request")
 
     return {
       error: "Wystąpił błąd podczas akceptacji prośby. Spróbuj ponownie.",
@@ -236,6 +244,8 @@ export async function acceptRequest(traineeId: string) {
 }
 
 export async function rejectRequest(traineeId: string) {
+  const logger = await getLogger()
+
   const session = await auth()
 
   if (!session?.user?.id) {
@@ -246,24 +256,26 @@ export async function rejectRequest(traineeId: string) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
+  const trainerId = session.user.id
+
+  logger.info({ trainerId, traineeId }, "Rejecting coaching request")
+
   try {
     await prisma.coaching_request.delete({
       where: {
         trainer_id_trainee_id: {
-          trainer_id: session.user.id,
+          trainer_id: trainerId,
           trainee_id: traineeId,
         },
       },
     })
 
     revalidatePath("/dashboard/trainees")
+    logger.info({ trainerId, traineeId }, "Coaching request rejected successfully")
     return { success: true }
+
   } catch (error) {
-    console.error(
-      "[REJECT_REQUEST_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+    logger.error({ trainerId, traineeId }, "Error rejecting coaching request")
     return {
       error: "Wystąpił błąd podczas odrzucania prośby. Spróbuj ponownie.",
     }

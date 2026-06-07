@@ -1,8 +1,13 @@
 import { prisma } from "@/lib/prisma"
 import { cooperation_status } from "@prisma/client"
 import { TraineeDTO, WorkplaceAddress } from "@/lib/types"
+import { getLogger } from "@/lib/server-logger"
 
 export async function getMyTrainees(userId: string) {
+  const logger = await getLogger()
+
+  logger.info({ userId }, "Fetching trainees")
+
   try {
     const cooperations = await prisma.cooperation.findMany({
       where: {
@@ -43,18 +48,19 @@ export async function getMyTrainees(userId: string) {
       workplace: cooperation.workplace as WorkplaceAddress,
     })) as TraineeDTO[]
 
+    logger.info({ userId }, "Trainees fetched successfully")
     return { success: true, data: mappedCooperations }
   } catch (error) {
-    console.error(
-      "[GET_MY_TRAINEES_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+    logger.error({ userId }, "Error fetching trainees")
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }
 
 export async function getMyTraineeBySlug(userId: string, slug: string) {
+  const logger = await getLogger()
+
+  logger.info({ userId, slug }, "Fetching trainee by slug")
+
   try {
     const cooperation = await prisma.cooperation.findFirst({
       where: {
@@ -89,13 +95,10 @@ export async function getMyTraineeBySlug(userId: string, slug: string) {
       },
     })
 
+    logger.info({ userId, slug}, "Trainee fetched by slug successfully")
     return { success: true, data: cooperation }
   } catch (error) {
-    console.error(
-      "[GET_MY_TRAINEE_BY_SLUG_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+    logger.error({ userId, slug }, "Error fetching trainee by slug")
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }

@@ -4,10 +4,13 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import { cooperation_status, user_role } from "@prisma/client"
+import { getLogger } from "@/lib/server-logger"
 
 export async function saveSurveyAnswers(
   answers: { question_id: string; answer: string }[]
 ) {
+  const logger = await getLogger()
+
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
@@ -17,8 +20,10 @@ export async function saveSurveyAnswers(
     return { error: "Brak uprawnień do tej operacji." }
   }
 
+  const traineeId = session.user.id
+
+  logger.info({ traineeId }, "Saving survey answers")
   try {
-    const traineeId = session.user.id
 
     await prisma.$transaction(async (tx) => {
       await tx.survey_answer.deleteMany({
@@ -60,18 +65,17 @@ export async function saveSurveyAnswers(
       }
     })
 
+    logger.info({ traineeId }, "Survey answers saved successfully")
     return { success: true }
   } catch (error) {
-    console.error(
-      "[SAVE_SURVEY_ANSWERS_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+    logger.error({ traineeId }, "Error saving survey answers")
     return { error: "Nie udało się zapisać ankiety. Spróbuj ponownie później." }
   }
 }
 
 export async function getSurveyData(traineeId?: string) {
+  const logger = await getLogger()
+
   const session = await auth()
 
   if (!session?.user?.id) {
@@ -80,6 +84,8 @@ export async function getSurveyData(traineeId?: string) {
 
   const userId = session.user.id
   const userRole = session.user.role
+
+  logger.info({ userId, traineeId }, "Fetching survey data")
 
   const traineeIdToFetch = traineeId || userId
 
@@ -135,13 +141,10 @@ export async function getSurveyData(traineeId?: string) {
       currentAnswer: answerDictionary[q.id] || undefined,
     }))
 
+    logger.info({ userId, traineeId: traineeIdToFetch }, "Survey data fetched successfully")
     return { success: true, data: mappedData }
   } catch (error) {
-    console.error(
-      "[GET_SURVEY_DATA_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+    logger.error({ userId, traineeId: traineeIdToFetch }, "Error fetching survey data")
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę" }
   }
 }

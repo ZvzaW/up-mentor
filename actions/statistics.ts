@@ -16,6 +16,7 @@ import {
   subWeeks,
 } from "date-fns"
 import { redirect } from "next/navigation"
+import { getLogger } from "@/lib/server-logger"
 
 const WEEK_DAY_LABELS = ["Pon", "Wt", "Śr", "Czw", "Pt", "Sob", "Ndz"] as const
 
@@ -61,6 +62,8 @@ async function getNextTraining(userId: string, role: user_role) {
 
 //------------------------------------------------------------------------------------------------
 export async function getStatistics() {
+  const logger = await getLogger()
+
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
@@ -69,11 +72,14 @@ export async function getStatistics() {
   const role = session.user.role
   const userId = session.user.id
 
+  logger.info({ userId, role }, "Fetching statistics")
+
   try {
     const nextTraining = await getNextTraining(userId, role)
 
     if (role === user_role.trainer) {
       const trainerStats = await getTrainerStatistics(userId)
+      logger.info({ userId, role }, "Statistics fetched successfully")
       return {
         success: true,
         nextTraining,
@@ -83,6 +89,7 @@ export async function getStatistics() {
 
     if (role === user_role.trainee) {
       const traineeStats = await getTraineeStatistics(userId)
+      logger.info({ userId, role }, "Statistics fetched successfully")
       return {
         success: true,
         nextTraining,
@@ -92,11 +99,7 @@ export async function getStatistics() {
 
     return { error: "Brak uprawnień do tej operacji." }
   } catch (error) {
-    console.error(
-      "[GET_STATISTICS_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+    logger.error({ userId, role }, "Error fetching statistics")
     return {
       error: "Nie udało się pobrać statystyk. Spróbuj odświeżyć stronę.",
     }

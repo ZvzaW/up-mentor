@@ -18,11 +18,16 @@ import { signOut, auth } from "@/auth"
 import { signIn } from "@/auth"
 import { getAuthJwt } from "@/lib/auth-tokens"
 import { AuthError } from "next-auth"
+import { getLogger } from "@/lib/server-logger"
 
 export async function register(
   formData: RegisterTraineeFormValues | RegisterTrainerFormValues,
   role: user_role
 ) {
+  const logger = await getLogger()
+
+  logger.info({role}, "Registering user")
+
   const schema =
     role === user_role.trainer ? registerTrainerSchema : registerTraineeSchema
   const validatedFields = schema.safeParse(formData)
@@ -80,12 +85,11 @@ export async function register(
         })
       }
     })
+
+    logger.info({role}, "User registered successfully")
   } catch (error) {
-    console.error(
-      "[REGISTER_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+    logger.error({role}, "Error registering user")
+
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2002"
@@ -98,8 +102,12 @@ export async function register(
 }
 
 export async function login(data: { email: string; password: string }) {
+  const logger = await getLogger()
+
   const email = data.email
   const password = data.password
+
+  logger.info("Logging in user")
 
   if (!email || !password) {
     return { error: "Wypełnij wszystkie pola!" }
@@ -111,8 +119,10 @@ export async function login(data: { email: string; password: string }) {
       password,
       redirect: false,
     })
+
+    logger.info("User logged in successfully")
   } catch (error) {
-    console.error("[LOGIN_ERROR]:", new Date().toLocaleString("pl-PL"), error)
+    logger.error("Error logging in user")
     if (error instanceof AuthError) {
       switch (error.type) {
         case "CredentialsSignin":
@@ -126,8 +136,12 @@ export async function login(data: { email: string; password: string }) {
 }
 
 export async function logout() {
+  const logger = await getLogger()
+
   const jwt = await getAuthJwt()
   const refreshTokenId = jwt?.refreshTokenId
+
+  logger.info("Logging out user")
 
   try {
     if (refreshTokenId) {
@@ -135,8 +149,10 @@ export async function logout() {
         where: { id: refreshTokenId },
       })
     }
+
+    logger.info("User logged out successfully")
   } catch (error) {
-    console.error("[LOGOUT_ERROR]:", new Date().toLocaleString("pl-PL"), error)
+    logger.error("Error logging out user")
     return { error: "Wystąpił błąd podczas wylogowywania. Spróbuj ponownie." }
   }
 
@@ -144,23 +160,27 @@ export async function logout() {
 }
 
 export async function logoutAllDevices() {
+  const logger = await getLogger()
+
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }
 
+  const userId = session.user.id
+
+  logger.info({ userId }, "Logging out user from all devices")
+
   try {
     await prisma.refresh_token.deleteMany({
       where: {
-        user_id: session.user.id,
+        user_id: userId,
       },
     })
+
+    logger.info({ userId }, "User logged out from all devices successfully")
   } catch (error) {
-    console.error(
-      "[LOGOUT_ALL_DEVICES_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+    logger.error({ userId }, "Error logging out user from all devices")
     return {
       error:
         "Wystąpił błąd podczas wylogowywania ze wszystkich urządzeń. Spróbuj ponownie.",

@@ -4,14 +4,19 @@ import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { cooperation_status, user_role } from "@prisma/client"
+import { getLogger } from "@/lib/server-logger"
 
 export async function deleteAccount() {
+  const logger = await getLogger()
+
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }
 
   const userId = session.user.id
+
+  logger.info({ userId }, "Deleting account")
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -142,12 +147,10 @@ export async function deleteAccount() {
         },
       })
     })
+
+    logger.info("Account deleted successfully")
   } catch (error) {
-    console.error(
-      "[DELETE_ACCOUNT_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+    logger.error({ userId }, "Error deleting account")
     return {
       error: "Wystąpił błąd podczas usuwania konta. Spróbuj ponownie.",
     }

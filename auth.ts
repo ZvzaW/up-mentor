@@ -75,26 +75,26 @@ async function refreshAccessToken(token: JWT) {
       where: { token: hashToken(token.refreshToken) },
     })
 
-    if (!storedToken || storedToken.expires_at < new Date()) {
+    if (!storedToken) {
       throw new Error("RefreshTokenExpired")
     }
 
-    const newRefreshToken = crypto.randomBytes(40).toString("hex")
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    if(storedToken.expires_at < new Date()) {
+      await prisma.refresh_token.delete({
+        where: { id: storedToken.id },
+      })
+      throw new Error("RefreshTokenExpired")
+    }
 
-    await prisma.refresh_token.update({
-      where: { id: storedToken.id },
-      data: {
-        token: hashToken(newRefreshToken),
-        expires_at: expiresAt,
-      },
-    })
+
+    const newAccessToken = crypto.randomBytes(20).toString("hex")
+    const newAccessTokenExpires = Date.now() + 15 * 60 * 1000 
 
     return {
       ...token,
-      accessToken: crypto.randomBytes(20).toString("hex"),
-      accessTokenExpires: Date.now() + 15 * 60 * 1000,
-      refreshToken: newRefreshToken,
+      accessToken: newAccessToken,
+      accessTokenExpires: newAccessTokenExpires,
+      refreshToken: token.refreshToken,
       refreshTokenId: storedToken.id,
     }
   } catch {

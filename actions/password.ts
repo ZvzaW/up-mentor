@@ -11,12 +11,19 @@ import nodemailer from "nodemailer"
 import crypto from "node:crypto"
 import { emailSchema } from "@/lib/validations"
 import { resetPasswordSchema } from "@/lib/validations"
+import { getLogger } from "@/lib/server-logger"
 
 export async function changePassword(input: unknown) {
+  const logger = await getLogger()
+
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
   }
+
+  const userId = session.user.id
+
+  logger.info({ userId }, "Changing password")
 
   const validated = changePasswordSchema.safeParse(input)
   if (!validated.success) return { error: "Nieprawidłowe dane wejściowe." }
@@ -54,12 +61,10 @@ export async function changePassword(input: unknown) {
         },
       })
     }
+
+    logger.info({ userId }, "Password changed successfully")
   } catch (error) {
-    console.error(
-      "[CHANGE_PASSWORD_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+    logger.error({ userId }, "Error changing password")
     return { error: "Wystąpił błąd podczas zmiany hasła. Spróbuj ponownie." }
   }
 
@@ -84,6 +89,10 @@ function getBaseUrl() {
 
 
 export async function requestPasswordReset(emailInput: string) {
+  const logger = await getLogger()
+
+  logger.info("Requesting password reset")
+
   const validated = emailSchema.safeParse({
     email: emailInput,
   })
@@ -136,13 +145,10 @@ export async function requestPasswordReset(emailInput: string) {
         `,
     })
 
+    logger.info("Password reset email sent successfully")
     return { success: true }
   } catch (error) {
-    console.error(
-      "[REQUEST_PASSWORD_RESET_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+    logger.error("Error requesting password reset")
     await prisma.password_reset_token.deleteMany({
       where: { token: tokenHash },
     })
@@ -156,6 +162,10 @@ export async function resetPassword(input: {
   password: string
   confirmPassword: string
 }) {
+  const logger = await getLogger()
+
+  logger.info("Resetting password")
+
   const validated = resetPasswordSchema.safeParse(input)
 
   if (!validated.success) {
@@ -177,6 +187,7 @@ export async function resetPassword(input: {
           where: { token: tokenHash },
         })
       }
+      logger.error("Token not found or expired")
       return { error: "Link jest nieprawidłowy lub wygasł." }
     }
 
@@ -197,13 +208,10 @@ export async function resetPassword(input: {
       })
     })
 
+    logger.info("Password reset successfully")
     return { success: true }
   } catch (error) {
-    console.error(
-      "[RESET_PASSWORD_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+    logger.error("Error resetting password")
     return {
       error: "Wystąpił błąd podczas resetowania hasła. Spróbuj ponownie.",
     }

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { cooperation_status, Prisma, user_role } from "@prisma/client"
+import { getLogger } from "@/lib/server-logger"
 
 async function exerciseVisibility(
   userId: string,
@@ -33,6 +34,10 @@ async function exerciseVisibility(
 }
 
 export async function getExercises(userId: string, role: user_role) {
+  const logger = await getLogger()
+
+  logger.info({ userId, role }, "Fetching exercises")
+
   try {
     const visibility = await exerciseVisibility(userId, role)
 
@@ -48,13 +53,10 @@ export async function getExercises(userId: string, role: user_role) {
       orderBy: { name: "asc" },
     })
 
+    logger.info({ userId, role }, "Exercises fetched successfully")
     return { success: true as const, data }
   } catch (error) {
-    console.error(
-      "[GET_EXERCISES_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+    logger.error({ userId, role }, "Error fetching exercises")
     return { error: "Nie udało się pobrać ćwiczeń. Spróbuj odświeżyć stronę." }
   }
 }

@@ -3,10 +3,7 @@ import type { JWT } from "next-auth/jwt"
 import { cookies } from "next/headers"
 import crypto from "node:crypto"
 
-const SESSION_COOKIE =
-  process.env.NODE_ENV === "production"
-    ? "__Secure-authjs.session-token"
-    : "authjs.session-token"
+const SESSION_COOKIE = "__Secure-authjs.session-token"
 
 export function hashToken(token: string) {
   return crypto.createHash("sha256").update(token).digest("hex")

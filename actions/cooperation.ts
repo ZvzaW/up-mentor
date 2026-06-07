@@ -8,6 +8,7 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import nodemailer from "nodemailer"
 import { cooperation_status, user_role } from "@prisma/client"
+import { getLogger } from "@/lib/server-logger"
 
 const transporter = nodemailer.createTransport({
   host: process.env.MAILTRAP_HOST,
@@ -82,6 +83,8 @@ async function getAssignedPlansToTrainee(trainerId: string, traineeId: string) {
 }
 
 export async function finishCooperation(partnerId: string) {
+  const logger = await getLogger()
+
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
@@ -91,6 +94,8 @@ export async function finishCooperation(partnerId: string) {
     session.user.role === user_role.trainer ? session.user.id : partnerId
   const traineeId =
     session.user.role === user_role.trainee ? session.user.id : partnerId
+
+  logger.info({ trainerId, traineeId }, "Finishing cooperation")
 
   try {
     const cooperation = await prisma.cooperation.findUnique({
@@ -183,13 +188,10 @@ export async function finishCooperation(partnerId: string) {
     revalidatePath("/dashboard/trainers")
     revalidatePath("/dashboard/trainees")
 
+    logger.info({ trainerId, traineeId }, "Cooperation finished successfully")
     return { success: true as const }
   } catch (error) {
-    console.error(
-      "[FINISH_COOPERATION_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+    logger.error({ trainerId, traineeId }, "Error finishing cooperation")
     return {
       error:
         "Wystąpił błąd podczas rozwiązywania współpracy. Spróbuj ponownie.",

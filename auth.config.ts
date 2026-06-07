@@ -1,6 +1,8 @@
 import type { NextAuthConfig } from "next-auth"
 import type { JWT } from "next-auth/jwt"
-import { user_role } from "@prisma/client"
+
+const TRAINEE = "trainee"
+const TRAINER = "trainer"
 
 export const authConfig = {
   secret: process.env.AUTH_SECRET,
@@ -33,19 +35,19 @@ export const authConfig = {
       }
 
 
-      if (path.startsWith("/dashboard/trainers") && userRole !== user_role.trainee) {
+      if (path.startsWith("/dashboard/trainers") && userRole !== TRAINEE) {
         return Response.redirect(new URL("/dashboard", nextUrl));
       }
 
-      if (path.startsWith("/dashboard/trainees") && userRole !== user_role.trainer) {
+      if (path.startsWith("/dashboard/trainees") && userRole !== TRAINER) {
         return Response.redirect(new URL("/dashboard", nextUrl));
       }
 
-      if (path.startsWith("/dashboard/workout-plans/edit") && userRole !== user_role.trainer) {
+      if (path.startsWith("/dashboard/workout-plans/edit") && userRole !== TRAINER) {
         return Response.redirect(new URL("/dashboard/workout-plans", nextUrl));
       }
 
-      if (path.startsWith("/dashboard/workout-plans/create") && userRole !== user_role.trainer) {
+      if (path.startsWith("/dashboard/workout-plans/create") && userRole !== TRAINER) {
         return Response.redirect(new URL("/dashboard/workout-plans", nextUrl));
       }
 

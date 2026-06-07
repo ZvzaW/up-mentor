@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { getLogger } from "@/lib/server-logger"
 
 type PublicTrainersCatalogFilters = {
   name?: string
@@ -8,8 +9,12 @@ type PublicTrainersCatalogFilters = {
 export async function getCatalogTrainers(
   filters?: PublicTrainersCatalogFilters
 ) {
+  const logger = await getLogger()
+
   const nameQuery = filters?.name?.trim()
   const cityQuery = filters?.city?.trim()
+
+  logger.info({ nameQuery, cityQuery }, "Fetching catalog trainers")
 
   try {
     type TrainerFindManyArgs = NonNullable<
@@ -98,18 +103,19 @@ export async function getCatalogTrainers(
       }
     })
 
+    logger.info({ nameQuery, cityQuery }, "Catalog trainers fetched successfully")
     return { success: true as const, data }
   } catch (error) {
-    console.error(
-      "[GET_CATALOG_TRAINERS_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+    logger.error({ nameQuery, cityQuery }, "Error fetching catalog trainers")
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }
 
 export async function getCatalogTrainerBySlug(slug: string) {
+  const logger = await getLogger()
+
+  logger.info({ slug }, "Getting catalog trainer by slug")
+
   try {
     const trainer = await prisma.trainer.findFirst({
       where: {
@@ -138,8 +144,11 @@ export async function getCatalogTrainerBySlug(slug: string) {
     })
 
     if (!trainer) {
+      logger.info({ slug }, "Catalog trainer not found by slug")
       return { success: true as const, data: null }
     }
+
+    logger.info({ slug }, "Catalog trainer found by slug")
 
     return {
       success: true as const,
@@ -154,11 +163,7 @@ export async function getCatalogTrainerBySlug(slug: string) {
       },
     }
   } catch (error) {
-    console.error(
-      "[GET_CATALOG_TRAINER_BY_SLUG_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+    logger.error({ slug }, "Error getting catalog trainer by slug")
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
 }

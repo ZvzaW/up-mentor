@@ -8,8 +8,11 @@ import {
 } from "@/lib/validations"
 import { redirect } from "next/navigation"
 import { cooperation_status, user_role } from "@prisma/client"
+import { getLogger } from "@/lib/server-logger"
 
 export async function getMyOpinion(trainerId: string) {
+  const logger = await getLogger()
+
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
@@ -18,6 +21,10 @@ export async function getMyOpinion(trainerId: string) {
   if (session.user.role !== user_role.trainee) {
     return { error: "Brak uprawnień do tej operacji." }
   }
+
+  const traineeId = session.user.id
+
+  logger.info({ traineeId, trainerId }, "Fetching opinion")
 
   try {
     const opinion = await prisma.opinion.findUnique({
@@ -34,9 +41,11 @@ export async function getMyOpinion(trainerId: string) {
     })
 
     if (!opinion) {
+      logger.info({ traineeId, trainerId }, "Opinion fetched successfully")
       return { success: true as const, data: null }
     }
 
+    logger.info({ traineeId, trainerId }, "Opinion fetched successfully")
     return {
       success: true as const,
       data: {
@@ -45,16 +54,14 @@ export async function getMyOpinion(trainerId: string) {
       },
     }
   } catch (error) {
-    console.error(
-      "[GET_MY_OPINION_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+    logger.error({ traineeId, trainerId }, "Error fetching opinion")
     return { error: "Nie udało się pobrać opinii. Spróbuj ponownie" }
   }
 }
 
 export async function upsertOpinion(opinion: TrainerOpinionFormValues) {
+  const logger = await getLogger()
+
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
@@ -63,6 +70,8 @@ export async function upsertOpinion(opinion: TrainerOpinionFormValues) {
   if (session.user.role !== user_role.trainee) {
     return { error: "Brak uprawnień do tej operacji." }
   }
+
+  const traineeId = session.user.id
 
   const validated = trainerOpinionSchema.safeParse(opinion)
   if (!validated.success) {
@@ -82,10 +91,13 @@ export async function upsertOpinion(opinion: TrainerOpinionFormValues) {
   })
 
   if (!cooperation || cooperation.status !== cooperation_status.active) {
+    logger.warn({ traineeId, trainerId: data.trainer_id }, "Cooperation to upsert opinion not found")
     return {
       error: "Możesz ocenić tylko trenera, z którym masz aktywną współpracę.",
     }
   }
+
+  logger.info({ traineeId, trainerId: data.trainer_id }, "Upserting opinion")
 
   try {
     await prisma.opinion.upsert({
@@ -106,12 +118,10 @@ export async function upsertOpinion(opinion: TrainerOpinionFormValues) {
         comment: data.comment,
       },
     })
+
+    logger.info({ traineeId, trainerId: data.trainer_id }, "Opinion upserted successfully")
   } catch (error) {
-    console.error(
-      "[UPSERT_OPINION_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+    logger.error({ traineeId, trainerId: data.trainer_id }, "Error upserting opinion")
     return {
       error: "Wystąpił błąd podczas zapisywania danych. Spróbuj ponownie.",
     }
@@ -121,6 +131,8 @@ export async function upsertOpinion(opinion: TrainerOpinionFormValues) {
 }
 
 export async function deleteOpinion(trainerId: string) {
+  const logger = await getLogger()
+
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/?unauthorized=true")
@@ -130,6 +142,10 @@ export async function deleteOpinion(trainerId: string) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
+  const traineeId = session.user.id
+
+  logger.info({ traineeId, trainerId }, "Deleting opinion")
+
   try {
     await prisma.opinion.deleteMany({
       where: {
@@ -137,12 +153,10 @@ export async function deleteOpinion(trainerId: string) {
         trainer_id: trainerId,
       },
     })
+
+    logger.info({ traineeId, trainerId }, "Opinion deleted successfully")
   } catch (error) {
-    console.error(
-      "[DELETE_OPINION_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+    logger.error({ traineeId, trainerId }, "Error deleting opinion")
     return { error: "Wystąpił błąd podczas usuwania danych. Spróbuj ponownie." }
   }
 

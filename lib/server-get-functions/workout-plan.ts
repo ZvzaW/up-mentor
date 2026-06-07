@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import type { WorkoutPlanFromDb, WorkoutPlanItem } from "@/lib/types"
 import { user_role } from "@prisma/client"
+import { getLogger } from "@/lib/server-logger"
 
 const formatPlans = (plans: WorkoutPlanFromDb[]): WorkoutPlanItem[] => {
   return plans.map((plan) => ({
@@ -30,6 +31,10 @@ const formatPlans = (plans: WorkoutPlanFromDb[]): WorkoutPlanItem[] => {
 }
 
 export async function getWorkoutPlans(userId: string, role: user_role) {
+  const logger = await getLogger()
+
+  logger.info({ userId, role }, "Fetching workout plans")
+
   try {
     if (role === user_role.trainer) {
       const plans = await prisma.workout_plan.findMany({
@@ -56,6 +61,7 @@ export async function getWorkoutPlans(userId: string, role: user_role) {
         orderBy: { name: "asc" },
       })
 
+      logger.info({ userId, role}, "Workout plans fetched successfully")
       return { data: formatPlans(plans) }
     } else if (role === user_role.trainee) {
       const plans = await prisma.workout_plan.findMany({
@@ -81,21 +87,23 @@ export async function getWorkoutPlans(userId: string, role: user_role) {
         },
         orderBy: { name: "asc" },
       })
+
+      logger.info({ userId, role }, "Workout plans fetched successfully")
       return { data: formatPlans(plans) }
     }
 
     return { error: "Nieprawidłowa rola" }
   } catch (error) {
-    console.error(
-      "[GET_WORKOUT_PLANS_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+    logger.error({ userId, role }, "Error fetching workout plans")
     return { error: "Nie udało się pobrać planów. Spróbuj odświeżyć stronę." }
   }
 }
 
 export async function getWorkoutPlanById(userId: string, planId: string) {
+  const logger = await getLogger()
+
+  logger.info({ userId, planId }, "Fetching workout plan by id")
+
   try {
     const plan = await prisma.workout_plan.findFirst({
       where: {
@@ -119,6 +127,8 @@ export async function getWorkoutPlanById(userId: string, planId: string) {
       return { error: "Nie znaleziono planu." }
     }
 
+    logger.info({ userId, planId }, "Workout plan fetched by id successfully")
+
     return {
       data: {
         id: plan.id,
@@ -141,11 +151,7 @@ export async function getWorkoutPlanById(userId: string, planId: string) {
       },
     }
   } catch (error) {
-    console.error(
-      "[GET_WORKOUT_PLAN_BY_ID_ERROR]:",
-      new Date().toLocaleString("pl-PL"),
-      error
-    )
+    logger.error({ userId, planId }, "Error fetching workout plan by id")
     return { error: "Nie udało się pobrać planu. Spróbuj odświeżyć stronę." }
   }
 }
