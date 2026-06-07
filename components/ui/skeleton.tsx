@@ -76,9 +76,8 @@ export { Skeleton }
 
 function NextTrainingSkeleton() {
   return (
-    <div className="bg-dirty-blue flex items-center justify-between rounded-xl py-4">
-      <Skeleton className="ml-5 h-4 w-32 rounded" />
-      <Skeleton className="mr-4 h-11 w-40 rounded-lg" />
+    <div>
+      <Skeleton className="h-20 rounded-xl" />
     </div>
   )
 }

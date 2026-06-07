@@ -79,13 +79,17 @@ export async function register(
         })
       }
     })
-  } catch (error: any) {
+  } catch (error) {
     console.error(
       "[REGISTER_ERROR]:",
       new Date().toLocaleString("pl-PL"),
       error
     )
-    if (error.code === "P2002") return { error: "Ten e-mail jest już zajęty!" }
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    )
+      return { error: "Ten e-mail jest już zajęty!" }
     return { error: "Wystąpił błąd podczas rejestracji, spróbuj ponownie." }
   }
 

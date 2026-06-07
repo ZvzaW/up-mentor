@@ -44,11 +44,8 @@ export default function LoginPage() {
       } else {
         window.location.href = "/dashboard"
       }
-    } catch (error: any) {
-      if (
-        error?.message === "NEXT_REDIRECT" ||
-        error?.digest?.includes("NEXT_REDIRECT")
-      ) {
+    } catch (error) {
+      if (error instanceof Error && error.message === "NEXT_REDIRECT") {
         throw error
       }
 

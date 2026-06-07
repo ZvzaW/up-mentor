@@ -335,7 +335,7 @@ export default function TrainingsCalendar({
         )}
         {isTrainer && (
           <p className="mt-2 text-center text-xs text-zinc-400 lg:text-left">
-            Kliknij pusty slot lub "Dodaj trening”, aby zaplanować zajęcia.
+            Kliknij pusty slot lub „Dodaj trening”, aby zaplanować zajęcia.
           </p>
         )}
       </div>

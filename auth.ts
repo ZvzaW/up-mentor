@@ -1,4 +1,5 @@
 import NextAuth from "next-auth"
+import type { JWT } from "next-auth/jwt"
 import Credentials from "next-auth/providers/credentials"
 import { authConfig } from "./auth.config"
 import { prisma } from "@/lib/prisma"
@@ -25,9 +26,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         return {
           id: user.id,
-          email: user.email,
-          phone: user.phone,
-          name: `${user.name} ${user.surname}`,
           role: user.role,
         }
       },
@@ -54,22 +52,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           accessTokenExpires: Date.now() + 15 * 60 * 1000,
           refreshToken: refreshToken,
           id: user.id!,
-          role: (user as any).role,
+          role: user.role,
         }
       }
 
-      const t = token as any
+      const t = token as JWT
 
       if (Date.now() < t.accessTokenExpires) {
         return token
       }
 
-      return await refreshAccessToken(token)
+      return await refreshAccessToken(t)
     },
   },
 })
 
-async function refreshAccessToken(token: any) {
+async function refreshAccessToken(token: JWT) {
   try {
     const storedToken = await prisma.refresh_token.findUnique({
       where: { token: token.refreshToken },
@@ -79,13 +77,12 @@ async function refreshAccessToken(token: any) {
       throw new Error("RefreshTokenExpired")
     }
 
-    console.log("REFRESH TOKEN")
     return {
       ...token,
       accessToken: crypto.randomBytes(20).toString("hex"),
       accessTokenExpires: Date.now() + 15 * 60 * 1000,
     }
   } catch {
-    return { ...token, error: "RefreshTokenError" }
+    return { ...token, error: "RefreshTokenError" as const }
   }
 }

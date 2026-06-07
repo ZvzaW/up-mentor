@@ -118,7 +118,7 @@ export function ManageCoachingRequestsDialog({
 
                     {req.message && (
                       <div className="bg-dirty-navy/50 rounded-md p-3 text-xs break-words text-zinc-300 italic">
-                        "{req.message}"
+                        „{req.message}”
                       </div>
                     )}
 

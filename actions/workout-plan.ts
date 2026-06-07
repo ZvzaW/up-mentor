@@ -3,7 +3,8 @@
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { toDownloadFile } from "@/lib/workout-plan-pdf"
-import {  WorkoutPlanPayload, WorkoutPlanPayloadSchema } from "@/lib/validations"
+import { WorkoutPlanPayload, WorkoutPlanPayloadSchema } from "@/lib/validations"
+import { Prisma } from "@prisma/client"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
@@ -96,7 +97,10 @@ export async function createWorkoutPlan(data: unknown) {
   }
 }
 
-export async function updateWorkoutPlan(planId: string, data: WorkoutPlanPayload) {
+export async function updateWorkoutPlan(
+  planId: string,
+  data: WorkoutPlanPayload
+) {
   const session = await auth()
 
   if (!session?.user?.id) {
@@ -106,7 +110,6 @@ export async function updateWorkoutPlan(planId: string, data: WorkoutPlanPayload
   if (session.user.role !== "trainer")
     return { error: "Brak uprawnień do tej operacji." }
 
- 
   try {
     const existingPlan = await prisma.workout_plan.findFirst({
       where: {
@@ -120,22 +123,22 @@ export async function updateWorkoutPlan(planId: string, data: WorkoutPlanPayload
       return { error: "Nie znaleziono planu do zaktualizowania." }
     }
 
- const validated = WorkoutPlanPayloadSchema.safeParse(data)
-  if (!validated.success) {
-    return { error: "Nieprawidłowe dane wejściowe." }
-  }
+    const validated = WorkoutPlanPayloadSchema.safeParse(data)
+    if (!validated.success) {
+      return { error: "Nieprawidłowe dane wejściowe." }
+    }
 
-  const planData = validated.data
-  const exerciseIds = planData.sections.flatMap((sec) =>
-    sec.exercise_sets.map((set) => set.exercise_id)
-  )
-  const exerciseValidation = await validateExercisesAccess(
-    session.user.id,
-    exerciseIds
-  )
-  if (exerciseValidation.error) {
-    return { error: exerciseValidation.error }
-  }
+    const planData = validated.data
+    const exerciseIds = planData.sections.flatMap((sec) =>
+      sec.exercise_sets.map((set) => set.exercise_id)
+    )
+    const exerciseValidation = await validateExercisesAccess(
+      session.user.id,
+      exerciseIds
+    )
+    if (exerciseValidation.error) {
+      return { error: exerciseValidation.error }
+    }
 
     await prisma.$transaction(async (tx) => {
       await tx.workout_plan.update({
@@ -264,7 +267,7 @@ export async function cloneWorkoutPlan(planId: string) {
 
   try {
     const existingPlan = await prisma.workout_plan.findUnique({
-      where: { 
+      where: {
         id: planId,
         trainer_id: session.user.id,
       },
@@ -329,7 +332,7 @@ export async function deleteWorkoutPlan(planId: string) {
 
   try {
     const existingPlan = await prisma.workout_plan.findUnique({
-      where: { 
+      where: {
         id: planId,
         trainer_id: session.user.id,
       },
@@ -469,13 +472,16 @@ export async function assignPlanToTrainee(planId: string, traineeId: string) {
 
     revalidatePath("/dashboard/workout-plans")
     return { success: true }
-  } catch (error: any) {
+  } catch (error) {
     console.error(
       "[ASSIGN_PLAN_TO_TRAINEE_ERROR]:",
       new Date().toLocaleString("pl-PL"),
       error
     )
-    if (error.code === "P2002") {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
       return {
         error: "Ten plan jest już przypisany do wybranego podopiecznego.",
       }

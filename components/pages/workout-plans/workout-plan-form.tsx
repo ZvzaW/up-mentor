@@ -51,7 +51,6 @@ import {
   WorkoutPlanPayload,
   type WorkoutPlanFormValues,
 } from "@/lib/validations"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 
 type WorkoutPlanFormExercise = {
   id: string
@@ -117,7 +116,9 @@ function buildDefaultValues(
   }
 }
 
-function mapToWorkoutPlanPayload(data: WorkoutPlanFormValues): WorkoutPlanPayload {
+function mapToWorkoutPlanPayload(
+  data: WorkoutPlanFormValues
+): WorkoutPlanPayload {
   return {
     name: data.name,
     difficulty: data.difficulty || null,
@@ -526,7 +527,6 @@ export function WorkoutPlanForm({
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   )
 
-
   const handleSectionDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
     if (!over || active.id === over.id) return
@@ -700,7 +700,6 @@ export function WorkoutPlanForm({
               </SortableContext>
             </DndContext>
           )}
-
 
           <div className="flex justify-center">
             <Button

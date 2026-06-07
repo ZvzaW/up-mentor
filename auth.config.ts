@@ -1,4 +1,5 @@
 import type { NextAuthConfig } from "next-auth"
+import type { JWT } from "next-auth/jwt"
 
 export const authConfig = {
   secret: process.env.AUTH_SECRET,
@@ -51,18 +52,18 @@ export const authConfig = {
     },
 
     async session({ session, token }) {
-      const t = token as any;
+      const t = token as JWT
 
-      session.accessToken = t.accessToken;
-      session.refreshToken = t.refreshToken;
-      session.error = t.error;
+      session.accessToken = t.accessToken
+      session.refreshToken = t.refreshToken
+      session.error = t.error
 
       if (session.user) {
-        session.user.id = t.id;
-        session.user.role = t.role;
+        session.user.id = t.id
+        session.user.role = t.role
       }
 
-      return session;
+      return session
     },
   },
   providers: [],

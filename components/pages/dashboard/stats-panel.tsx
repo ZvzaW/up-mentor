@@ -18,20 +18,20 @@ interface StatsPanelProps {
 
 export default function StatsPanel({ role }: StatsPanelProps) {
   const [result, setResult] = useState<StatisticsResult | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const [statsError, setStatsError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     let cancelled = false
-    setIsLoading(true)
-    setStatsError(null)
-    setResult(null)
 
     getStatistics().then((res) => {
       if (cancelled) return
+
       if (res.error) {
         setStatsError(res.error)
+        setResult(null)
       } else if (res.success) {
+        setStatsError(null)
         setResult(res)
       }
 
@@ -41,7 +41,7 @@ export default function StatsPanel({ role }: StatsPanelProps) {
     return () => {
       cancelled = true
     }
-  }, [role])
+  }, [])
 
   const isStatsReady = !isLoading && result != null && result.success
 

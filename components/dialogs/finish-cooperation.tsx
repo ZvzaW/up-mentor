@@ -57,7 +57,7 @@ export function FinishCooperationDialog({
           <DialogDescription className=" ">
             Utracisz dostęp do danych tej strony współpracy. Natomiast zachowasz
             zanonimizowaną historię treningów. Jeśli zostały udostępnione
-            podopiecznemu plany treningowe w systemie, otrzyma je na mail'a w
+            podopiecznemu plany treningowe w systemie, otrzyma je na maila w
             formie pdf.
           </DialogDescription>
         </DialogHeader>

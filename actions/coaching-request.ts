@@ -28,7 +28,6 @@ export async function sendCoachingRequest(data: CoachingRequestInput) {
   const traineeId = session.user.id
   const { trainer_id, workplace_id, message } = validated.data
 
-  
   try {
     const existingRequest = await prisma.coaching_request.findUnique({
       where: {
@@ -165,7 +164,7 @@ export async function acceptRequest(traineeId: string) {
       })
 
       if (!workplace) {
-        return {error: "Miejsce treningów z prośby nie jest dostępne."}
+        return { error: "Miejsce treningów z prośby nie jest dostępne." }
       }
 
       const existingCooperation = await tx.cooperation.findUnique({
@@ -195,7 +194,9 @@ export async function acceptRequest(traineeId: string) {
             },
           })
         } else {
-          return { error: "Posiadasz już aktywną współpracę z tym podopiecznym." }
+          return {
+            error: "Posiadasz już aktywną współpracę z tym podopiecznym.",
+          }
         }
       } else {
         await tx.cooperation.create({
@@ -226,7 +227,7 @@ export async function acceptRequest(traineeId: string) {
       new Date().toLocaleString("pl-PL"),
       error
     )
-  
+
     return {
       error: "Wystąpił błąd podczas akceptacji prośby. Spróbuj ponownie.",
     }

@@ -111,6 +111,7 @@ export const traineePersonalDataSchema = z.object({
   phone: basePhone,
   birthdate: baseBirthdate,
 })
+
 export type TraineePersonalDataValues = z.infer<
   typeof traineePersonalDataSchema
 >
@@ -257,30 +258,30 @@ const ExerciseSetSchema = z.object({
   id: z.string().optional(),
   exercise_id: z.string().min(1, "Wybierz ćwiczenie"),
   series_count: z
-  .number()
-  .int("Liczba serii musi być liczbą całkowitą")
-  .min(1, "Minimum 1 seria")
-  .max(50, "Maksymalnie 50 serii"),
+    .number()
+    .int("Liczba serii musi być liczbą całkowitą")
+    .min(1, "Minimum 1 seria")
+    .max(50, "Maksymalnie 50 serii"),
   reps_count: z
-  .number()
-  .int("Liczba powtórzeń musi być liczbą całkowitą")
-  .min(1, "Minimum 1 powtórzenie")
-  .max(1000, "Maksymalnie 1000 powtórzeń"),
+    .number()
+    .int("Liczba powtórzeń musi być liczbą całkowitą")
+    .min(1, "Minimum 1 powtórzenie")
+    .max(1000, "Maksymalnie 1000 powtórzeń"),
   weight: z
-  .number()
-  .min(0, "Waga nie może być ujemna")
-  .max(999.99, "Maksymalna waga to 999,99 kg")
-  .nullable(),
-  order: z.number().int().min(1)
+    .number()
+    .min(0, "Waga nie może być ujemna")
+    .max(999.99, "Maksymalna waga to 999,99 kg")
+    .nullable(),
+  order: z.number().int().min(1),
 })
 
 const SectionSchema = z.object({
   id: z.string().optional(),
   body_part: z
-  .string()
-  .max(100, "Partia ciała może mieć maksymalnie 100 znaków")
-  .optional()
-  .nullable(),
+    .string()
+    .max(100, "Partia ciała może mieć maksymalnie 100 znaków")
+    .optional()
+    .nullable(),
   order: z.number().int().min(1),
   exercise_sets: z
     .array(ExerciseSetSchema)
@@ -307,7 +308,6 @@ export const WorkoutPlanPayloadSchema = z.object({
 })
 
 export type WorkoutPlanPayload = z.infer<typeof WorkoutPlanPayloadSchema>
-
 
 const ExerciseSetFormSchema = ExerciseSetSchema.extend({
   uid: z.string(),

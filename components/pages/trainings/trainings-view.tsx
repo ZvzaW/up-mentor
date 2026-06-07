@@ -10,14 +10,14 @@ import {
   isTrainingScheduledInPast,
   type TrainingSlot,
 } from "@/lib/training-calendar-functions"
-import { TrainingDTO } from "@/lib/types"
+import { TraineeDTO, TrainingDTO } from "@/lib/types"
 
 type TrainingsViewProps = {
   role: "trainer" | "trainee" | string
   initialTrainings: TrainingDTO[]
   initialWeekAnchor: string
   initialFetchError?: string | null
-  trainees: any[] | null
+  trainees: TraineeDTO[] | null
 }
 
 type DialogState = {

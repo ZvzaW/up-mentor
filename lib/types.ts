@@ -60,6 +60,16 @@ export type TrainingListItem = {
   workplaceAddress: string
 }
 
+export type TrainingMonthGroup = {
+  monthLabel: string
+  trainings: TrainingListItem[]
+}
+
+export type TrainingYearGroup = {
+  year: number
+  months: TrainingMonthGroup[]
+}
+
 export type TrainerStatistics = {
   weeklyLoad: { day: string; h: number }[]
   monthlyComparison: { month: string; trainings: number; salary: number }[]
@@ -98,7 +108,6 @@ export const EXERCISE_BODY_PARTS = [
   "Łydki",
   "Full body",
 ] as const
-
 
 export type WorkoutPlanUserRef = {
   name: string | null

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useForm } from "react-hook-form"
+import { useForm, type Path } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
 import {
@@ -40,6 +40,8 @@ import {
 import {
   changePasswordSchema,
   type ChangePasswordValues,
+  type TraineePersonalDataValues,
+  type TrainerPersonalDataValues,
   traineePersonalDataSchema,
   trainerPersonalDataSchema,
 } from "@/lib/validations"
@@ -47,7 +49,6 @@ import { deleteAccount } from "@/actions/account"
 import { changePassword } from "@/actions/password"
 import { logoutAllDevices } from "@/actions/authorization"
 import { updatePersonalData } from "@/actions/profile"
-import { z } from "zod"
 
 export interface SettingsDialogProps {
   baseData: {
@@ -67,6 +68,8 @@ export interface SettingsDialogProps {
 }
 
 type ViewState = "main" | "logout" | "password" | "delete" | "edit-data"
+
+type EditFormValues = TraineePersonalDataValues | TrainerPersonalDataValues
 
 export default function SettingsDialog({
   baseData,
@@ -129,15 +132,9 @@ export default function SettingsDialog({
     }
 
     return base
-  }, [
-    baseData.name,
-    baseData.surname,
-    baseData.phone,
-    isTrainer,
-    specificData?.birthdate,
-  ])
+  }, [baseData, isTrainer, specificData])
 
-  const editForm = useForm<z.infer<typeof formSchema>>({
+  const editForm = useForm<EditFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: editDefaultValues,
     mode: "onChange",
@@ -567,7 +564,7 @@ export default function SettingsDialog({
                   {baseData.role === "trainee" && (
                     <FormField
                       control={editForm.control}
-                      name={"birthdate" as any}
+                      name={"birthdate" as Path<EditFormValues>}
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Data urodzenia</FormLabel>
