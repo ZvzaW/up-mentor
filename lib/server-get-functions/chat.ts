@@ -66,7 +66,7 @@ export async function getChatConversations(userId: string, role: user_role) {
     }
 
     return { error: "Brak uprawnień do czatu." }
-  } catch (error) {
+  } catch {
     logger.error({ userId, role }, "Error fetching chat conversations")
     return { error: "Nie udało się pobrać rozmów. Spróbuj odświeżyć stronę." }
   }

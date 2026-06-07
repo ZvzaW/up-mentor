@@ -190,7 +190,7 @@ export async function finishCooperation(partnerId: string) {
 
     logger.info({ trainerId, traineeId }, "Cooperation finished successfully")
     return { success: true as const }
-  } catch (error) {
+  } catch {
     logger.error({ trainerId, traineeId }, "Error finishing cooperation")
     return {
       error:

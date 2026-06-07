@@ -149,7 +149,7 @@ export async function deleteAccount() {
     })
 
     logger.info("Account deleted successfully")
-  } catch (error) {
+  } catch {
     logger.error({ userId }, "Error deleting account")
     return {
       error: "Wystąpił błąd podczas usuwania konta. Spróbuj ponownie.",

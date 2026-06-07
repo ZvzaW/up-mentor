@@ -48,9 +48,9 @@ export async function getMyTrainers(userId: string) {
       slug: cooperation.trainer.slug,
     }))
 
-    logger.info({ userId}, "Trainers fetched successfully")
+    logger.info({ userId }, "Trainers fetched successfully")
     return { success: true, data: mappedCooperations }
-  } catch (error) {
+  } catch {
     logger.error({ userId }, "Error fetching trainers")
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
@@ -96,7 +96,7 @@ export async function getMyTrainerBySlug(userId: string, slug: string) {
 
     logger.info({ userId, slug }, "Trainer fetched by slug successfully")
     return { success: true, data: cooperation }
-  } catch (error) {
+  } catch {
     logger.error({ userId, slug }, "Error fetching trainer by slug")
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
@@ -117,7 +117,7 @@ export async function countCooperations(userId: string) {
 
     logger.info({ userId, count }, "Active cooperations counted successfully")
     return { success: true, data: count }
-  } catch (error) {
+  } catch {
     logger.error({ userId }, "Error counting active cooperations")
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }

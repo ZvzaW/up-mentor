@@ -28,7 +28,9 @@ export async function updatePersonalData(input: unknown) {
 
   logger.info({ userId, role }, "Updating personal data")
   const schema =
-    role === user_role.trainer ? trainerPersonalDataSchema : traineePersonalDataSchema
+    role === user_role.trainer
+      ? trainerPersonalDataSchema
+      : traineePersonalDataSchema
 
   const validated = schema.safeParse(input)
   if (!validated.success) return { error: "Nieprawidłowe dane wejściowe." }
@@ -57,7 +59,7 @@ export async function updatePersonalData(input: unknown) {
     })
 
     logger.info({ userId, role }, "Personal data updated successfully")
-  } catch (error) {
+  } catch {
     logger.error({ userId, role }, "Error updating personal data")
     return {
       error: "Wystąpił błąd podczas aktualizacji danych. Spróbuj ponownie.",
@@ -104,7 +106,7 @@ export async function updateTrainerCard(input: unknown) {
     logger.info({ userId }, "Trainer card updated successfully")
     revalidatePath("/dashboard/profile")
     return { success: true }
-  } catch (error) {
+  } catch {
     logger.error({ userId }, "Error updating trainer card")
     return {
       error: "Wystąpił błąd podczas aktualizacji danych. Spróbuj ponownie.",
@@ -155,10 +157,13 @@ export async function editWorkplace(workplace: workplace) {
       return { error: "Nie znaleziono miejsca pracy lub brak uprawnień." }
     }
 
-    logger.info({ userId, workplaceId: data.id }, "Workplace edited successfully")
+    logger.info(
+      { userId, workplaceId: data.id },
+      "Workplace edited successfully"
+    )
     revalidatePath("/dashboard/profile")
     return { success: true }
-  } catch (error) {
+  } catch {
     logger.error({ userId, workplaceId: data.id }, "Error editing workplace")
     return {
       error: "Wystąpił błąd podczas aktualizacji danych. Spróbuj ponownie.",
@@ -204,7 +209,7 @@ export async function addWorkplace(input: unknown) {
     logger.info({ userId }, "Workplace added successfully")
     revalidatePath("/dashboard/profile")
     return { success: true }
-  } catch (error) {
+  } catch {
     logger.error({ userId }, "Error adding workplace")
     return {
       error: "Wystąpił błąd podczas zapisywania danych. Spróbuj ponownie.",
@@ -235,7 +240,10 @@ export async function deleteWorkplace(workplaceId: string) {
     })
 
     if (workplacesCount <= 1) {
-      logger.warn({ userId, workplaceId }, "Workplace not deleted because it is the last one")
+      logger.warn(
+        { userId, workplaceId },
+        "Workplace not deleted because it is the last one"
+      )
       return {
         error:
           "Nie możesz usunąć tego miejsca pracy. Profil trenera musi posiadać co najmniej jedno miejsce.",
@@ -250,14 +258,16 @@ export async function deleteWorkplace(workplaceId: string) {
     })
 
     if (result.count === 0) {
-      logger.warn({ userId, workplaceId }, "Workplace not deleted because it is not found")
+      logger.warn(
+        { userId, workplaceId },
+        "Workplace not deleted because it is not found"
+      )
       return { error: "Nie znaleziono miejsca pracy lub brak uprawnień." }
     }
 
     logger.info({ userId, workplaceId }, "Workplace deleted successfully")
     revalidatePath("/dashboard/profile")
     return { success: true }
-
   } catch (error) {
     logger.error({ userId, workplaceId }, "Error deleting workplace")
     if (
@@ -300,7 +310,7 @@ export async function changeProfileVisibility(isPublic: boolean) {
     logger.info({ userId, isPublic }, "Profile visibility changed successfully")
     revalidatePath("/dashboard/profile")
     return { success: true }
-  } catch (error) {
+  } catch {
     logger.error({ userId, isPublic }, "Error changing profile visibility")
     return {
       error: "Wystąpił błąd podczas zapisywania zmian. Spróbuj ponownie.",

@@ -36,7 +36,7 @@ export async function getNotifications(page: number = 0) {
 
     logger.info({ userId, page }, "Notifications fetched successfully")
     return { grouped, hasMore }
-  } catch (error) {
+  } catch {
     logger.error({ userId, page }, "Error fetching notifications")
     return {
       grouped: {},
@@ -98,9 +98,12 @@ export async function getUnreadCount() {
       },
     })
 
-    logger.info({ userId, count }, "Unread notifications count fetched successfully")
+    logger.info(
+      { userId, count },
+      "Unread notifications count fetched successfully"
+    )
     return { count, error: null }
-  } catch (error) {
+  } catch {
     logger.error({ userId }, "Error fetching unread notifications count")
     return {
       count: 0,
@@ -130,10 +133,16 @@ export async function markAsRead(id: string) {
       data: { is_read: true },
     })
 
-    logger.info({ userId, notificationId: id }, "Notification marked as read successfully")
+    logger.info(
+      { userId, notificationId: id },
+      "Notification marked as read successfully"
+    )
     return { error: null }
-  } catch (error) {
-    logger.error({ userId, notificationId: id }, "Error marking notification as read")
+  } catch {
+    logger.error(
+      { userId, notificationId: id },
+      "Error marking notification as read"
+    )
     return {
       error: "Coś poszło nie tak przy odczytywaniu powiadomienia.",
     }
@@ -161,10 +170,16 @@ export async function markAsUnread(id: string) {
       data: { is_read: false },
     })
 
-    logger.info({ userId, notificationId: id }, "Notification marked as unread successfully")
+    logger.info(
+      { userId, notificationId: id },
+      "Notification marked as unread successfully"
+    )
     return { error: null }
-  } catch (error) {
-    logger.error({ userId, notificationId: id }, "Error marking notification as unread")
+  } catch {
+    logger.error(
+      { userId, notificationId: id },
+      "Error marking notification as unread"
+    )
     return {
       error:
         "Wystąpił błąd podczas aktualizacji powiadomienia. Spróbuj ponownie.",
@@ -192,9 +207,12 @@ export async function deleteNotification(id: string) {
       },
     })
 
-    logger.info({ userId, notificationId: id }, "Notification deleted successfully")
+    logger.info(
+      { userId, notificationId: id },
+      "Notification deleted successfully"
+    )
     return { success: true }
-  } catch (error) {
+  } catch {
     logger.error({ userId, notificationId: id }, "Error deleting notification")
     return {
       error: "Wystąpił błąd podczas usuwania powiadomienia. Spróbuj ponownie.",

@@ -5,7 +5,8 @@ import { NextResponse } from "next/server"
 const { auth } = NextAuth(authConfig)
 
 export default auth((req) => {
-  const correlationId = req.headers.get("x-correlation-id") || crypto.randomUUID()
+  const correlationId =
+    req.headers.get("x-correlation-id") || crypto.randomUUID()
 
   const requestHeaders = new Headers(req.headers)
   requestHeaders.set("x-correlation-id", correlationId)

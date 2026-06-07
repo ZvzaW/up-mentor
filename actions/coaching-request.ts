@@ -43,7 +43,10 @@ export async function sendCoachingRequest(data: CoachingRequestInput) {
     })
 
     if (existingRequest) {
-      logger.info({ traineeId, trainerId: trainer_id }, "Coaching request already sent")
+      logger.info(
+        { traineeId, trainerId: trainer_id },
+        "Coaching request already sent"
+      )
       return { error: "Wysłałeś/aś już prośbę o współpracę do tego trenera." }
     }
 
@@ -56,7 +59,10 @@ export async function sendCoachingRequest(data: CoachingRequestInput) {
     })
 
     if (existingCooperation) {
-      logger.info({ traineeId, trainerId: trainer_id }, "Cooperation already exists")
+      logger.info(
+        { traineeId, trainerId: trainer_id },
+        "Cooperation already exists"
+      )
       return { error: "Posiadasz już aktywną współpracę z tym trenerem." }
     }
 
@@ -82,10 +88,16 @@ export async function sendCoachingRequest(data: CoachingRequestInput) {
     })
 
     revalidatePath("/dashboard/trainers/catalog")
-    logger.info({ traineeId, trainerId: trainer_id }, "Coaching request sent successfully")
+    logger.info(
+      { traineeId, trainerId: trainer_id },
+      "Coaching request sent successfully"
+    )
     return { success: true }
-  } catch (error) {
-    logger.error({ traineeId, trainerId: trainer_id }, "Error sending coaching request")
+  } catch {
+    logger.error(
+      { traineeId, trainerId: trainer_id },
+      "Error sending coaching request"
+    )
     return {
       error: "Wystąpił błąd podczas wysyłania prośby. Spróbuj ponownie.",
     }
@@ -120,9 +132,12 @@ export async function deleteCoachingRequest(trainerId: string) {
     })
 
     revalidatePath("/dashboard/trainers/catalog")
-    logger.info({ traineeId, trainerId }, "Coaching request deleted successfully")
+    logger.info(
+      { traineeId, trainerId },
+      "Coaching request deleted successfully"
+    )
     return { success: true }
-  } catch (error) {
+  } catch {
     logger.error({ traineeId, trainerId }, "Error deleting coaching request")
     return { error: "Wystąpił błąd podczas usuwania danych. Spróbuj ponownie." }
   }
@@ -174,7 +189,10 @@ export async function acceptRequest(traineeId: string) {
       })
 
       if (!workplace) {
-        logger.warn({ trainerId, traineeId, workplaceId }, "Workplace not found")
+        logger.warn(
+          { trainerId, traineeId, workplaceId },
+          "Workplace not found"
+        )
         return { error: "Miejsce treningów z prośby nie jest dostępne." }
       }
 
@@ -205,7 +223,10 @@ export async function acceptRequest(traineeId: string) {
             },
           })
         } else {
-          logger.warn({ trainerId, traineeId, workplaceId }, "Cooperation already exists")
+          logger.warn(
+            { trainerId, traineeId, workplaceId },
+            "Cooperation already exists"
+          )
           return {
             error: "Posiadasz już aktywną współpracę z tym podopiecznym.",
           }
@@ -232,9 +253,12 @@ export async function acceptRequest(traineeId: string) {
     })
 
     revalidatePath("/dashboard/trainees")
-    logger.info({ trainerId, traineeId }, "Coaching request accepted successfully")
+    logger.info(
+      { trainerId, traineeId },
+      "Coaching request accepted successfully"
+    )
     return { success: true }
-  } catch (error) {
+  } catch {
     logger.error({ trainerId, traineeId }, "Error accepting coaching request")
 
     return {
@@ -271,10 +295,12 @@ export async function rejectRequest(traineeId: string) {
     })
 
     revalidatePath("/dashboard/trainees")
-    logger.info({ trainerId, traineeId }, "Coaching request rejected successfully")
+    logger.info(
+      { trainerId, traineeId },
+      "Coaching request rejected successfully"
+    )
     return { success: true }
-
-  } catch (error) {
+  } catch {
     logger.error({ trainerId, traineeId }, "Error rejecting coaching request")
     return {
       error: "Wystąpił błąd podczas odrzucania prośby. Spróbuj ponownie.",

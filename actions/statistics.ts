@@ -98,7 +98,7 @@ export async function getStatistics() {
     }
 
     return { error: "Brak uprawnień do tej operacji." }
-  } catch (error) {
+  } catch {
     logger.error({ userId, role }, "Error fetching statistics")
     return {
       error: "Nie udało się pobrać statystyk. Spróbuj odświeżyć stronę.",

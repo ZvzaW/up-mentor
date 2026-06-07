@@ -12,12 +12,16 @@ function createBaseLogger(): pino.Logger {
     return pino({ level })
   }
 
-  const pretty = require("pino-pretty")({
-    colorize: true,
-    translateTime: "SYS:standard",
+  return pino({
+    level,
+    transport: {
+      target: "pino-pretty",
+      options: {
+        colorize: true,
+        translateTime: "SYS:standard",
+      },
+    },
   })
-
-  return pino({ level }, pretty)
 }
 
 export const baseLogger = globalForLogger.baseLogger ?? createBaseLogger()

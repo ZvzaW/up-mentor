@@ -118,7 +118,7 @@ export async function createTraining(raw: CreateTrainingFormValues) {
     logger.info({ userId }, "Training created successfully")
     revalidatePath("/dashboard/trainings")
     return { success: true }
-  } catch (error) {
+  } catch {
     logger.error({ userId }, "Error creating training")
     return {
       error: "Wystąpił błąd podczas zapisywania treningu. Spróbuj ponownie.",
@@ -164,7 +164,10 @@ export async function updateTraining(raw: UpdateTrainingFormValues) {
     }
 
     if (isTrainingScheduledInPast(existing.scheduled_at)) {
-      logger.warn({ userId, trainingId: data.id }, "Training cannot be edited because it is in the past")
+      logger.warn(
+        { userId, trainingId: data.id },
+        "Training cannot be edited because it is in the past"
+      )
       return { error: "Nie można edytować treningu z przeszłości." }
     }
 
@@ -177,10 +180,13 @@ export async function updateTraining(raw: UpdateTrainingFormValues) {
       },
     })
 
-    logger.info({ userId, trainingId: data.id }, "Training updated successfully")
+    logger.info(
+      { userId, trainingId: data.id },
+      "Training updated successfully"
+    )
     revalidatePath("/dashboard/trainings")
     return { success: true }
-  } catch (error) {
+  } catch {
     logger.error({ userId, trainingId: data.id }, "Error updating training")
     return {
       error: "Wystąpił błąd podczas aktualizacji treningu. Spróbuj ponownie.",
@@ -215,7 +221,10 @@ export async function deleteTraining(id: string) {
     }
 
     if (isTrainingScheduledInPast(existing.scheduled_at)) {
-      logger.warn({ userId, trainingId: id }, "Training cannot be deleted because it is in the past")
+      logger.warn(
+        { userId, trainingId: id },
+        "Training cannot be deleted because it is in the past"
+      )
       return { error: "Nie można usunąć treningu z przeszłości." }
     }
 
@@ -223,7 +232,7 @@ export async function deleteTraining(id: string) {
     logger.info({ userId, trainingId: id }, "Training deleted successfully")
     revalidatePath("/dashboard/trainings")
     return { success: true }
-  } catch (error) {
+  } catch {
     logger.error({ userId, trainingId: id }, "Error deleting training")
     return {
       error: "Wystąpił błąd podczas usuwania treningu. Spróbuj ponownie.",
@@ -289,14 +298,17 @@ export async function getTrainingsForWeek(weekAnchorIso: string) {
       orderBy: { scheduled_at: "asc" },
     })
 
-    logger.info({ userId, weekAnchorIso }, "Trainings for week fetched successfully")
+    logger.info(
+      { userId, weekAnchorIso },
+      "Trainings for week fetched successfully"
+    )
     return {
       success: true,
       data: trainings.map(mapTraining),
       weekStart: weekStart.toISOString(),
       weekEnd: weekEnd.toISOString(),
     }
-  } catch (error) {
+  } catch {
     logger.error({ userId, weekAnchorIso }, "Error fetching trainings for week")
     return {
       error: "Nie udało się pobrać treningów. Spróbuj odświeżyć stronę.",

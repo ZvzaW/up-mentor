@@ -55,7 +55,7 @@ export async function getExercises(userId: string, role: user_role) {
 
     logger.info({ userId, role }, "Exercises fetched successfully")
     return { success: true as const, data }
-  } catch (error) {
+  } catch {
     logger.error({ userId, role }, "Error fetching exercises")
     return { error: "Nie udało się pobrać ćwiczeń. Spróbuj odświeżyć stronę." }
   }

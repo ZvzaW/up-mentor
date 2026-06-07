@@ -50,7 +50,7 @@ export async function getMyTrainees(userId: string) {
 
     logger.info({ userId }, "Trainees fetched successfully")
     return { success: true, data: mappedCooperations }
-  } catch (error) {
+  } catch {
     logger.error({ userId }, "Error fetching trainees")
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
@@ -95,9 +95,9 @@ export async function getMyTraineeBySlug(userId: string, slug: string) {
       },
     })
 
-    logger.info({ userId, slug}, "Trainee fetched by slug successfully")
+    logger.info({ userId, slug }, "Trainee fetched by slug successfully")
     return { success: true, data: cooperation }
-  } catch (error) {
+  } catch {
     logger.error({ userId, slug }, "Error fetching trainee by slug")
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }

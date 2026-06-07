@@ -24,7 +24,6 @@ export async function saveSurveyAnswers(
 
   logger.info({ traineeId }, "Saving survey answers")
   try {
-
     await prisma.$transaction(async (tx) => {
       await tx.survey_answer.deleteMany({
         where: { trainee_id: traineeId },
@@ -67,7 +66,7 @@ export async function saveSurveyAnswers(
 
     logger.info({ traineeId }, "Survey answers saved successfully")
     return { success: true }
-  } catch (error) {
+  } catch {
     logger.error({ traineeId }, "Error saving survey answers")
     return { error: "Nie udało się zapisać ankiety. Spróbuj ponownie później." }
   }
@@ -141,10 +140,16 @@ export async function getSurveyData(traineeId?: string) {
       currentAnswer: answerDictionary[q.id] || undefined,
     }))
 
-    logger.info({ userId, traineeId: traineeIdToFetch }, "Survey data fetched successfully")
+    logger.info(
+      { userId, traineeId: traineeIdToFetch },
+      "Survey data fetched successfully"
+    )
     return { success: true, data: mappedData }
-  } catch (error) {
-    logger.error({ userId, traineeId: traineeIdToFetch }, "Error fetching survey data")
+  } catch {
+    logger.error(
+      { userId, traineeId: traineeIdToFetch },
+      "Error fetching survey data"
+    )
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę" }
   }
 }

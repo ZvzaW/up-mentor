@@ -93,7 +93,7 @@ export async function createWorkoutPlan(data: unknown) {
     logger.info({ userId }, "Workout plan created successfully")
     revalidatePath("/dashboard/workout-plans")
     return { success: true }
-  } catch (error) {
+  } catch {
     logger.error({ userId }, "Error creating workout plan")
     return {
       error: "Wystąpił błąd podczas zapisywania planu. Spróbuj ponownie.",
@@ -254,7 +254,7 @@ export async function updateWorkoutPlan(
     revalidatePath("/dashboard/workout-plans")
     revalidatePath(`/dashboard/workout-plans/edit/${planId}`)
     return { success: true }
-  } catch (error) {
+  } catch {
     logger.error({ userId, planId }, "Error updating workout plan")
     return {
       error: "Wystąpił błąd podczas aktualizacji planu. Spróbuj ponownie.",
@@ -322,7 +322,7 @@ export async function cloneWorkoutPlan(planId: string) {
     logger.info({ userId, planId }, "Workout plan cloned successfully")
     revalidatePath("/dashboard/workout-plans")
     return { success: true }
-  } catch (error) {
+  } catch {
     logger.error({ userId, planId }, "Error cloning workout plan")
     return {
       error: "Wystąpił błąd podczas klonowania planu. Spróbuj ponownie.",
@@ -364,7 +364,7 @@ export async function deleteWorkoutPlan(planId: string) {
     logger.info({ userId, planId }, "Workout plan deleted successfully")
     revalidatePath("/dashboard/workout-plans")
     return { success: true }
-  } catch (error) {
+  } catch {
     logger.error({ userId, planId }, "Error deleting workout plan")
     return { error: "Wystąpił błąd podczas usuwania planu. Spróbuj ponownie." }
   }
@@ -379,7 +379,10 @@ export async function generateWorkoutPlanPdf(planId: string) {
     redirect("/?unauthorized=true")
   }
 
-  if (session.user.role !== user_role.trainer && session.user.role !== user_role.trainee) {
+  if (
+    session.user.role !== user_role.trainer &&
+    session.user.role !== user_role.trainee
+  ) {
     return { error: "Brak uprawnień do tej operacji." }
   }
 
@@ -434,7 +437,7 @@ export async function generateWorkoutPlanPdf(planId: string) {
 
     logger.info({ userId, planId }, "Workout plan PDF generated successfully")
     return { success: true as const, data: file }
-  } catch (error) {
+  } catch {
     logger.error({ userId, planId }, "Error generating workout plan PDF")
     return {
       error: "Nie udało się wygenerować pliku PDF. Spróbuj ponownie.",
@@ -450,12 +453,15 @@ export async function assignPlanToTrainee(planId: string, traineeId: string) {
     redirect("/?unauthorized=true")
   }
 
-    if (session.user.role !== user_role.trainer)
+  if (session.user.role !== user_role.trainer)
     return { error: "Brak uprawnień do tej operacji." }
 
   const userId = session.user.id
 
-  logger.info({ userId, planId, traineeId }, "Assigning workout plan to trainee")
+  logger.info(
+    { userId, planId, traineeId },
+    "Assigning workout plan to trainee"
+  )
 
   try {
     const existingPlan = await prisma.workout_plan.findFirst({
@@ -481,7 +487,10 @@ export async function assignPlanToTrainee(planId: string, traineeId: string) {
     })
 
     if (!activeCooperation) {
-      logger.warn({ userId, planId, traineeId }, "No active cooperation with the selected trainee")
+      logger.warn(
+        { userId, planId, traineeId },
+        "No active cooperation with the selected trainee"
+      )
       return {
         error: "Brak aktywnej współpracy z wybranym podopiecznym.",
       }
@@ -494,11 +503,17 @@ export async function assignPlanToTrainee(planId: string, traineeId: string) {
       },
     })
 
-    logger.info({ userId, planId, traineeId }, "Workout plan assigned to trainee successfully")
+    logger.info(
+      { userId, planId, traineeId },
+      "Workout plan assigned to trainee successfully"
+    )
     revalidatePath("/dashboard/workout-plans")
     return { success: true }
   } catch (error) {
-    logger.error({ userId, planId, traineeId }, "Error assigning workout plan to trainee")
+    logger.error(
+      { userId, planId, traineeId },
+      "Error assigning workout plan to trainee"
+    )
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2002"

@@ -73,7 +73,7 @@ export async function getPendingRequests(userId: string) {
 
     logger.info({ userId }, "Pending coaching requests fetched successfully")
     return { success: true, data: mappedRequests }
-  } catch (error) {
+  } catch {
     logger.error({ userId }, "Error fetching pending coaching requests")
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }

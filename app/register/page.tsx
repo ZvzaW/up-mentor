@@ -80,7 +80,8 @@ export default function RegisterPage() {
   const [isPending, setIsPending] = useState(false)
 
   const handleTabChange = (value: string) => {
-    const tab = value === user_role.trainer ? user_role.trainer : user_role.trainee
+    const tab =
+      value === user_role.trainer ? user_role.trainer : user_role.trainee
     setActiveTab(tab)
     setTraineeError(null)
     setTrainerError(null)

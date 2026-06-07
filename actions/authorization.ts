@@ -26,7 +26,7 @@ export async function register(
 ) {
   const logger = await getLogger()
 
-  logger.info({role}, "Registering user")
+  logger.info({ role }, "Registering user")
 
   const schema =
     role === user_role.trainer ? registerTrainerSchema : registerTraineeSchema
@@ -86,9 +86,9 @@ export async function register(
       }
     })
 
-    logger.info({role}, "User registered successfully")
+    logger.info({ role }, "User registered successfully")
   } catch (error) {
-    logger.error({role}, "Error registering user")
+    logger.error({ role }, "Error registering user")
 
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -151,7 +151,7 @@ export async function logout() {
     }
 
     logger.info("User logged out successfully")
-  } catch (error) {
+  } catch {
     logger.error("Error logging out user")
     return { error: "Wystąpił błąd podczas wylogowywania. Spróbuj ponownie." }
   }
@@ -179,7 +179,7 @@ export async function logoutAllDevices() {
     })
 
     logger.info({ userId }, "User logged out from all devices successfully")
-  } catch (error) {
+  } catch {
     logger.error({ userId }, "Error logging out user from all devices")
     return {
       error:

@@ -53,7 +53,7 @@ export async function getMyOpinion(trainerId: string) {
         comment: opinion.comment,
       },
     }
-  } catch (error) {
+  } catch {
     logger.error({ traineeId, trainerId }, "Error fetching opinion")
     return { error: "Nie udało się pobrać opinii. Spróbuj ponownie" }
   }
@@ -91,7 +91,10 @@ export async function upsertOpinion(opinion: TrainerOpinionFormValues) {
   })
 
   if (!cooperation || cooperation.status !== cooperation_status.active) {
-    logger.warn({ traineeId, trainerId: data.trainer_id }, "Cooperation to upsert opinion not found")
+    logger.warn(
+      { traineeId, trainerId: data.trainer_id },
+      "Cooperation to upsert opinion not found"
+    )
     return {
       error: "Możesz ocenić tylko trenera, z którym masz aktywną współpracę.",
     }
@@ -119,9 +122,15 @@ export async function upsertOpinion(opinion: TrainerOpinionFormValues) {
       },
     })
 
-    logger.info({ traineeId, trainerId: data.trainer_id }, "Opinion upserted successfully")
-  } catch (error) {
-    logger.error({ traineeId, trainerId: data.trainer_id }, "Error upserting opinion")
+    logger.info(
+      { traineeId, trainerId: data.trainer_id },
+      "Opinion upserted successfully"
+    )
+  } catch {
+    logger.error(
+      { traineeId, trainerId: data.trainer_id },
+      "Error upserting opinion"
+    )
     return {
       error: "Wystąpił błąd podczas zapisywania danych. Spróbuj ponownie.",
     }
@@ -155,7 +164,7 @@ export async function deleteOpinion(trainerId: string) {
     })
 
     logger.info({ traineeId, trainerId }, "Opinion deleted successfully")
-  } catch (error) {
+  } catch {
     logger.error({ traineeId, trainerId }, "Error deleting opinion")
     return { error: "Wystąpił błąd podczas usuwania danych. Spróbuj ponownie." }
   }

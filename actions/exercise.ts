@@ -48,7 +48,7 @@ export async function createTrainerExercise(input: unknown) {
     logger.info({ userId }, "Trainer exercise created successfully")
     revalidatePath("/dashboard/exercises")
     return { success: true }
-  } catch (error) {
+  } catch {
     logger.error({ userId }, "Error creating trainer exercise")
     return {
       error: "Wystąpił błąd podczas zapisywania danych. Spróbuj ponownie.",
@@ -98,11 +98,17 @@ export async function editTrainerExercise(exercise: exercise) {
       return { error: "Nie znaleziono ćwiczenia do edycji." }
     }
 
-    logger.info({ userId, exerciseId: data.id }, "Trainer exercise edited successfully")
+    logger.info(
+      { userId, exerciseId: data.id },
+      "Trainer exercise edited successfully"
+    )
     revalidatePath("/dashboard/exercises")
     return { success: true }
-  } catch (error) {
-    logger.error({ userId, exerciseId: data.id }, "Error editing trainer exercise")
+  } catch {
+    logger.error(
+      { userId, exerciseId: data.id },
+      "Error editing trainer exercise"
+    )
     return {
       error: "Wystąpił błąd podczas aktualizacji danych. Spróbuj ponownie.",
     }
@@ -142,7 +148,7 @@ export async function deleteTrainerExercise(exerciseId: string) {
     logger.info({ userId, exerciseId }, "Trainer exercise deleted successfully")
     revalidatePath("/dashboard/exercises")
     return { success: true }
-  } catch (error) {
+  } catch {
     logger.error({ userId, exerciseId }, "Error deleting trainer exercise")
     return { error: "Wystąpił błąd podczas usuwania danych. Spróbuj ponownie." }
   }

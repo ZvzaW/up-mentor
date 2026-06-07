@@ -37,7 +37,7 @@ export async function updateMyTraineeNote(traineeId: string, note: string) {
 
     logger.info({ trainerId, traineeId }, "Trainee note updated successfully")
     return { success: true }
-  } catch (error) {
+  } catch {
     logger.error({ trainerId, traineeId }, "Error updating trainee note")
     return {
       error: "Wystąpił błąd podczas zapisywania danych. Spróbuj ponownie.",

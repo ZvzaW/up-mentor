@@ -16,8 +16,10 @@ async function assertCooperationAccess(
   trainerId: string,
   traineeId: string
 ): Promise<string | null> {
-  const isTrainerParticipant = role === user_role.trainer && userId === trainerId
-  const isTraineeParticipant = role === user_role.trainee && userId === traineeId
+  const isTrainerParticipant =
+    role === user_role.trainer && userId === trainerId
+  const isTraineeParticipant =
+    role === user_role.trainee && userId === traineeId
 
   if (!isTrainerParticipant && !isTraineeParticipant) {
     return "Brak uprawnień do tej rozmowy."
@@ -74,8 +76,8 @@ export async function getChatMessages(trainerId: string, traineeId: string) {
 
     logger.info("Chat messages fetched successfully")
     return { success: true, data }
-  } catch (error) {
-    logger.error({trainerId, traineeId}, "Error fetching chat messages")
+  } catch {
+    logger.error({ trainerId, traineeId }, "Error fetching chat messages")
     return {
       error: "Nie udało się pobrać wiadomości. Spróbuj odświeżyć stronę.",
     }
@@ -147,7 +149,7 @@ export async function sendChatMessage(
 
     logger.info({ trainerId, traineeId }, "Chat message sent successfully")
     return { success: true, data: payload }
-  } catch (error) {
+  } catch {
     logger.error({ trainerId, traineeId }, "Error sending chat message")
     return {
       error: "Wystąpił błąd podczas wysyłania wiadomości. Spróbuj ponownie.",

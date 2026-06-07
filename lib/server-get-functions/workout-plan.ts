@@ -61,7 +61,7 @@ export async function getWorkoutPlans(userId: string, role: user_role) {
         orderBy: { name: "asc" },
       })
 
-      logger.info({ userId, role}, "Workout plans fetched successfully")
+      logger.info({ userId, role }, "Workout plans fetched successfully")
       return { data: formatPlans(plans) }
     } else if (role === user_role.trainee) {
       const plans = await prisma.workout_plan.findMany({
@@ -93,7 +93,7 @@ export async function getWorkoutPlans(userId: string, role: user_role) {
     }
 
     return { error: "Nieprawidłowa rola" }
-  } catch (error) {
+  } catch {
     logger.error({ userId, role }, "Error fetching workout plans")
     return { error: "Nie udało się pobrać planów. Spróbuj odświeżyć stronę." }
   }
@@ -150,7 +150,7 @@ export async function getWorkoutPlanById(userId: string, planId: string) {
         })),
       },
     }
-  } catch (error) {
+  } catch {
     logger.error({ userId, planId }, "Error fetching workout plan by id")
     return { error: "Nie udało się pobrać planu. Spróbuj odświeżyć stronę." }
   }

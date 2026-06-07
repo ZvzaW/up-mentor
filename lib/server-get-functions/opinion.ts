@@ -53,7 +53,7 @@ export async function getTrainerOpinions(trainerId: string) {
         reviews,
       },
     }
-  } catch (error) {
+  } catch {
     logger.error({ trainerId }, "Error fetching trainer opinions")
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę" }
   }

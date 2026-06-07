@@ -115,13 +115,16 @@ export async function getTrainingsForTrainee(
 
     const scheduledDates = trainings.map((t) => t.scheduled_at)
 
-    logger.info({ userId, traineeId }, "Trainings for trainee fetched successfully")
+    logger.info(
+      { userId, traineeId },
+      "Trainings for trainee fetched successfully"
+    )
 
     return {
       success: true,
       data: groupTrainingsByYearAndMonth(listItems, scheduledDates),
     }
-  } catch (error) {
+  } catch {
     logger.error({ userId, traineeId }, "Error fetching trainings for trainee")
     return {
       error: "Nie udało się pobrać treningów. Spróbuj odświeżyć stronę.",

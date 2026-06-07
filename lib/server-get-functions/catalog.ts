@@ -101,9 +101,12 @@ export async function getCatalogTrainers(
       averageRate: averageRateByTrainerId.get(trainer.id) ?? null,
     }))
 
-    logger.info({ nameQuery, cityQuery }, "Catalog trainers fetched successfully")
+    logger.info(
+      { nameQuery, cityQuery },
+      "Catalog trainers fetched successfully"
+    )
     return { success: true as const, data }
-  } catch (error) {
+  } catch {
     logger.error({ nameQuery, cityQuery }, "Error fetching catalog trainers")
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }
@@ -160,7 +163,7 @@ export async function getCatalogTrainerBySlug(slug: string) {
         workplaces: trainer.workplace,
       },
     }
-  } catch (error) {
+  } catch {
     logger.error({ slug }, "Error getting catalog trainer by slug")
     return { error: "Nie udało się pobrać danych. Spróbuj odświeżyć stronę." }
   }

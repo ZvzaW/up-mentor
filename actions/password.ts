@@ -63,7 +63,7 @@ export async function changePassword(input: unknown) {
     }
 
     logger.info({ userId }, "Password changed successfully")
-  } catch (error) {
+  } catch {
     logger.error({ userId }, "Error changing password")
     return { error: "Wystąpił błąd podczas zmiany hasła. Spróbuj ponownie." }
   }
@@ -86,7 +86,6 @@ function getBaseUrl() {
   if (process.env.AUTH_URL) return process.env.AUTH_URL
   return "https://localhost:3000"
 }
-
 
 export async function requestPasswordReset(emailInput: string) {
   const logger = await getLogger()
@@ -147,7 +146,7 @@ export async function requestPasswordReset(emailInput: string) {
 
     logger.info("Password reset email sent successfully")
     return { success: true }
-  } catch (error) {
+  } catch {
     logger.error("Error requesting password reset")
     await prisma.password_reset_token.deleteMany({
       where: { token: tokenHash },
@@ -210,7 +209,7 @@ export async function resetPassword(input: {
 
     logger.info("Password reset successfully")
     return { success: true }
-  } catch (error) {
+  } catch {
     logger.error("Error resetting password")
     return {
       error: "Wystąpił błąd podczas resetowania hasła. Spróbuj ponownie.",
