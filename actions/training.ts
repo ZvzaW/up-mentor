@@ -17,6 +17,8 @@ import {
   combineDateAndTime,
   formatWorkplaceAddress,
   parseCalendarDate,
+  toTrainingDateTimeString,
+  toWallClockDate,
 } from "@/lib/utils"
 import { TrainingDTO, WorkplaceAddress } from "@/lib/types"
 import { getLogger } from "@/lib/server-logger"
@@ -50,7 +52,7 @@ function mapTraining(t: {
       ? "Dane niedostępne"
       : `${t.cooperation.trainer.user.name} ${t.cooperation.trainer.user.surname}`,
     workplaceAddress: workplaceAddress,
-    scheduledAt: t.scheduled_at.toISOString(),
+    scheduledAt: toTrainingDateTimeString(t.scheduled_at),
     duration: Number(t.duration),
   }
 }
@@ -72,7 +74,7 @@ async function validateTrainerTrainingInput(
   }
 
   const scheduledAt = combineDateAndTime(data.date, data.start_time)
-  if (isTrainingScheduledInPast(scheduledAt)) {
+  if (isTrainingScheduledInPast(toWallClockDate(scheduledAt))) {
     return {
       error:
         "Termin treningu nie może być w przeszłości. Popraw datę lub godzinę.",
@@ -167,7 +169,7 @@ export async function updateTraining(raw: UpdateTrainingFormValues) {
       return { error: "Nie znaleziono treningu." }
     }
 
-    if (isTrainingScheduledInPast(existing.scheduled_at)) {
+    if (isTrainingScheduledInPast(toWallClockDate(existing.scheduled_at))) {
       logger.warn(
         { userId, trainingId: data.id },
         "Training cannot be edited because it is in the past"
@@ -224,7 +226,7 @@ export async function deleteTraining(id: string) {
       return { error: "Nie znaleziono treningu." }
     }
 
-    if (isTrainingScheduledInPast(existing.scheduled_at)) {
+    if (isTrainingScheduledInPast(toWallClockDate(existing.scheduled_at))) {
       logger.warn(
         { userId, trainingId: id },
         "Training cannot be deleted because it is in the past"
@@ -257,8 +259,30 @@ export async function getTrainingsForWeek(weekAnchorDate: string) {
   logger.info({ userId, weekAnchorDate }, "Fetching trainings for week")
 
   const anchor = parseCalendarDate(weekAnchorDate)
-  const weekStart = startOfWeek(anchor, { weekStartsOn: 1 })
-  const weekEnd = endOfWeek(anchor, { weekStartsOn: 1 })
+  const weekStartLocal = startOfWeek(anchor, { weekStartsOn: 1 })
+  const weekEndLocal = endOfWeek(anchor, { weekStartsOn: 1 })
+  const weekStart = new Date(
+    Date.UTC(
+      weekStartLocal.getFullYear(),
+      weekStartLocal.getMonth(),
+      weekStartLocal.getDate(),
+      0,
+      0,
+      0,
+      0
+    )
+  )
+  const weekEnd = new Date(
+    Date.UTC(
+      weekEndLocal.getFullYear(),
+      weekEndLocal.getMonth(),
+      weekEndLocal.getDate(),
+      23,
+      59,
+      59,
+      999
+    )
+  )
 
   try {
     const where =

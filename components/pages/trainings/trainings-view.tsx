@@ -11,7 +11,11 @@ import {
   type TrainingSlot,
 } from "@/lib/training-calendar-functions"
 import { TraineeDTO, TrainingDTO } from "@/lib/types"
-import { parseCalendarDate, toDateInputValue } from "@/lib/utils"
+import {
+  parseCalendarDate,
+  parseTrainingDateTime,
+  toDateInputValue,
+} from "@/lib/utils"
 import { user_role } from "@prisma/client"
 
 function weekStartKey(date: Date) {
@@ -100,7 +104,9 @@ export default function TrainingsView({
   }
 
   const openTraining = (training: TrainingDTO) => {
-    const isPast = isTrainingScheduledInPast(new Date(training.scheduledAt))
+    const isPast = isTrainingScheduledInPast(
+      parseTrainingDateTime(training.scheduledAt)
+    )
     setDialog({
       open: true,
       mode: isTrainer && !isPast ? "edit" : "view",

@@ -35,7 +35,39 @@ export function toTimeInputValue(d: Date) {
 export function combineDateAndTime(date: string, time: string) {
   const [y, mo, d] = date.split("-").map(Number)
   const [h, m] = time.split(":").map(Number)
+  return new Date(Date.UTC(y, mo - 1, d, h, m, 0, 0))
+}
+
+export function toTrainingDateTimeString(d: Date) {
+  const year = d.getUTCFullYear()
+  const month = String(d.getUTCMonth() + 1).padStart(2, "0")
+  const day = String(d.getUTCDate()).padStart(2, "0")
+  const hours = String(d.getUTCHours()).padStart(2, "0")
+  const minutes = String(d.getUTCMinutes()).padStart(2, "0")
+  return `${year}-${month}-${day}T${hours}:${minutes}:00`
+}
+
+export function parseTrainingDateTime(value: string) {
+  if (value.endsWith("Z")) {
+    return new Date(value)
+  }
+
+  const [datePart, timePart = "00:00:00"] = value.split("T")
+  const [y, mo, d] = datePart.split("-").map(Number)
+  const [h, m] = timePart.split(":").map(Number)
   return new Date(y, mo - 1, d, h, m, 0, 0)
+}
+
+export function toWallClockDate(d: Date) {
+  return new Date(
+    d.getUTCFullYear(),
+    d.getUTCMonth(),
+    d.getUTCDate(),
+    d.getUTCHours(),
+    d.getUTCMinutes(),
+    0,
+    0
+  )
 }
 
 export function calculateAge(birthdate: Date) {

@@ -3,7 +3,7 @@
 import { auth } from "@/auth"
 import { user_role } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
-import { formatDate, toTimeInputValue } from "@/lib/utils"
+import { formatDate, toTimeInputValue, toWallClockDate } from "@/lib/utils"
 import {
   addDays,
   endOfDay,
@@ -57,7 +57,7 @@ async function getNextTraining(userId: string, role: user_role) {
   })
 
   if (!next) return null
-  return formatNextTrainingLabel(next.scheduled_at)
+  return formatNextTrainingLabel(toWallClockDate(next.scheduled_at))
 }
 
 //------------------------------------------------------------------------------------------------

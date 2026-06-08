@@ -43,6 +43,7 @@ import {
 } from "@/lib/training-calendar-functions"
 import {
   formatWorkplaceAddress,
+  parseTrainingDateTime,
   toDateInputValue,
   toTimeInputValue,
 } from "@/lib/utils"
@@ -85,13 +86,14 @@ export default function TrainingDialog({
   const [isPending, startTransition] = React.useTransition()
   const wasOpenRef = React.useRef(false)
   const isPastTraining = Boolean(
-    training && isTrainingScheduledInPast(new Date(training.scheduledAt))
+    training &&
+    isTrainingScheduledInPast(parseTrainingDateTime(training.scheduledAt))
   )
   const readOnly = mode === "view" || !isTrainer || isPastTraining
 
   const defaultValues: TrainingDialogFormValues = React.useMemo(() => {
     if (training) {
-      const startsAt = new Date(training.scheduledAt)
+      const startsAt = parseTrainingDateTime(training.scheduledAt)
       return {
         id: training.id,
         trainee_id: training.traineeId,
@@ -224,7 +226,7 @@ export default function TrainingDialog({
                     <p>
                       <span className="text-gold">Termin: </span>
                       {formatTrainingDateTime(
-                        new Date(training.scheduledAt),
+                        parseTrainingDateTime(training.scheduledAt),
                         training.duration
                       )}
                     </p>

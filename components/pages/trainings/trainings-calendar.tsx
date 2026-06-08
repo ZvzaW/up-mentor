@@ -23,7 +23,7 @@ import {
   slotFromClick,
   type TrainingSlot,
 } from "@/lib/training-calendar-functions"
-import { cn } from "@/lib/utils"
+import { cn, parseTrainingDateTime } from "@/lib/utils"
 
 type TrainingsCalendarProps = {
   weekAnchor: Date
@@ -78,7 +78,7 @@ export default function TrainingsCalendar({
 
   const trainingsForDay = (day: Date) =>
     trainings.filter((training) =>
-      isSameDay(day, new Date(training.scheduledAt))
+      isSameDay(day, parseTrainingDateTime(training.scheduledAt))
     )
 
   const handleGridClick = (
@@ -150,7 +150,7 @@ export default function TrainingsCalendar({
         )}
 
         {dayTrainings.map((training) => {
-          const startsAt = new Date(training.scheduledAt)
+          const startsAt = parseTrainingDateTime(training.scheduledAt)
           const position = getTrainingPosition(startsAt, training.duration)
           const timeRange = formatTrainingTimeRange(startsAt, training.duration)
           {

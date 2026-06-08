@@ -6,6 +6,7 @@ import {
   formatDate,
   formatWorkplaceAddress,
   toTimeInputValue,
+  toWallClockDate,
 } from "@/lib/utils"
 import { WorkplaceAddress } from "@/lib/types"
 import { getLogger } from "@/lib/server-logger"
@@ -103,15 +104,18 @@ export async function getTrainingsForTrainee(
       orderBy: { scheduled_at: "desc" },
     })
 
-    const listItems = trainings.map((t) => ({
-      id: t.id,
-      date: formatDate(t.scheduled_at),
-      startTime: toTimeInputValue(t.scheduled_at),
-      durationLabel: `${Number(t.duration)} h`,
-      workplaceAddress: formatWorkplaceAddress(
-        cooperation.workplace as WorkplaceAddress
-      ),
-    }))
+    const listItems = trainings.map((t) => {
+      const scheduledAt = toWallClockDate(t.scheduled_at)
+      return {
+        id: t.id,
+        date: formatDate(scheduledAt),
+        startTime: toTimeInputValue(scheduledAt),
+        durationLabel: `${Number(t.duration)} h`,
+        workplaceAddress: formatWorkplaceAddress(
+          cooperation.workplace as WorkplaceAddress
+        ),
+      }
+    })
 
     const scheduledDates = trainings.map((t) => t.scheduled_at)
 
