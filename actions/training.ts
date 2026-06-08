@@ -13,7 +13,11 @@ import { redirect } from "next/navigation"
 import { cooperation_status, Prisma, user_role } from "@prisma/client"
 import { endOfWeek, startOfWeek } from "date-fns"
 import { isTrainingScheduledInPast } from "@/lib/training-calendar-functions"
-import { combineDateAndTime, formatWorkplaceAddress } from "@/lib/utils"
+import {
+  combineDateAndTime,
+  formatWorkplaceAddress,
+  parseCalendarDate,
+} from "@/lib/utils"
 import { TrainingDTO, WorkplaceAddress } from "@/lib/types"
 import { getLogger } from "@/lib/server-logger"
 
@@ -240,7 +244,7 @@ export async function deleteTraining(id: string) {
   }
 }
 
-export async function getTrainingsForWeek(weekAnchorIso: string) {
+export async function getTrainingsForWeek(weekAnchorDate: string) {
   const logger = await getLogger()
 
   const session = await auth()
@@ -250,9 +254,9 @@ export async function getTrainingsForWeek(weekAnchorIso: string) {
 
   const userId = session.user.id
 
-  logger.info({ userId, weekAnchorIso }, "Fetching trainings for week")
+  logger.info({ userId, weekAnchorDate }, "Fetching trainings for week")
 
-  const anchor = new Date(weekAnchorIso)
+  const anchor = parseCalendarDate(weekAnchorDate)
   const weekStart = startOfWeek(anchor, { weekStartsOn: 1 })
   const weekEnd = endOfWeek(anchor, { weekStartsOn: 1 })
 
@@ -299,7 +303,7 @@ export async function getTrainingsForWeek(weekAnchorIso: string) {
     })
 
     logger.info(
-      { userId, weekAnchorIso },
+      { userId, weekAnchorDate },
       "Trainings for week fetched successfully"
     )
     return {
@@ -309,7 +313,7 @@ export async function getTrainingsForWeek(weekAnchorIso: string) {
       weekEnd: weekEnd.toISOString(),
     }
   } catch {
-    logger.error({ userId, weekAnchorIso }, "Error fetching trainings for week")
+    logger.error({ userId, weekAnchorDate }, "Error fetching trainings for week")
     return {
       error: "Nie udało się pobrać treningów. Spróbuj odświeżyć stronę.",
     }

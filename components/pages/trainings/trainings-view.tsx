@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { startOfDay, getDay } from "date-fns"
+import { startOfDay, getDay, startOfWeek } from "date-fns"
 import { getTrainingsForWeek } from "@/actions/training"
 import TrainingDialog from "@/components/dialogs/training-dialog"
 import TrainingsCalendar from "@/components/pages/trainings/trainings-calendar"
@@ -11,7 +11,12 @@ import {
   type TrainingSlot,
 } from "@/lib/training-calendar-functions"
 import { TraineeDTO, TrainingDTO } from "@/lib/types"
+import { parseCalendarDate, toDateInputValue } from "@/lib/utils"
 import { user_role } from "@prisma/client"
+
+function weekStartKey(date: Date) {
+  return toDateInputValue(startOfWeek(date, { weekStartsOn: 1 }))
+}
 
 type TrainingsViewProps = {
   role: user_role
@@ -43,8 +48,8 @@ export default function TrainingsView({
   trainees,
 }: TrainingsViewProps) {
   const isTrainer = role === user_role.trainer
-  const [weekAnchor, setWeekAnchor] = React.useState(
-    () => new Date(initialWeekAnchor)
+  const [weekAnchor, setWeekAnchor] = React.useState(() =>
+    parseCalendarDate(initialWeekAnchor)
   )
   const [trainings, setTrainings] = React.useState(initialTrainings)
   const [fetchError, setFetchError] = React.useState<string | null>(
@@ -60,7 +65,7 @@ export default function TrainingsView({
   const [dialog, setDialog] = React.useState<DialogState>(CLOSED_DIALOG)
 
   const refreshTrainings = React.useCallback(async (anchor: Date) => {
-    const result = await getTrainingsForWeek(anchor.toISOString())
+    const result = await getTrainingsForWeek(toDateInputValue(anchor))
 
     if (result?.error) {
       setFetchError(result.error)
@@ -73,10 +78,16 @@ export default function TrainingsView({
   }, [])
 
   const handleWeekChange = (date: Date) => {
-    setWeekAnchor(startOfDay(date))
+    const normalized = startOfDay(date)
+    const sameWeek = weekStartKey(normalized) === weekStartKey(weekAnchor)
+
+    setWeekAnchor(normalized)
     const day = getDay(date)
     setMobileDayIndex(day === 0 ? 6 : day - 1)
-    refreshTrainings(date)
+
+    if (!sameWeek) {
+      void refreshTrainings(normalized)
+    }
   }
 
   const openCreate = (slot?: TrainingSlot) => {
@@ -111,7 +122,6 @@ export default function TrainingsView({
         fetchError={fetchError}
         isTrainer={isTrainer}
         mobileDayIndex={mobileDayIndex}
-        onMobileDayIndexChange={setMobileDayIndex}
         onSlotClick={(slot) => openCreate(slot)}
         onTrainingClick={openTraining}
         onNewClick={() => openCreate()}

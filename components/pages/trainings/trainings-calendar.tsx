@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { format, isSameDay } from "date-fns"
+import { addDays, format, isSameDay } from "date-fns"
 import { pl } from "date-fns/locale"
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
 
@@ -32,7 +32,6 @@ type TrainingsCalendarProps = {
   fetchError?: string | null
   isTrainer: boolean
   mobileDayIndex: number
-  onMobileDayIndexChange: (index: number) => void
   onSlotClick: (slot: TrainingSlot) => void
   onTrainingClick: (training: TrainingDTO) => void
   onNewClick: () => void
@@ -50,7 +49,6 @@ export default function TrainingsCalendar({
   fetchError,
   isTrainer,
   mobileDayIndex,
-  onMobileDayIndexChange,
   onSlotClick,
   onTrainingClick,
   onNewClick,
@@ -253,8 +251,8 @@ export default function TrainingsCalendar({
             type="button"
             variant="ghost"
             size="icon-sm"
-            disabled={mobileDayIndex <= 0}
-            onClick={() => onMobileDayIndexChange(mobileDayIndex - 1)}
+            onClick={() => onWeekChange(addDays(mobileDay, -1))}
+            aria-label="Poprzedni dzień"
           >
             <ChevronLeft />
           </Button>
@@ -265,8 +263,8 @@ export default function TrainingsCalendar({
             type="button"
             variant="ghost"
             size="icon-sm"
-            disabled={mobileDayIndex >= 6}
-            onClick={() => onMobileDayIndexChange(mobileDayIndex + 1)}
+            onClick={() => onWeekChange(addDays(mobileDay, 1))}
+            aria-label="Następny dzień"
           >
             <ChevronRight />
           </Button>

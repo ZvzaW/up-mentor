@@ -21,6 +21,11 @@ export const toDateInputValue = (d: Date) => {
   return `${year}-${month}-${day}`
 }
 
+export function parseCalendarDate(date: string) {
+  const [y, mo, d] = date.split("-").map(Number)
+  return new Date(y, mo - 1, d)
+}
+
 export function toTimeInputValue(d: Date) {
   const hours = String(d.getHours()).padStart(2, "0")
   const minutes = String(d.getMinutes()).padStart(2, "0")
