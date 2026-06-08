@@ -3,10 +3,15 @@
 import * as React from "react"
 import { addDays, format, isSameDay } from "date-fns"
 import { pl } from "date-fns/locale"
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
+import {
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  Plus,
+} from "lucide-react"
 
 import type { TrainingDTO } from "@/lib/types"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import {
@@ -30,6 +35,7 @@ type TrainingsCalendarProps = {
   onWeekChange: (date: Date) => void
   trainings: TrainingDTO[]
   fetchError?: string | null
+  isLoadingTrainings?: boolean
   isTrainer: boolean
   mobileDayIndex: number
   onSlotClick: (slot: TrainingSlot) => void
@@ -47,6 +53,7 @@ export default function TrainingsCalendar({
   onWeekChange,
   trainings,
   fetchError,
+  isLoadingTrainings = false,
   isTrainer,
   mobileDayIndex,
   onSlotClick,
@@ -270,13 +277,29 @@ export default function TrainingsCalendar({
           </Button>
         </div>
 
-        {fetchError && (
-          <Alert variant="destructive" className="mx-auto mb-4 shrink-0">
-            <AlertDescription>{fetchError}</AlertDescription>
-          </Alert>
-        )}
+        <div className="border-baby-blue bg-dirty-navy/60 relative min-h-0 overflow-hidden rounded-md border">
+          {isLoadingTrainings && (
+            <div
+              className="bg-dark-navy/70 absolute inset-0 z-30 flex flex-col items-center justify-center gap-3 backdrop-blur-[1px]"
+              aria-busy="true"
+              aria-live="polite"
+            >
+              <Loader2 className="text-gold size-8 animate-spin" />
+              <span className="text-sm text-zinc-300">Ładowanie treningów…</span>
+            </div>
+          )}
 
-        <div className="border-baby-blue bg-dirty-navy/60 min-h-0 overflow-hidden rounded-md border">
+          {fetchError && !isLoadingTrainings && (
+            <div
+              className="bg-dark-navy/70 absolute inset-0 z-30 flex flex-col items-center justify-center gap-3 px-6 text-center backdrop-blur-[1px]"
+              role="alert"
+              aria-live="assertive"
+            >
+              <AlertCircle className="text-destructive size-8" />
+              <span className="text-sm text-destructive">{fetchError}</span>
+            </div>
+          )}
+
           {/*NAGŁOWEK - DNI*/}
           <div
             className="border-baby-blue bg-dark-navy/95 flex border-b pr-5 sm:pr-2"

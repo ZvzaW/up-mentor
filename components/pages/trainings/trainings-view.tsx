@@ -67,17 +67,29 @@ export default function TrainingsView({
   })
 
   const [dialog, setDialog] = React.useState<DialogState>(CLOSED_DIALOG)
+  const [isLoadingTrainings, setIsLoadingTrainings] = React.useState(false)
+  const fetchRequestIdRef = React.useRef(0)
 
   const refreshTrainings = React.useCallback(async (anchor: Date) => {
-    const result = await getTrainingsForWeek(toDateInputValue(anchor))
+    const requestId = ++fetchRequestIdRef.current
+    setIsLoadingTrainings(true)
 
-    if (result?.error) {
-      setFetchError(result.error)
-      return
-    }
-    setFetchError(null)
-    if (result?.data) {
-      setTrainings(result.data)
+    try {
+      const result = await getTrainingsForWeek(toDateInputValue(anchor))
+      if (requestId !== fetchRequestIdRef.current) return
+
+      if (result?.error) {
+        setFetchError(result.error)
+        return
+      }
+      setFetchError(null)
+      if (result?.data) {
+        setTrainings(result.data)
+      }
+    } finally {
+      if (requestId === fetchRequestIdRef.current) {
+        setIsLoadingTrainings(false)
+      }
     }
   }, [])
 
@@ -126,6 +138,7 @@ export default function TrainingsView({
         onWeekChange={handleWeekChange}
         trainings={trainings}
         fetchError={fetchError}
+        isLoadingTrainings={isLoadingTrainings}
         isTrainer={isTrainer}
         mobileDayIndex={mobileDayIndex}
         onSlotClick={(slot) => openCreate(slot)}
