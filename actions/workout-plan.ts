@@ -388,20 +388,39 @@ export async function generateWorkoutPlanPdf(planId: string) {
 
   const userId = session.user.id
 
-  logger.info({ userId, planId }, "Generating workout plan PDF")
 
   try {
-    const plan = await prisma.workout_plan.findFirst({
-      where: {
-        id: planId,
-        ...(session.user.role === user_role.trainer
-          ? { trainer_id: session.user.id }
-          : {
-              plans_library: {
-                some: { trainee_id: session.user.id },
-              },
-            }),
-      },
+    const role = session.user.role 
+
+    logger.info({ userId, planId, role }, "Generating workout plan PDF")
+
+    if (role === user_role.trainer) {
+      const ownedPlan = await prisma.workout_plan.findUnique({
+        where: { id: planId, trainer_id: session.user.id },
+        select: { id: true },
+      })
+
+      if (!ownedPlan) {
+        logger.warn({ userId, planId, role }, "Workout plan to generate not found")
+        return { error: "Nie znaleziono planu lub brak dostępu." }
+      }
+    } else if (role === user_role.trainee) {
+      const assignment = await prisma.plans_library.findFirst({
+        where: {
+          trainee_id: session.user.id,
+          workout_plan_id: planId,
+        },
+        select: { trainee_id: true },
+      })
+
+      if (!assignment) {
+        logger.warn({ userId, planId, role }, "Workout plan to generate not found")
+        return { error: "Nie znaleziono planu lub brak dostępu." }
+      }
+    }
+
+    const plan = await prisma.workout_plan.findUnique({
+      where: { id: planId },
       include: {
         section: {
           orderBy: { order: "asc" },
@@ -423,19 +442,9 @@ export async function generateWorkoutPlanPdf(planId: string) {
       return { error: "Nie znaleziono planu lub brak dostępu." }
     }
 
-    if (session.user.role === user_role.trainer) {
-      const assignmentCount = await prisma.plans_library.count({
-        where: { workout_plan_id: planId },
-      })
-
-      if (assignmentCount === 0) {
-        return { error: "Plan nie został jeszcze udostępniony podopiecznemu." }
-      }
-    }
-
     const file = await toDownloadFile(plan)
 
-    logger.info({ userId, planId }, "Workout plan PDF generated successfully")
+    logger.info({ userId, planId, role }, "Workout plan PDF generated successfully")
     return { success: true as const, data: file }
   } catch {
     logger.error({ userId, planId }, "Error generating workout plan PDF")
