@@ -267,8 +267,18 @@ export default function RegisterPage() {
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>
-                        <FormLabel className="mb-0">
+                        <FormLabel className="mb-0 flex flex-row">
                           Wyrażam zgodę na przetwarzanie danych.*
+                          <Link
+                            href="/privacy-policy"
+                            className="text-xs underline"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Polityka prywatności
+                          </Link>
+                          
                         </FormLabel>
                         <FormMessage />
                       </FormItem>
@@ -491,8 +501,18 @@ export default function RegisterPage() {
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>
-                        <FormLabel className="mb-0">
+                        <FormLabel className="mb-0 flex flex-row">
                           Wyrażam zgodę na przetwarzanie danych.*
+                          <Link
+                            href="/privacy-policy"
+                            className="text-xs underline"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Polityka prywatności
+                          </Link>
+                          
                         </FormLabel>
                         <FormMessage />
                       </FormItem>
